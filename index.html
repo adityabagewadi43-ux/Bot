@@ -34,7 +34,6 @@
             margin: 10px 0;
             border-radius: 6px;
             border: 1px solid #ccc;
-            font-size: 14px;
         }
 
         button {
@@ -45,7 +44,6 @@
             border-radius: 6px;
             background-color: #2c5364;
             color: white;
-            font-size: 16px;
             cursor: pointer;
         }
 
@@ -55,7 +53,6 @@
 
         .error {
             color: red;
-            font-size: 14px;
             margin-top: 10px;
         }
     </style>
@@ -79,13 +76,27 @@
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
 
-        // simple frontend validation
         if (username === "" || password === "") {
             document.getElementById("errorMsg").innerText = "Please fill all fields!";
-        } else {
-            alert("Login button clicked!");
+        } 
+        else if (username === "admin" && password === "1234") {
+            // save login state
+            localStorage.setItem("loggedIn", "true");
+
+            // redirect to home page
+            window.location.href = "home.html";
+        } 
+        else {
+            document.getElementById("errorMsg").innerText = "Invalid Username or Password!";
         }
     }
+
+    // Enter key support
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            login();
+        }
+    });
 </script>
 
 </body>
