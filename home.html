@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Modern Trading </title>
+<title>Modern Trading</title>
 
 <style>
 body {
@@ -31,6 +31,7 @@ body {
     padding: 20px;
     border-radius: 20px;
     transition: 0.3s;
+    cursor: pointer;
 }
 
 .card:hover {
@@ -49,18 +50,20 @@ body {
 <body>
 
 <div class="container">
-    <h1>System Trading </h1>
+    <h1>System Trading</h1>
     <p>Explore global markets</p>
 
     <div class="grid">
 
-        <div class="card">
+        <!-- ✅ Crypto (Clickable) -->
+        <div class="card" onclick="openCrypto()">
             <div class="icon">₿</div>
             <h2>Crypto</h2>
             <p>Bitcoin, Ethereum</p>
             <p class="positive">+2.45%</p>
         </div>
 
+        <!-- Other Cards -->
         <div class="card">
             <div class="icon">🇮🇳</div>
             <h2>Indian Stocks</h2>
@@ -98,6 +101,13 @@ body {
 
     </div>
 </div>
+
+<!-- 🔗 Script to open crypto page -->
+<script>
+function openCrypto() {
+    window.location.href = "crypto.html";
+}
+</script>
 
 </body>
 </html>
