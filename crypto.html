@@ -1,887 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoPulse • Live Crypto Dashboard + AI Analyst</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
-        
-        :root {
-            --tw-color-primary: #00ff9d;
-        }
-        
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .logo-font {
-            font-family: 'Space Grotesk', sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Adiket Crypto Dashboard</title>
 
-        .crypto-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .crypto-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 50px -12px rgb(0 255 157 / 0.15);
-        }
-        
-        .chart-container {
-            position: relative;
-        }
-        
-        .ai-bubble {
-            animation: fadeIn 0.4s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .live-dot {
-            animation: pulse 2s infinite;
-        }
-    </style>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI';
+    background: #0d1117;
+    color: white;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+    font-size: 28px;
+    background: #161b22;
+    font-weight: bold;
+}
+
+.container {
+    padding: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.coin {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #30363d;
+}
+
+.pattern {
+    margin-bottom: 15px;
+}
+
+.pattern h4 {
+    margin: 5px 0;
+    color: #58a6ff;
+}
+
+.ai-box {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    padding: 15px;
+    border-radius: 8px;
+}
+</style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
-    <!-- HEADER / NAVBAR -->
-    <nav class="border-b border-zinc-800 bg-zinc-900 sticky top-0 z-50">
-        <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
-            
-            <!-- Logo + Brand -->
-            <div class="flex items-center gap-x-3">
-                <div class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center text-2xl shadow-inner">₿</div>
-                <h1 class="logo-font text-3xl tracking-tighter">CryptoPulse</h1>
-                <span class="text-emerald-400 text-xs font-medium px-3 py-1 bg-emerald-950 rounded-3xl border border-emerald-500/30">LIVE</span>
-            </div>
 
-            <!-- Menu -->
-            <div class="flex items-center gap-x-8 text-sm font-medium">
-                <a onclick="navigateTo('dashboard')" class="flex items-center gap-x-2 hover:text-emerald-400 transition-colors cursor-pointer">
-                    <span class="text-xl">📊</span>
-                    <span>Dashboard</span>
-                </a>
-                <a onclick="navigateTo('crypto')" class="flex items-center gap-x-2 bg-emerald-500 text-black px-6 py-2 rounded-3xl hover:bg-emerald-400 transition-colors font-semibold">
-                    <span class="text-xl">₿</span>
-                    <span>CRYPTO</span>
-                </a>
-                <a onclick="navigateTo('portfolio')" class="flex items-center gap-x-2 hover:text-emerald-400 transition-colors cursor-pointer">
-                    <span class="text-xl">💼</span>
-                    <span>Portfolio</span>
-                </a>
-                <a onclick="navigateTo('news')" class="flex items-center gap-x-2 hover:text-emerald-400 transition-colors cursor-pointer">
-                    <span class="text-xl">📰</span>
-                    <span>News</span>
-                </a>
-                <a onclick="navigateTo('iot')" class="flex items-center gap-x-2 hover:text-emerald-400 transition-colors cursor-pointer">
-                    <span class="text-xl">🔌</span>
-                    <span>IoT Hub</span>
-                </a>
-            </div>
+<body>
 
-            <!-- Right side -->
-            <div class="flex items-center gap-x-6">
-                <div class="flex items-center bg-zinc-800 text-sm rounded-3xl px-5 py-2 gap-x-2 border border-zinc-700">
-                    <div class="w-2 h-2 bg-emerald-400 rounded-full live-dot"></div>
-                    <span class="font-medium">Market Open • 24/7</span>
-                </div>
-                
-                <div class="flex items-center gap-x-2 bg-zinc-800 rounded-3xl px-4 py-2 text-sm cursor-pointer hover:bg-zinc-700" onclick="toggleSearch()">
-                    <span>🔎</span>
-                    <input id="global-search" 
-                           onkeyup="if(event.key==='Enter') searchCoin()"
-                           placeholder="Search coins... (BTC, ETH...)"
-                           class="bg-transparent outline-none w-52 text-sm">
-                </div>
-                
-                <div class="flex items-center gap-x-3">
-                    <div class="text-right">
-                        <div class="text-xs text-zinc-400">Connected Wallet</div>
-                        <div class="text-emerald-400 font-medium text-sm">0x71C4...f3a9</div>
-                    </div>
-                    <div class="w-9 h-9 bg-zinc-700 rounded-2xl flex items-center justify-center text-xl">👾</div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<header>🚀 Crypto Intelligence Dashboard</header>
 
-    <div class="max-w-screen-2xl mx-auto px-8 py-8 flex gap-6">
-        
-        <!-- LEFT SIDEBAR: Top Coins -->
-        <div class="w-80 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 h-fit sticky top-24">
-            <h2 class="text-lg font-semibold mb-6 flex items-center gap-x-2">
-                🔥 Top Cryptos
-                <span class="text-xs bg-orange-500 text-white px-3 py-0.5 rounded-3xl">Live</span>
-            </h2>
-            
-            <div id="top-coins-list" class="space-y-4 max-h-[580px] overflow-y-auto pr-2"></div>
-            
-            <div class="mt-8 pt-8 border-t border-zinc-700 text-xs text-zinc-400">
-                <div class="flex justify-between mb-2">
-                    <span>Market Cap Rank</span>
-                    <span class="text-emerald-400">Updated every 15s</span>
-                </div>
-                <p class="text-zinc-500">Click any coin to load full chart + AI analysis</p>
-            </div>
-        </div>
+<div class="container">
 
-        <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 space-y-8">
-            
-            <!-- GLOBAL STATS -->
-            <div id="global-stats" class="grid grid-cols-4 gap-4">
-                <!-- Populated by JS -->
-            </div>
+<div class="grid">
 
-            <!-- SELECTED COIN HERO -->
-            <div id="selected-hero" class="bg-gradient-to-r from-zinc-900 to-zinc-800 border border-zinc-700 rounded-3xl p-8 flex items-center gap-8">
-                <div id="hero-content" class="flex-1">
-                    <!-- Populated by JS -->
-                </div>
-                
-                <!-- Quick stats -->
-                <div class="flex gap-8 text-center">
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-1">24H CHANGE</div>
-                        <div id="hero-24h" class="text-3xl font-semibold"></div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-1">7D CHANGE</div>
-                        <div id="hero-7d" class="text-3xl font-semibold"></div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-1">VOLUME 24H</div>
-                        <div id="hero-volume" class="text-3xl font-semibold"></div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-1">MARKET CAP</div>
-                        <div id="hero-mcap" class="text-3xl font-semibold"></div>
-                    </div>
-                </div>
-            </div>
+<!-- LEFT SIDE -->
+<div>
 
-            <!-- CHART SECTION -->
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-x-4">
-                        <h2 id="chart-title" class="text-2xl font-semibold">Bitcoin Price Chart</h2>
-                        <div onclick="changeChartPeriod(1)" id="period-1" class="period-btn active text-xs px-4 py-1 bg-emerald-500 text-black rounded-3xl cursor-pointer">1D</div>
-                        <div onclick="changeChartPeriod(7)" id="period-7" class="period-btn text-xs px-4 py-1 hover:bg-zinc-800 rounded-3xl cursor-pointer">7D</div>
-                        <div onclick="changeChartPeriod(30)" id="period-30" class="period-btn text-xs px-4 py-1 hover:bg-zinc-800 rounded-3xl cursor-pointer">30D</div>
-                        <div onclick="changeChartPeriod(90)" id="period-90" class="period-btn text-xs px-4 py-1 hover:bg-zinc-800 rounded-3xl cursor-pointer">90D</div>
-                    </div>
-                    <div class="text-xs flex items-center gap-x-2 text-zinc-400">
-                        <span class="bg-emerald-400 w-2 h-2 rounded-full live-dot"></span>
-                        LIVE • LAST UPDATED <span id="last-updated" class="font-medium text-white">just now</span>
-                    </div>
-                </div>
-                
-                <div class="chart-container h-96">
-                    <canvas id="price-chart"></canvas>
-                </div>
-            </div>
+<!-- TradingView Chart -->
+<div class="card">
+<h2>Live BTC Chart</h2>
 
-            <!-- DETAILED INFO GRID -->
-            <div class="grid grid-cols-3 gap-6">
-                <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
-                    <h3 class="font-medium mb-4 text-emerald-400">Market Data</h3>
-                    <div id="market-data-grid" class="space-y-6">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-                
-                <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
-                    <h3 class="font-medium mb-4">All-Time High / Low</h3>
-                    <div id="ath-atl" class="space-y-6">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-                
-                <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
-                    <h3 class="font-medium mb-4">Additional Metrics</h3>
-                    <div id="additional-metrics" class="grid grid-cols-2 gap-4 text-sm">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="tradingview-widget-container">
+  <div id="tradingview_chart"></div>
+</div>
 
-        <!-- RIGHT PANEL: AI MARKET ANALYST (the "AI in between a space" you asked for) -->
-        <div class="w-96 bg-gradient-to-b from-zinc-900 to-zinc-950 border border-emerald-500/30 rounded-3xl p-6 flex flex-col h-fit sticky top-24 shadow-2xl shadow-emerald-500/10">
-            
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-x-3">
-                    <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-3xl shadow-inner">🧠</div>
-                    <div>
-                        <h2 class="text-xl font-semibold tracking-tight">AI Market Analyst</h2>
-                        <p class="text-emerald-400 text-xs">Powered by real-time signals</p>
-                    </div>
-                </div>
-                <span onclick="refreshAnalysis()" class="cursor-pointer text-emerald-400 hover:text-white flex items-center gap-x-1 text-sm font-medium">
-                    <span>⟳</span> REFRESH
-                </span>
-            </div>
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+new TradingView.widget({
+  "width": "100%",
+  "height": 400,
+  "symbol": "BINANCE:BTCUSDT",
+  "interval": "15",
+  "theme": "dark",
+  "style": "1",
+  "locale": "en",
+  "container_id": "tradingview_chart"
+});
+</script>
 
-            <div id="ai-coin-header" class="flex items-center gap-x-4 bg-zinc-800 rounded-3xl p-4 mb-6">
-                <!-- Filled by JS -->
-            </div>
+</div>
 
-            <!-- AI ANALYSIS CARD -->
-            <div class="bg-zinc-800/70 border border-zinc-700 rounded-3xl p-6 mb-6">
-                <div class="flex justify-between items-baseline mb-6">
-                    <div class="text-lg font-semibold">Current Recommendation</div>
-                    <div id="ai-recommendation-badge" class="px-6 py-1 text-sm font-bold rounded-3xl"></div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-6 mb-8">
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-2">BEST BUY PRICE</div>
-                        <div id="ai-buy-price" class="text-4xl font-semibold text-emerald-400"></div>
-                        <div class="text-xs text-zinc-400">Support level</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-zinc-400 mb-2">TARGET SELL PRICE</div>
-                        <div id="ai-sell-price" class="text-4xl font-semibold text-orange-400"></div>
-                        <div class="text-xs text-zinc-400">Resistance level</div>
-                    </div>
-                </div>
-                
-                <div id="ai-reasoning" class="text-zinc-300 text-sm leading-relaxed border-t border-zinc-700 pt-6">
-                    <!-- Filled by JS -->
-                </div>
-                
-                <div class="text-[10px] text-zinc-500 mt-4 italic">
-                    ⚠️ This is simulated AI analysis for demo purposes. Never financial advice.
-                </div>
-            </div>
+<!-- Pattern Section -->
+<div class="card">
+<h2>Candlestick Patterns</h2>
 
-            <!-- MINI CHAT WITH AI -->
-            <div class="mt-auto">
-                <div class="text-xs uppercase font-medium text-zinc-400 mb-3">Ask the Analyst anything about this coin</div>
-                <div id="ai-chat-window" class="bg-zinc-900 rounded-3xl h-64 p-4 overflow-y-auto text-sm mb-4 space-y-4">
-                    <!-- Chat messages added by JS -->
-                    <div class="ai-bubble bg-emerald-950 text-emerald-400 p-3 rounded-2xl rounded-tl-none max-w-[80%]">
-                        Hi! I'm your personal crypto analyst. Ask me about <span id="chat-coin-name" class="font-bold"></span> and I'll give instant insights.
-                    </div>
-                </div>
-                
-                <div class="flex gap-2">
-                    <input id="ai-question-input" 
-                           type="text" 
-                           placeholder="Should I hold BTC right now?"
-                           class="flex-1 bg-zinc-800 border border-zinc-700 focus:border-emerald-400 rounded-3xl px-6 py-4 text-sm outline-none">
-                    <button onclick="sendToAI()" 
-                            class="bg-emerald-500 hover:bg-emerald-400 transition-colors text-black font-semibold px-8 rounded-3xl">
-                        →
-                    </button>
-                </div>
-            </div>
-            
-            <!-- IoT integration badge (as you requested "a part of iot") -->
-            <div class="mt-8 text-center border border-dashed border-emerald-300/30 rounded-3xl py-3 px-4 text-xs flex items-center justify-center gap-x-2 bg-emerald-950/30">
-                <span class="text-emerald-400">🔌</span>
-                <span class="font-medium">IoT Connected</span>
-                <span class="text-emerald-400 text-[10px]">• Live oracle feed from smart devices</span>
-            </div>
-        </div>
-    </div>
+<div class="pattern">
+<h4>Long-Legged Doji</h4>
+<p>Indicates high market indecision. Price moves both directions but closes near opening.</p>
+</div>
 
-    <!-- FOOTER NOTE -->
-    <div class="max-w-screen-2xl mx-auto px-8 py-6 text-xs text-zinc-400 flex items-center justify-between border-t border-zinc-800">
-        <div>
-            Demo webpage built exactly as requested • Click <strong>CRYPTO</strong> in the top nav to experience full dashboard • All data is mocked for instant demo (you can replace with CoinGecko API key if you want live prices)
-        </div>
-        <div class="flex items-center gap-x-5">
-            <a href="#" onclick="alert('Portfolio feature coming in v2!')" class="hover:text-white">💼 Portfolio</a>
-            <a href="#" onclick="alert('News feed would load real headlines here')" class="hover:text-white">📰 Market News</a>
-            <span class="text-emerald-400">Built with ❤️ for real-time crypto + AI analysis</span>
-        </div>
-    </div>
+<div class="pattern">
+<h4>Bullish Engulfing</h4>
+<p>Strong bullish reversal signal. Buyers dominate after downtrend.</p>
+</div>
 
-    <script>
-        // TAILWIND INIT
-        function initializeTailwind() {
-            tailwind.config = {
-                content: [],
-                theme: {
-                    extend: {}
-                }
-            }
-            return true
-        }
+<div class="pattern">
+<h4>Hammer</h4>
+<p>Signals potential reversal after a downtrend.</p>
+</div>
 
-        // MOCK DATA - realistic and live-feeling
-        let allCoins = [
-            {
-                id: "bitcoin",
-                symbol: "btc",
-                name: "Bitcoin",
-                image: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
-                current_price: 68245,
-                price_change_percentage_24h: 3.8,
-                price_change_percentage_7d: -2.4,
-                market_cap: 1348000000000,
-                total_volume: 42800000000,
-                high_24h: 69500,
-                low_24h: 67120,
-                ath: 73750,
-                atl: 67,
-                circulating_supply: 19720000
-            },
-            {
-                id: "ethereum",
-                symbol: "eth",
-                name: "Ethereum",
-                image: "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-                current_price: 2658,
-                price_change_percentage_24h: -1.2,
-                price_change_percentage_7d: 8.9,
-                market_cap: 319800000000,
-                total_volume: 18900000000,
-                high_24h: 2710,
-                low_24h: 2580,
-                ath: 4891,
-                atl: 0.43,
-                circulating_supply: 120300000
-            },
-            {
-                id: "solana",
-                symbol: "sol",
-                name: "Solana",
-                image: "https://assets.coingecko.com/coins/images/4128/large/solana.png",
-                current_price: 172.45,
-                price_change_percentage_24h: 7.1,
-                price_change_percentage_7d: 14.3,
-                market_cap: 81000000000,
-                total_volume: 6200000000,
-                high_24h: 175,
-                low_24h: 158,
-                ath: 260,
-                atl: 0.5,
-                circulating_supply: 468000000
-            },
-            {
-                id: "binancecoin",
-                symbol: "bnb",
-                name: "BNB",
-                image: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2.png",
-                current_price: 598,
-                price_change_percentage_24h: 2.9,
-                price_change_percentage_7d: -4.1,
-                market_cap: 87200000000,
-                total_volume: 1890000000,
-                high_24h: 610,
-                low_24h: 580,
-                ath: 690,
-                atl: 0.04,
-                circulating_supply: 147500000
-            },
-            {
-                id: "ripple",
-                symbol: "xrp",
-                name: "XRP",
-                image: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
-                current_price: 0.58,
-                price_change_percentage_24h: -4.8,
-                price_change_percentage_7d: 12.6,
-                market_cap: 32800000000,
-                total_volume: 2380000000,
-                high_24h: 0.62,
-                low_24h: 0.55,
-                ath: 3.84,
-                atl: 0.002,
-                circulating_supply: 55600000000
-            },
-            {
-                id: "cardano",
-                symbol: "ada",
-                name: "Cardano",
-                image: "https://assets.coingecko.com/coins/images/975/large/cardano.png",
-                current_price: 0.42,
-                price_change_percentage_24h: 5.6,
-                price_change_percentage_7d: 9.8,
-                market_cap: 14900000000,
-                total_volume: 890000000,
-                high_24h: 0.43,
-                low_24h: 0.39,
-                ath: 3.10,
-                atl: 0.017,
-                circulating_supply: 35780000000
-            },
-            {
-                id: "dogecoin",
-                symbol: "doge",
-                name: "Dogecoin",
-                image: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png",
-                current_price: 0.145,
-                price_change_percentage_24h: 11.4,
-                price_change_percentage_7d: 18.7,
-                market_cap: 21200000000,
-                total_volume: 2450000000,
-                high_24h: 0.152,
-                low_24h: 0.128,
-                ath: 0.73,
-                atl: 0.000087,
-                circulating_supply: 146300000000
-            }
-        ]
+<div class="pattern">
+<h4>Shooting Star</h4>
+<p>Bearish reversal signal at the top of an uptrend.</p>
+</div>
 
-        // Mock chart history for each coin (different patterns)
-        let mockChartData = {
-            bitcoin: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [64500, 65200, 67100, 66800, 67900, 67500, 68245]
-            },
-            ethereum: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [2450, 2510, 2580, 2620, 2590, 2680, 2658]
-            },
-            solana: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [138, 145, 152, 149, 155, 165, 172.45]
-            },
-            binancecoin: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [610, 595, 588, 592, 585, 590, 598]
-            },
-            ripple: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [0.62, 0.59, 0.55, 0.57, 0.54, 0.56, 0.58]
-            },
-            cardano: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [0.38, 0.39, 0.41, 0.40, 0.415, 0.42, 0.42]
-            },
-            dogecoin: {
-                labels: ["Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18"],
-                prices: [0.112, 0.118, 0.125, 0.131, 0.138, 0.142, 0.145]
-            }
-        }
+</div>
 
-        let currentSelectedCoin = null
-        let priceChartInstance = null
-        let currentPeriod = 7
+</div>
 
-        // Render top coins sidebar
-        function renderTopCoins() {
-            const container = document.getElementById('top-coins-list')
-            container.innerHTML = ''
-            
-            allCoins.forEach(coin => {
-                const changeColor = coin.price_change_percentage_24h >= 0 ? 'text-emerald-400' : 'text-red-400'
-                const html = `
-                <div onclick="selectCoin('${coin.id}')" 
-                     class="crypto-card flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-2xl p-4 cursor-pointer">
-                    <div class="flex items-center gap-x-3">
-                        <img src="${coin.image}" alt="${coin.name}" class="w-8 h-8 rounded-full">
-                        <div>
-                            <div class="font-semibold">${coin.name}</div>
-                            <div class="text-xs text-zinc-400 uppercase">${coin.symbol}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-medium">$${(coin.current_price).toLocaleString()}</div>
-                        <div class="${changeColor} text-sm font-medium">
-                            ${coin.price_change_percentage_24h >= 0 ? '↑' : '↓'} ${Math.abs(coin.price_change_percentage_24h)}%
-                        </div>
-                    </div>
-                </div>`
-                container.innerHTML += html
-            })
-        }
+<!-- RIGHT SIDE -->
+<div>
 
-        // Render global stats bar
-        function renderGlobalStats() {
-            const container = document.getElementById('global-stats')
-            container.innerHTML = `
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-center">
-                <div class="text-emerald-400 text-xs mb-1">TOTAL MARKET CAP</div>
-                <div class="text-3xl font-semibold">$${(2.48).toFixed(2)}T</div>
-                <div class="text-emerald-400 text-sm flex justify-center items-center gap-x-1">+4.2% <span class="text-xs">24h</span></div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-center">
-                <div class="text-emerald-400 text-xs mb-1">24H VOLUME</div>
-                <div class="text-3xl font-semibold">$${(98.4).toFixed(1)}B</div>
-                <div class="text-red-400 text-sm flex justify-center items-center gap-x-1">-1.8% <span class="text-xs">24h</span></div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-center">
-                <div class="text-emerald-400 text-xs mb-1">BTC DOMINANCE</div>
-                <div class="text-3xl font-semibold">52.8%</div>
-                <div class="text-emerald-400 text-sm">+0.9%</div>
-            </div>
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-center">
-                <div class="text-emerald-400 text-xs mb-1">FEAR &amp; GREED</div>
-                <div class="text-3xl font-semibold text-amber-400">68 <span class="text-base">GREED</span></div>
-                <div class="h-2 bg-zinc-700 rounded-3xl mt-3 overflow-hidden"><div class="h-2 w-3/4 bg-amber-400"></div></div>
-            </div>`
-        }
+<!-- Market Data -->
+<div class="card">
+<h2>Top Cryptos</h2>
+<div id="cryptoList">Loading...</div>
+</div>
 
-        // Select a coin and load everything
-        function selectCoin(coinId) {
-            currentSelectedCoin = allCoins.find(c => c.id === coinId)
-            if (!currentSelectedCoin) return
-            
-            // Update hero
-            const heroHTML = `
-                <div class="flex items-center gap-x-6">
-                    <img src="${currentSelectedCoin.image}" class="w-16 h-16 rounded-3xl" alt="">
-                    <div>
-                        <div class="flex items-baseline gap-x-3">
-                            <h1 class="text-5xl font-semibold">${currentSelectedCoin.name}</h1>
-                            <span class="text-4xl uppercase text-zinc-400">${currentSelectedCoin.symbol}</span>
-                        </div>
-                        <div class="text-5xl font-medium text-emerald-400">$${currentSelectedCoin.current_price.toLocaleString()}</div>
-                    </div>
-                </div>`
-            document.getElementById('hero-content').innerHTML = heroHTML
-            
-            // Quick stats
-            document.getElementById('hero-24h').innerHTML = `
-                <span class="${currentSelectedCoin.price_change_percentage_24h >= 0 ? 'text-emerald-400' : 'text-red-400'}">
-                    ${currentSelectedCoin.price_change_percentage_24h >= 0 ? '+' : ''}${currentSelectedCoin.price_change_percentage_24h}%
-                </span>`
-            document.getElementById('hero-7d').innerHTML = `
-                <span class="${currentSelectedCoin.price_change_percentage_7d >= 0 ? 'text-emerald-400' : 'text-red-400'}">
-                    ${currentSelectedCoin.price_change_percentage_7d >= 0 ? '+' : ''}${currentSelectedCoin.price_change_percentage_7d}%
-                </span>`
-            document.getElementById('hero-volume').innerHTML = `$${(currentSelectedCoin.total_volume / 1000000000).toFixed(1)}B`
-            document.getElementById('hero-mcap').innerHTML = `$${(currentSelectedCoin.market_cap / 1000000000000).toFixed(2)}T`
-            
-            // Chart title
-            document.getElementById('chart-title').textContent = `${currentSelectedCoin.name} Price Chart`
-            
-            // Render chart
-            renderPriceChart()
-            
-            // Render details
-            renderCoinDetails()
-            
-            // Render AI panel
-            renderAIPanel()
-        }
+<!-- AI Insight -->
+<div class="card">
+<h2>AI Insight</h2>
+<div class="ai-box" id="aiInsight">
+Analyzing market trends...
+</div>
+</div>
 
-        // Render the big price chart
-        function renderPriceChart() {
-            const ctx = document.getElementById('price-chart')
-            
-            if (priceChartInstance) priceChartInstance.destroy()
-            
-            const dataSet = mockChartData[currentSelectedCoin.id] || mockChartData.bitcoin
-            
-            priceChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dataSet.labels,
-                    datasets: [{
-                        label: `${currentSelectedCoin.symbol.toUpperCase()} Price (USD)`,
-                        data: dataSet.prices,
-                        borderColor: '#00ff9d',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        fill: true,
-                        backgroundColor: 'rgba(0, 255, 157, 0.08)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            displayColors: false,
-                            backgroundColor: '#111',
-                            titleColor: '#fff',
-                            bodyColor: '#00ff9d',
-                            callbacks: {
-                                label: (ctx) => '$' + ctx.raw.toLocaleString()
-                            }
-                        }
-                    },
-                    scales: {
-                        x: { grid: { color: '#27272a', lineWidth: 1 }, ticks: { color: '#a3a3a3' } },
-                        y: { 
-                            grid: { color: '#27272a' }, 
-                            ticks: { 
-                                color: '#a3a3a3',
-                                callback: (val) => '$' + val.toLocaleString()
-                            }
-                        }
-                    }
-                }
-            })
-        }
+</div>
 
-        // Change time period (just visual for demo)
-        function changeChartPeriod(days) {
-            currentPeriod = days
-            document.querySelectorAll('.period-btn').forEach(el => el.classList.remove('active', 'bg-emerald-500', 'text-black'))
-            const activeBtn = document.getElementById(`period-${days}`)
-            if (activeBtn) {
-                activeBtn.classList.add('active', 'bg-emerald-500', 'text-black')
-            }
-            // For demo we keep same data but you can extend this
-            renderPriceChart()
-        }
+</div>
 
-        // Full details grid
-        function renderCoinDetails() {
-            // Market data
-            const marketHTML = `
-            <div class="flex justify-between"><span class="text-zinc-400">Market Cap</span><span class="font-medium">$${(currentSelectedCoin.market_cap / 1000000000000).toFixed(2)}T</span></div>
-            <div class="flex justify-between"><span class="text-zinc-400">24h Volume</span><span class="font-medium">$${(currentSelectedCoin.total_volume / 1000000000).toFixed(1)}B</span></div>
-            <div class="flex justify-between"><span class="text-zinc-400">24h High</span><span class="font-medium">$${currentSelectedCoin.high_24h.toLocaleString()}</span></div>
-            <div class="flex justify-between"><span class="text-zinc-400">24h Low</span><span class="font-medium">$${currentSelectedCoin.low_24h.toLocaleString()}</span></div>
-            <div class="flex justify-between"><span class="text-zinc-400">Circulating Supply</span><span class="font-medium">${(currentSelectedCoin.circulating_supply / 1000000).toFixed(1)}M</span></div>`
-            document.getElementById('market-data-grid').innerHTML = marketHTML
-            
-            // ATH / ATL
-            const athHTML = `
-            <div>
-                <div class="text-xs text-zinc-400">ALL-TIME HIGH</div>
-                <div class="font-semibold text-xl">$${currentSelectedCoin.ath.toLocaleString()}</div>
-                <div class="text-xs text-red-400">-7.5% from ATH</div>
-            </div>
-            <div>
-                <div class="text-xs text-zinc-400">ALL-TIME LOW</div>
-                <div class="font-semibold text-xl">$${currentSelectedCoin.atl}</div>
-                <div class="text-xs text-emerald-400">+101,800% from ATL</div>
-            </div>`
-            document.getElementById('ath-atl').innerHTML = athHTML
-            
-            // Additional metrics
-            const addHTML = `
-            <div class="bg-zinc-800 rounded-2xl p-4"><div class="text-xs text-zinc-400">Fully Diluted Valuation</div><div class="text-lg font-medium">$${(currentSelectedCoin.market_cap * 1.05 / 1000000000000).toFixed(2)}T</div></div>
-            <div class="bg-zinc-800 rounded-2xl p-4"><div class="text-xs text-zinc-400">Max Supply</div><div class="text-lg font-medium">21M</div></div>
-            <div class="bg-zinc-800 rounded-2xl p-4"><div class="text-xs text-zinc-400">Total Supply</div><div class="text-lg font-medium">21M</div></div>
-            <div class="bg-zinc-800 rounded-2xl p-4"><div class="text-xs text-zinc-400">Community Score</div><div class="text-lg font-medium flex items-center">98 <span class="text-emerald-400 text-xl ml-2">⭐</span></div></div>`
-            document.getElementById('additional-metrics').innerHTML = addHTML
-        }
+</div>
 
-        // AI MARKET ANALYST PANEL
-        function renderAIPanel() {
-            if (!currentSelectedCoin) return
-            
-            // Header
-            const headerHTML = `
-                <img src="${currentSelectedCoin.image}" class="w-9 h-9 rounded-2xl" alt="">
-                <div class="flex-1">
-                    <div class="font-semibold">${currentSelectedCoin.name} <span class="uppercase text-xs text-zinc-400">${currentSelectedCoin.symbol}</span></div>
-                    <div class="text-emerald-400 text-2xl">$${currentSelectedCoin.current_price.toLocaleString()}</div>
-                </div>`
-            document.getElementById('ai-coin-header').innerHTML = headerHTML
-            
-            // Chat coin name
-            document.getElementById('chat-coin-name').textContent = currentSelectedCoin.symbol.toUpperCase()
-            
-            // Generate AI analysis
-            generateAIRecommendation()
-        }
+<script>
+// Fetch crypto data
+async function getCrypto() {
+    const res = await axios.get(
+        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
+    );
 
-        function generateAIRecommendation() {
-            const coin = currentSelectedCoin
-            const price = coin.current_price
-            const change24 = coin.price_change_percentage_24h
-            
-            let recText = ''
-            let badgeClass = ''
-            let badgeLabel = ''
-            let buyPrice = 0
-            let sellPrice = 0
-            let reasoning = ''
-            
-            if (change24 > 8) {
-                recText = 'STRONG BUY'
-                badgeClass = 'bg-emerald-400 text-black'
-                badgeLabel = 'STRONG BUY'
-                buyPrice = Math.round(price * 0.96)
-                sellPrice = Math.round(price * 1.18)
-                reasoning = `Momentum is extremely bullish. ${coin.name} has broken key resistance and shows strong institutional accumulation. Hold tight or add on dips.`
-            } else if (change24 > 3) {
-                recText = 'BUY'
-                badgeClass = 'bg-emerald-500 text-white'
-                badgeLabel = 'BUY'
-                buyPrice = Math.round(price * 0.97)
-                sellPrice = Math.round(price * 1.12)
-                reasoning = `Positive short-term momentum detected. Current price is near support. Perfect entry point for swing traders.`
-            } else if (change24 > -2) {
-                recText = 'HOLD'
-                badgeClass = 'bg-amber-400 text-black'
-                badgeLabel = 'HOLD'
-                buyPrice = Math.round(price * 0.94)
-                sellPrice = Math.round(price * 1.09)
-                reasoning = `Market is consolidating. No clear directional signal yet. Best to hold your position and wait for breakout confirmation.`
-            } else {
-                recText = 'SELL / TAKE PROFIT'
-                badgeClass = 'bg-red-400 text-white'
-                badgeLabel = 'SELL'
-                buyPrice = Math.round(price * 0.88)
-                sellPrice = Math.round(price * 1.04)
-                reasoning = `Bearish pressure building. Consider reducing exposure. Strong resistance overhead and volume is declining.`
-            }
-            
-            // Update DOM
-            document.getElementById('ai-recommendation-badge').innerHTML = `<span class="${badgeClass} px-6 py-1 rounded-3xl">${badgeLabel}</span>`
-            document.getElementById('ai-buy-price').innerHTML = `$${buyPrice.toLocaleString()}`
-            document.getElementById('ai-sell-price').innerHTML = `$${sellPrice.toLocaleString()}`
-            document.getElementById('ai-reasoning').innerHTML = `
-                <p><strong>Recommendation:</strong> ${recText}</p>
-                <p class="mt-3">${reasoning}</p>
-                <p class="mt-4 text-xs text-zinc-400">Based on 24h momentum, volume profile &amp; on-chain signals • Updated moments ago</p>`
-        }
+    let html = "";
 
-        // Refresh AI analysis button
-        function refreshAnalysis() {
-            if (!currentSelectedCoin) return
-            // Fake live refresh
-            currentSelectedCoin.price_change_percentage_24h = (currentSelectedCoin.price_change_percentage_24h * -0.7).toFixed(1) * 1 // small random flip
-            generateAIRecommendation()
-            
-            const badge = document.getElementById('ai-recommendation-badge')
-            badge.style.transitionDuration = '300ms'
-            badge.style.transform = 'scale(1.1)'
-            setTimeout(() => { badge.style.transform = 'scale(1)' }, 300)
-            
-            // Add a message to chat
-            const chat = document.getElementById('ai-chat-window')
-            chat.innerHTML += `<div class="ai-bubble ml-auto bg-white/10 p-3 rounded-2xl rounded-tr-none max-w-[80%]">🔄 Analysis refreshed with latest market data</div>`
-            chat.scrollTop = chat.scrollHeight
-        }
+    res.data.slice(0, 8).forEach(coin => {
+        html += `
+        <div class="coin">
+            <span>${coin.name}</span>
+            <span>$${coin.current_price}</span>
+        </div>`;
+    });
 
-        // Simple AI chat
-        function sendToAI() {
-            const input = document.getElementById('ai-question-input')
-            const question = input.value.trim()
-            if (!question || !currentSelectedCoin) return
-            
-            const chat = document.getElementById('ai-chat-window')
-            
-            // User message
-            chat.innerHTML += `
-            <div class="ai-bubble ml-auto bg-emerald-500 text-black p-3 rounded-2xl rounded-tr-none max-w-[75%]">
-                ${question}
-            </div>`
-            
-            // Simulate thinking
-            setTimeout(() => {
-                let answer = ''
-                
-                if (question.toLowerCase().includes('hold') || question.toLowerCase().includes('sell') || question.toLowerCase().includes('buy')) {
-                    answer = `For ${currentSelectedCoin.name} right now my AI model says: ${document.getElementById('ai-recommendation-badge').textContent}. Current sentiment score is 74/100.`
-                } else if (question.toLowerCase().includes('price')) {
-                    answer = `Latest price of ${currentSelectedCoin.name} is <strong>$${currentSelectedCoin.current_price.toLocaleString()}</strong>. My model predicts +6.4% in next 48 hours with 68% confidence.`
-                } else {
-                    answer = `Great question! The on-chain metrics for ${currentSelectedCoin.symbol.toUpperCase()} are healthy. Whale activity is increasing and developer activity score is 91/100. Anything else?`
-                }
-                
-                chat.innerHTML += `
-                <div class="ai-bubble bg-emerald-950 text-emerald-400 p-3 rounded-2xl rounded-tl-none max-w-[80%]">
-                    ${answer}
-                </div>`
-                chat.scrollTop = chat.scrollHeight
-            }, 800)
-            
-            input.value = ''
-        }
+    document.getElementById("cryptoList").innerHTML = html;
+}
 
-        // Fake live price updates every 12 seconds
-        function startLiveUpdates() {
-            setInterval(() => {
-                // Random small price movement on all coins
-                allCoins.forEach(coin => {
-                    const change = (Math.random() * 2.8 - 1.4).toFixed(2) * 1
-                    coin.current_price = parseFloat((coin.current_price + coin.current_price * (change / 100)).toFixed(coin.current_price > 100 ? 0 : 2))
-                    coin.price_change_percentage_24h = parseFloat((coin.price_change_percentage_24h + change * 0.6).toFixed(1))
-                })
-                
-                // Re-render sidebar
-                renderTopCoins()
-                
-                // If we have a selected coin, update hero price only
-                if (currentSelectedCoin) {
-                    const updatedCoin = allCoins.find(c => c.id === currentSelectedCoin.id)
-                    if (updatedCoin) {
-                        currentSelectedCoin = updatedCoin
-                        // Only update price in hero (don't re-render everything)
-                        const priceEl = document.querySelector('#hero-content .text-5xl')
-                        if (priceEl) priceEl.textContent = `$${currentSelectedCoin.current_price.toLocaleString()}`
-                        
-                        // Also refresh AI if the change was big
-                        if (Math.abs(currentSelectedCoin.price_change_percentage_24h) > 4) {
-                            generateAIRecommendation()
-                        }
-                    }
-                }
-                
-                document.getElementById('last-updated').textContent = 'moments ago'
-                setTimeout(() => {
-                    if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = 'just now'
-                }, 4000)
-            }, 12000)
-        }
+getCrypto();
 
-        // Fake navigation (you asked for "page linked with means when we click on crypto")
-        function navigateTo(page) {
-            if (page === 'crypto') {
-                // Already on crypto - just scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-                alert('✅ You are already in the full CRYPTO section with charts, details & AI analyst!')
-            } else if (page === 'iot') {
-                alert('🔌 IoT Hub (demo): Your smart home devices are feeding live oracle data into the blockchain.\n\nExample: Fridge sensor just bought 0.0003 SOL automatically when price dipped 4% below target.')
-            } else {
-                alert(`🚀 ${page.toUpperCase()} page would open here in the real app.\n\nEverything is already fully functional in the CRYPTO dashboard above!`)
-            }
-        }
+// Fake AI Insight
+function generateInsight() {
+    const insights = [
+        "BTC showing consolidation near resistance.",
+        "ETH gaining bullish momentum.",
+        "Market volatility increasing — trade carefully.",
+        "Altcoins may outperform BTC this week."
+    ];
 
-        function toggleSearch() {
-            const input = document.getElementById('global-search')
-            input.focus()
-        }
+    const random = insights[Math.floor(Math.random() * insights.length)];
+    document.getElementById("aiInsight").innerText = random;
+}
 
-        function searchCoin() {
-            const query = document.getElementById('global-search').value.toLowerCase().trim()
-            if (!query) return
-            
-            const found = allCoins.find(c => 
-                c.name.toLowerCase().includes(query) || 
-                c.symbol.toLowerCase().includes(query)
-            )
-            
-            if (found) {
-                selectCoin(found.id)
-                document.getElementById('global-search').value = ''
-            } else {
-                alert('Coin not in top list yet. Try BTC, ETH, SOL...')
-            }
-        }
+setInterval(generateInsight, 4000);
+</script>
 
-        // MAIN START FUNCTION
-        function launchCryptoDashboard() {
-            initializeTailwind()
-            renderTopCoins()
-            renderGlobalStats()
-            
-            // Load Bitcoin by default
-            currentSelectedCoin = allCoins[0]
-            selectCoin('bitcoin')
-            
-            // Start live price pulsing
-            startLiveUpdates()
-            
-            console.log('%c✅ CryptoPulse full dashboard + AI Market Analyst ready!', 'background:#00ff9d;color:#000;font-size:13px;padding:2px 6px;border-radius:3px')
-            console.log('👉 Click any coin on the left • AI panel gives you buy/sell/hold advice instantly')
-            console.log('📡 IoT section is also included as requested')
-        }
-        
-        // BOOT THE APP
-        window.onload = launchCryptoDashboard
-    </script>
 </body>
 </html>
