@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Adiket Crypto Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<title>Crypto Pattern Intelligence</title>
 
 <style>
 body {
@@ -15,180 +13,199 @@ body {
 }
 
 header {
-    padding: 20px;
     text-align: center;
+    padding: 20px;
     font-size: 28px;
     background: #161b22;
-    font-weight: bold;
 }
 
 .container {
     padding: 20px;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-}
-
+/* CARDS */
 .card {
     background: #161b22;
     padding: 20px;
     border-radius: 10px;
+    margin-bottom: 20px;
 }
 
-h2 {
-    margin-top: 0;
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
 }
 
-.coin {
+/* PATTERNS */
+.pattern {
+    border: 1px solid #30363d;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.pattern h3 {
+    color: #58a6ff;
+}
+
+/* IMAGE STYLE */
+.pattern img {
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.info-box {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
     border-bottom: 1px solid #30363d;
-}
-
-.pattern {
-    margin-bottom: 15px;
-}
-
-.pattern h4 {
-    margin: 5px 0;
-    color: #58a6ff;
-}
-
-.ai-box {
-    background: #0d1117;
-    border: 1px solid #30363d;
-    padding: 15px;
-    border-radius: 8px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🚀 Crypto Intelligence Dashboard</header>
+<header>📊 Crypto Pattern Intelligence Dashboard</header>
 
 <div class="container">
 
+<!-- CRYPTO INFO -->
+<div class="card">
+<h2>Crypto Basics</h2>
+
+<div class="info-box">
+<span>What is Crypto?</span>
+<span>Digital decentralized currency</span>
+</div>
+
+<div class="info-box">
+<span>Blockchain</span>
+<span>Secure distributed ledger</span>
+</div>
+
+<div class="info-box">
+<span>Market Cap</span>
+<span>Price × Supply</span>
+</div>
+
+<div class="info-box">
+<span>Volatility</span>
+<span>High (rapid price changes)</span>
+</div>
+
+</div>
+
+<!-- CHART PATTERNS -->
+<div class="card">
+<h2>📈 Chart Patterns (Very Important)</h2>
+
 <div class="grid">
 
-<!-- LEFT SIDE -->
-<div>
-
-<!-- TradingView Chart -->
-<div class="card">
-<h2>Live BTC Chart</h2>
-
-<div class="tradingview-widget-container">
-  <div id="tradingview_chart"></div>
+<div class="pattern">
+<h3>Head & Shoulders</h3>
+<p>Reversal pattern — trend changes from bullish to bearish.</p>
+<img src="https://i.imgur.com/8bXWz7R.png">
 </div>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
+<div class="pattern">
+<h3>Double Top</h3>
+<p>Strong bearish reversal after two peaks.</p>
+<img src="https://i.imgur.com/7Q1Z5hC.png">
+</div>
+
+<div class="pattern">
+<h3>Double Bottom</h3>
+<p>Bullish reversal pattern — price bounces twice.</p>
+<img src="https://i.imgur.com/1WZ5XyC.png">
+</div>
+
+<div class="pattern">
+<h3>Ascending Triangle</h3>
+<p>Continuation pattern — breakout likely upwards.</p>
+<img src="https://i.imgur.com/0X6QJrM.png">
+</div>
+
+<div class="pattern">
+<h3>Descending Triangle</h3>
+<p>Bearish continuation pattern.</p>
+<img src="https://i.imgur.com/5FJYgYy.png">
+</div>
+
+<div class="pattern">
+<h3>Symmetrical Triangle</h3>
+<p>Breakout can happen in any direction.</p>
+<img src="https://i.imgur.com/fdYQK2L.png">
+</div>
+
+</div>
+
+</div>
+
+<!-- CANDLESTICK PATTERNS -->
+<div class="card">
+<h2>🕯️ Candlestick Patterns</h2>
+
+<div class="grid">
+
+<div class="pattern">
+<h3>Long-Legged Doji</h3>
+<p>Market indecision — buyers & sellers equal.</p>
+<img src="https://i.imgur.com/6v9QZxU.png">
+</div>
+
+<div class="pattern">
+<h3>Hammer</h3>
+<p>Bullish reversal after downtrend.</p>
+<img src="https://i.imgur.com/3kQZ6XH.png">
+</div>
+
+<div class="pattern">
+<h3>Shooting Star</h3>
+<p>Bearish reversal at top.</p>
+<img src="https://i.imgur.com/7GkP6mH.png">
+</div>
+
+<div class="pattern">
+<h3>Bullish Engulfing</h3>
+<p>Strong buying pressure signal.</p>
+<img src="https://i.imgur.com/X6bYyXc.png">
+</div>
+
+<div class="pattern">
+<h3>Bearish Engulfing</h3>
+<p>Strong selling pressure.</p>
+<img src="https://i.imgur.com/qkP6X9H.png">
+</div>
+
+</div>
+
+</div>
+
+<!-- AI ANALYSIS BOX -->
+<div class="card">
+<h2>🤖 AI Pattern Insight</h2>
+<p id="aiText">Analyzing patterns...</p>
+</div>
+
+</div>
+
 <script>
-new TradingView.widget({
-  "width": "100%",
-  "height": 400,
-  "symbol": "BINANCE:BTCUSDT",
-  "interval": "15",
-  "theme": "dark",
-  "style": "1",
-  "locale": "en",
-  "container_id": "tradingview_chart"
-});
-</script>
+const insights = [
+"Head & Shoulders suggests possible market reversal.",
+"Ascending triangle indicates bullish breakout soon.",
+"Long-legged doji shows indecision — wait before trading.",
+"Double top warns of potential price drop.",
+"Strong bullish engulfing spotted — buyers in control."
+];
 
-</div>
-
-<!-- Pattern Section -->
-<div class="card">
-<h2>Candlestick Patterns</h2>
-
-<div class="pattern">
-<h4>Long-Legged Doji</h4>
-<p>Indicates high market indecision. Price moves both directions but closes near opening.</p>
-</div>
-
-<div class="pattern">
-<h4>Bullish Engulfing</h4>
-<p>Strong bullish reversal signal. Buyers dominate after downtrend.</p>
-</div>
-
-<div class="pattern">
-<h4>Hammer</h4>
-<p>Signals potential reversal after a downtrend.</p>
-</div>
-
-<div class="pattern">
-<h4>Shooting Star</h4>
-<p>Bearish reversal signal at the top of an uptrend.</p>
-</div>
-
-</div>
-
-</div>
-
-<!-- RIGHT SIDE -->
-<div>
-
-<!-- Market Data -->
-<div class="card">
-<h2>Top Cryptos</h2>
-<div id="cryptoList">Loading...</div>
-</div>
-
-<!-- AI Insight -->
-<div class="card">
-<h2>AI Insight</h2>
-<div class="ai-box" id="aiInsight">
-Analyzing market trends...
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-// Fetch crypto data
-async function getCrypto() {
-    const res = await axios.get(
-        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
-    );
-
-    let html = "";
-
-    res.data.slice(0, 8).forEach(coin => {
-        html += `
-        <div class="coin">
-            <span>${coin.name}</span>
-            <span>$${coin.current_price}</span>
-        </div>`;
-    });
-
-    document.getElementById("cryptoList").innerHTML = html;
-}
-
-getCrypto();
-
-// Fake AI Insight
-function generateInsight() {
-    const insights = [
-        "BTC showing consolidation near resistance.",
-        "ETH gaining bullish momentum.",
-        "Market volatility increasing — trade carefully.",
-        "Altcoins may outperform BTC this week."
-    ];
-
+function updateAI() {
     const random = insights[Math.floor(Math.random() * insights.length)];
-    document.getElementById("aiInsight").innerText = random;
+    document.getElementById("aiText").innerText = random;
 }
 
-setInterval(generateInsight, 4000);
+setInterval(updateAI, 4000);
 </script>
 
 </body>
