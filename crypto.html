@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crypto Pattern Intelligence</title>
 
 <style>
@@ -23,7 +24,6 @@ header {
     padding: 20px;
 }
 
-/* CARDS */
 .card {
     background: #161b22;
     padding: 20px;
@@ -31,25 +31,23 @@ header {
     margin-bottom: 20px;
 }
 
-/* GRID */
 .grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
 }
 
-/* PATTERNS */
 .pattern {
     border: 1px solid #30363d;
     padding: 15px;
     border-radius: 8px;
+    transition: 0.3s;
 }
 
-.pattern h3 {
-    color: #58a6ff;
+.pattern:hover {
+    transform: scale(1.05);
 }
 
-/* IMAGE STYLE */
 .pattern img {
     width: 100%;
     border-radius: 6px;
@@ -71,79 +69,129 @@ header {
 
 <div class="container">
 
-<!-- CRYPTO INFO -->
+<!-- BASIC INFO -->
 <div class="card">
-<h2>Crypto Basics</h2>
+<h2>🪙 Crypto Basics</h2>
 
-<div class="info-box">
-<span>What is Crypto?</span>
-<span>Digital decentralized currency</span>
+<div class="info-box"><span>What is Crypto?</span><span>Digital decentralized currency</span></div>
+<div class="info-box"><span>Blockchain</span><span>Secure distributed ledger</span></div>
+<div class="info-box"><span>Market Cap</span><span>Price × Supply</span></div>
+<div class="info-box"><span>Volatility</span><span>High</span></div>
+
 </div>
 
-<div class="info-box">
-<span>Blockchain</span>
-<span>Secure distributed ledger</span>
+<!-- 🔥 FULL DETAILED CONTENT ADDED -->
+<div class="card">
+<h2>🪙 What is Cryptocurrency?</h2>
+<p>
+Cryptocurrency is a digital form of money that operates independently of central banks. 
+It uses cryptographic techniques to secure transactions and control the creation of new units. 
+Unlike traditional currencies, cryptocurrencies are decentralized and run on blockchain networks.
+</p>
+<p>
+The most popular cryptocurrency is <b>Bitcoin (BTC)</b>, introduced in 2009. Since then, 
+thousands of cryptocurrencies have been developed, each with unique features and use cases.
+</p>
 </div>
 
-<div class="info-box">
-<span>Market Cap</span>
-<span>Price × Supply</span>
+<div class="card">
+<h2>🔗 Blockchain Technology</h2>
+<p>Blockchain is a distributed ledger recording transactions across a network.</p>
+<ul>
+<li>Transaction data</li>
+<li>Timestamp</li>
+<li>Hash of previous block</li>
+</ul>
+<ul>
+<li><b>Secure</b></li>
+<li><b>Transparent</b></li>
+<li><b>Decentralized</b></li>
+</ul>
 </div>
 
-<div class="info-box">
-<span>Volatility</span>
-<span>High (rapid price changes)</span>
+<div class="card">
+<h2>⚙️ How Cryptocurrency Works</h2>
+<p>
+Transactions are verified by miners/validators using Proof of Work or Proof of Stake 
+and permanently stored on blockchain.
+</p>
 </div>
 
+<div class="card">
+<h2>📊 Crypto Metrics</h2>
+
+<div class="info-box"><span>Market Cap</span><span>Total value</span></div>
+<div class="info-box"><span>Volume</span><span>24h trading</span></div>
+<div class="info-box"><span>Supply</span><span>Available coins</span></div>
+
+</div>
+
+<div class="card">
+<h2>📈 Types of Cryptocurrencies</h2>
+<ul>
+<li>Bitcoin (BTC)</li>
+<li>Ethereum (ETH)</li>
+<li>Altcoins</li>
+<li>Stablecoins</li>
+<li>Meme coins</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>⚠️ Advantages & Risks</h2>
+<ul>
+<li>Decentralized</li>
+<li>Fast transactions</li>
+<li>High volatility risk</li>
+</ul>
 </div>
 
 <!-- CHART PATTERNS -->
 <div class="card">
-<h2>📈 Chart Patterns (Very Important)</h2>
+<h2>📈 Chart Patterns</h2>
 
 <div class="grid">
 
 <div class="pattern">
 <h3>Head & Shoulders</h3>
-<p>Reversal pattern — trend changes from bullish to bearish.</p>
-<img src="head and shoulder.jpg">
+<p>Bearish reversal</p>
+<img src="head and shoulders.jpg">
 </div>
 
 <div class="pattern">
 <h3>Double Top</h3>
-<p>Strong bearish reversal after two peaks.</p>
+<p>Strong resistance</p>
 <img src="Double Top.jpg">
 </div>
 
 <div class="pattern">
 <h3>Double Bottom</h3>
-<p>Bullish reversal pattern — price bounces twice.</p>
+<p>Bullish reversal</p>
 <img src="Double Bottom.jpg">
 </div>
 
 <div class="pattern">
 <h3>Ascending Triangle</h3>
-<p>Continuation pattern — breakout likely upwards.</p>
+<p>Bullish reversal</p>
 <img src="Ascending Triangle.jpg">
 </div>
 
 <div class="pattern">
-<h3>Descending Triangle</h3>
-<p>Bearish continuation pattern.</p>
-<img src="Descending Triangle.jpg">
-</div>
-
-<div class="pattern">
 <h3>Symmetrical Triangle</h3>
-<p>Breakout can happen in any direction.</p>
+<p>Bullish reversal</p>
 <img src="Symmetrical Triangle.jpg">
 </div>
 
+<div class="pattern">
+<h3>Descending Triangle</h3>
+<p>Bullish reversal</p>
+<img src="Descending Triangle.jpg">
 </div>
 
 </div>
+</div>
 
-<!-- CANDLESTICK PATTERNS -->
+<!-- CANDLESTICKS -->
 <div class="card">
 <h2>🕯️ Candlestick Patterns</h2>
 
@@ -151,61 +199,29 @@ header {
 
 <div class="pattern">
 <h3>Long-Legged Doji</h3>
-<p>Market indecision — buyers & sellers equal.</p>
+<p>Market indecision</p>
 <img src="https://i.imgur.com/6v9QZxU.png">
 </div>
 
 <div class="pattern">
 <h3>Hammer</h3>
-<p>Bullish reversal after downtrend.</p>
+<p>Bullish reversal</p>
 <img src="https://i.imgur.com/3kQZ6XH.png">
 </div>
 
-<div class="pattern">
-<h3>Shooting Star</h3>
-<p>Bearish reversal at top.</p>
-<img src="https://i.imgur.com/7GkP6mH.png">
+</div>
 </div>
 
-<div class="pattern">
-<h3>Bullish Engulfing</h3>
-<p>Strong buying pressure signal.</p>
-<img src="https://i.imgur.com/X6bYyXc.png">
-</div>
-
-<div class="pattern">
-<h3>Bearish Engulfing</h3>
-<p>Strong selling pressure.</p>
-<img src="https://i.imgur.com/qkP6X9H.png">
-</div>
-
-</div>
-
-</div>
-
-<!-- AI ANALYSIS BOX -->
+<!-- AI SECTION -->
 <div class="card">
 <h2>🤖 AI Pattern Insight</h2>
 
 <p id="aiText">Analyzing patterns...</p>
 
-<a href="https://quant-aura-insight.lovable.app/" target="_blank">
-    <button style="
-        margin-top: 12px;
-        padding: 10px 16px;
-        background: #58a6ff;
-        border: none;
-        border-radius: 6px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: 0.3s;
-    "
-    onmouseover="this.style.background='#1f6feb'"
-    onmouseout="this.style.background='#58a6ff'">
-        Open Full AI Analysis 🚀
-    </button>
-</a>
+<button onclick="window.open('https://quant-aura-insight.lovable.app/crypto','_blank')"
+style="margin-top:12px;padding:10px 16px;background:#58a6ff;border:none;border-radius:6px;color:white;cursor:pointer;">
+Open Full AI Analysis 🚀
+</button>
 
 </div>
 
@@ -213,19 +229,18 @@ header {
 
 <script>
 const insights = [
-"Head & Shoulders suggests possible market reversal.",
-"Ascending triangle indicates bullish breakout soon.",
-"Long-legged doji shows indecision — wait before trading.",
-"Double top warns of potential price drop.",
-"Strong bullish engulfing spotted — buyers in control."
+"Head & Shoulders → bearish reversal",
+"Triangle → breakout incoming",
+"Doji → indecision",
+"Double top → possible drop"
 ];
 
 function updateAI() {
-    const random = insights[Math.floor(Math.random() * insights.length)];
-    document.getElementById("aiText").innerText = random;
+    document.getElementById("aiText").innerText =
+    insights[Math.floor(Math.random() * insights.length)];
 }
 
-setInterval(updateAI, 4000);
+setInterval(updateAI, 3000);
 </script>
 
 </body>
