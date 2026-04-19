@@ -6,16 +6,17 @@
 <title>Crypto Pattern Intelligence</title>
 
 <style>
-/* ANIMATED BACKGROUND */
+/* TRADING‑STYLE LIVE BACKGROUND */
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0d0d1a, #0d1117);
+    background: #0d0d1a;
     color: white;
     overflow-x: hidden;
+    position: relative;
 }
 
-/* FLOWING WAVE / PULSE BACKGROUND */
+/* ANIMATED LINE CHART / TRADING GRAPH */
 body::before {
     content: "";
     position: fixed;
@@ -23,33 +24,14 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 30% 20%, rgba(60, 60, 180, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 70% 80%, rgba(120, 60, 180, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(100, 150, 255, 0.05) 0%, transparent 60%);
+    background: linear-gradient(180deg, rgba(20,20,40,0.3) 0%, rgba(10,10,20,0.7) 100%),
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path d='M0 60 L200 40 L400 60 L600 30 L800 50 L1000 40 L1200 60' stroke='%2344a6ff' stroke-width='1' fill='none' opacity='0.3'/><path d='M0 80 L200 70 L400 90 L600 60 L800 70 L1000 50 L1200 80' stroke='%23ff5e8a' stroke-width='1' fill='none' opacity='0.2'/></svg>") repeat-x 0 0;
+    background-size: 1200px 120px;
     z-index: -1;
-    animation: float 15s ease-in-out infinite alternate;
+    animation: chartScroll 30s linear infinite;
 }
 
-@keyframes float {
-    0%   { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(10px, 5px) scale(1.02); }
-}
-
-/* CUSTOM WAVE LINE PATTERN */
-body::after {
-    content: "";
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1200 120' xmlns='http://www.w3.org/2000/svg'><path d='M0 120L300 60L600 120L900 60L1200 120L1200 120L0 120Z' fill='%2330363d' opacity='0.2'/></svg>") repeat-x bottom;
-    background-size: 300px 40px;
-    animation: wave 10s linear infinite;
-    z-index: -1;
-}
-
-@keyframes wave {
+@keyframes chartScroll {
     0%   { background-position: 0 0; }
     100% { background-position: 1200px 0; }
 }
@@ -104,10 +86,14 @@ header {
     padding: 20px;
     font-size: 28px;
     background: #161b22;
+    position: relative;
+    z-index: 1;
 }
 
 .container {
     padding: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .card {
@@ -297,7 +283,7 @@ and permanently stored on blockchain.
 
 <div class="pattern">
 <h3>Descending Triangle</h3>
-<p>Bearish reversal</p>
+<p>Descending prices</p>
 <img src="Descending Triangle.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
