@@ -6,13 +6,99 @@
 <title>Crypto Pattern Intelligence</title>
 
 <style>
+/* ANIMATED BACKGROUND */
 body {
     margin: 0;
-    font-family: 'Segoe UI';
-    background: #0d1117;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0d0d1a, #0d1117);
     color: white;
+    overflow-x: hidden;
 }
 
+/* FLOWING WAVE / PULSE BACKGROUND */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 20%, rgba(60, 60, 180, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(120, 60, 180, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(100, 150, 255, 0.05) 0%, transparent 60%);
+    z-index: -1;
+    animation: float 15s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(10px, 5px) scale(1.02); }
+}
+
+/* CUSTOM WAVE LINE PATTERN */
+body::after {
+    content: "";
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1200 120' xmlns='http://www.w3.org/2000/svg'><path d='M0 120L300 60L600 120L900 60L1200 120L1200 120L0 120Z' fill='%2330363d' opacity='0.2'/></svg>") repeat-x bottom;
+    background-size: 300px 40px;
+    animation: wave 10s linear infinite;
+    z-index: -1;
+}
+
+@keyframes wave {
+    0%   { background-position: 0 0; }
+    100% { background-position: 1200px 0; }
+}
+
+/* LIGHTBOX STYLES */
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    text-align: center;
+}
+
+.lightbox-content {
+    max-width: 90%;
+    max-height: 90%;
+    margin-top: 5vh;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    object-fit: contain;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: #ccc;
+}
+
+.lightbox-trigger {
+    cursor: zoom‑in;
+}
+
+.lightbox-trigger:hover {
+    transform: scale(1.05);
+}
+
+/* LAYOUT */
 header {
     text-align: center;
     padding: 20px;
@@ -29,6 +115,7 @@ header {
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .grid {
@@ -46,6 +133,7 @@ header {
 
 .pattern:hover {
     transform: scale(1.05);
+    border-color: #58a6ff;
 }
 
 .pattern img {
@@ -60,12 +148,37 @@ header {
     padding: 10px 0;
     border-bottom: 1px solid #30363d;
 }
+
+/* EXTRA INFO STYLES */
+.extra-info {
+    line-height: 1.6;
+}
+
+.extra-info h3 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: #58a6ff;
+}
+
+.extra-info p {
+    margin-bottom: 10px;
+}
+
+.extra-info ul {
+    margin-left: 18px;
+}
 </style>
 </head>
 
 <body>
 
 <header>📊 Crypto Pattern Intelligence Dashboard</header>
+
+<!-- LIGHTBOX FOR ZOOMED IMAGES -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <span class="close-btn">&times;</span>
+  <img id="lightbox-img" class="lightbox-content">
+</div>
 
 <div class="container">
 
@@ -80,7 +193,7 @@ header {
 
 </div>
 
-<!-- 🔥 FULL DETAILED CONTENT ADDED -->
+<!-- FULL DETAILED CONTENT -->
 <div class="card">
 <h2>🪙 What is Cryptocurrency?</h2>
 <p>
@@ -155,37 +268,37 @@ and permanently stored on blockchain.
 <div class="pattern">
 <h3>Head & Shoulders</h3>
 <p>Bearish reversal</p>
-<img src="head and shoulders.jpg">
+<img src="head and shoulders.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Double Top</h3>
 <p>Strong resistance</p>
-<img src="Double Top.jpg">
+<img src="Double Top.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Double Bottom</h3>
 <p>Bullish reversal</p>
-<img src="Double Bottom.jpg">
+<img src="Double Bottom.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Ascending Triangle</h3>
 <p>Bullish reversal</p>
-<img src="Ascending Triangle.jpg">
+<img src="Ascending Triangle.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Symmetrical Triangle</h3>
 <p>Bullish reversal</p>
-<img src="Symmetrical Triangle.jpg">
+<img src="Symmetrical Triangle.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Descending Triangle</h3>
-<p>Bullish reversal</p>
-<img src="Descending Triangle.jpg">
+<p>Bearish reversal</p>
+<img src="Descending Triangle.jpg" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 </div>
@@ -200,16 +313,58 @@ and permanently stored on blockchain.
 <div class="pattern">
 <h3>Long-Legged Doji</h3>
 <p>Market indecision</p>
-<img src="https://i.imgur.com/6v9QZxU.png">
+<img src="https://i.imgur.com/6v9QZxU.png" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 <div class="pattern">
 <h3>Hammer</h3>
 <p>Bullish reversal</p>
-<img src="https://i.imgur.com/3kQZ6XH.png">
+<img src="https://i.imgur.com/3kQZ6XH.png" class="lightbox-trigger" onclick="showLightbox(this.src)">
 </div>
 
 </div>
+</div>
+
+<!-- EXTENDED CRYPTO KNOWLEDGE -->
+<div class="card">
+  <h2>📖 Extended Crypto Knowledge</h2>
+
+  <div class="extra-info">
+    <h3>What Is A Blockchain?</h3>
+    <p>
+      A blockchain is a public, tamper‑proof ledger where every transaction is recorded in blocks,
+      linked together in chronological order. Each block contains a cryptographic hash of the previous
+      block, making it very hard to alter past data.
+    </p>
+
+    <h3>Proof of Work vs Proof of Stake</h3>
+    <p><b>Proof of Work (PoW)</b> uses miners who solve complex math puzzles to secure the network and create new blocks (e.g., Bitcoin).</p>
+    <p><b>Proof of Stake (PoS)</b> selects validators based on how much crypto they “stake” as collateral (e.g., Ethereum after The Merge).</p>
+
+    <h3>Wallets: Hot vs Cold</h3>
+    <p><b>Hot wallets</b> are connected to the internet (apps, exchanges, browser wallets). They are convenient but more exposed to hacks.</p>
+    <p><b>Cold wallets</b> are offline devices or hardware wallets (like USB‑style devices). They are slower to use but much safer for long‑term storage.</p>
+
+    <h3>How To Buy Crypto (Simple Steps)</h3>
+    <ul>
+      <li>Choose a trusted crypto exchange (e.g., Binance, Coinbase, Kraken).</li>
+      <li>Verify your identity and enable 2‑factor authentication (2FA).</li>
+      <li>Fund your account with fiat (INR, USD, etc.) via bank transfer, card, or UPI.</li>
+      <li>Buy BTC, ETH, or other coins and move them to your personal wallet.</li>
+    </ul>
+
+    <h3>Trading vs Investing</h3>
+    <p><b>Investing</b> (often “HODLing”) means buying crypto and holding it long‑term, expecting value to grow over time.</p>
+    <p><b>Trading</b> means actively buying and selling to catch short‑term price swings (day trading, swing trading, scalping).</p>
+
+    <h3>Key Risks & Security Tips</h3>
+    <ul>
+      <li>Crypto is highly volatile; prices can drop 30–50% in a short time.</li>
+      <li>Use strong passwords and 2FA on all accounts.</li>
+      <li>Never share your private keys or seed phrases.</li>
+      <li>Avoid “too good to be true” yield or giveaway scams.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- AI SECTION -->
@@ -241,6 +396,27 @@ function updateAI() {
 }
 
 setInterval(updateAI, 3000);
+</script>
+
+<!-- LIGHTBOX FUNCTIONS -->
+<script>
+function showLightbox(imgSrc) {
+  const lb  = document.getElementById("lightbox");
+  const img = document.getElementById("lightbox-img");
+  img.src = imgSrc;
+  lb.style.display = "block";
+}
+
+function closeLightbox() {
+  document.getElementById("lightbox").style.display = "none";
+}
+
+// Close when pressing Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeLightbox();
+  }
+});
 </script>
 
 </body>
