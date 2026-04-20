@@ -163,7 +163,7 @@ body {
 
 <script>
 
-/* ===== FULL ENGINE ===== */
+/* ===== EXACT ENGINE FROM HOME ===== */
 
 const canvas = document.getElementById('tradingCanvas');
 const ctx = canvas.getContext('2d');
@@ -175,70 +175,152 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
+const GREEN = '#00dc96';
+const RED = '#ff5c5c';
+const DIM_GREEN = 'rgba(0,220,150,';
+const DIM_RED = 'rgba(255,92,92,';
+
 /* GRID */
-function drawGrid(){
-  ctx.strokeStyle='rgba(0,220,150,0.04)';
-  for(let x=0;x<canvas.width;x+=60){
-    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(0,220,150,0.04)';
+  const spacing = 60;
+  for (let x = 0; x < canvas.width; x += spacing) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
   }
-  for(let y=0;y<canvas.height;y+=60){
-    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+  for (let y = 0; y < canvas.height; y += spacing) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
   }
 }
 
-/* MATRIX */
-const columns = Array.from({length:80},(_,i)=>({
-  x:i*20,y:Math.random()*-500,speed:0.5+Math.random()
-}));
+/* ===== MATRIX STREAM ===== */
+const CHARS = '0123456789ABCDEF₿ETH+-';
+const columns = [];
 
-function drawMatrix(){
-  ctx.fillStyle='rgba(0,220,150,0.15)';
-  columns.forEach(c=>{
-    ctx.fillText(Math.random()>0.5?'1':'0',c.x,c.y);
-    c.y+=c.speed;
-    if(c.y>canvas.height)c.y=0;
+for (let i = 0; i < Math.floor(window.innerWidth / 20); i++) {
+  columns.push({
+    x: i * 20,
+    y: Math.random() * -500,
+    speed: 0.5 + Math.random()
   });
 }
 
-/* CANDLE CHART */
-class Candle{
-  constructor(x,y){
-    this.x=x;this.y=y;
-    this.height=Math.random()*40;
-    this.dir=Math.random()>0.5;
+function drawMatrix() {
+  columns.forEach(c => {
+    ctx.fillStyle = 'rgba(0,220,150,0.12)';
+    ctx.font = '11px monospace';
+    ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], c.x, c.y);
+    c.y += c.speed;
+    if (c.y > canvas.height) c.y = 0;
+  });
+}
+
+/* ===== REAL CANDLESTICK ENGINE ===== */
+class CandlestickChart {
+  constructor(x, y, w, h) {
+    this.x = x; this.y = y; this.w = w; this.h = h;
+    this.candles = [];
+    this.scrollX = 0;
+    this.step = 16;
+    this.price = 100;
+    this.generate(60);
   }
+
+  generate(n) {
+    for (let i = 0; i < n; i++) this.candles.push(this.createCandle());
+  }
+
+  createCandle() {
+    const move = (Math.random() - 0.5) * 4;
+    this.price += move;
+    const open = this.price + Math.random()*2;
+    const close = this.price - Math.random()*2;
+    const high = Math.max(open, close) + Math.random()*2;
+    const low = Math.min(open, close) - Math.random()*2;
+    return { open, close, high, low };
+  }
+
+  draw() {
+    const prices = this.candles.flatMap(c => [c.high, c.low]);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min || 1;
+    const toY = p => this.y + this.h - ((p - min)/range)*this.h;
+
+    this.scrollX -= 0.5;
+
+    if (this.scrollX < -this.step) {
+      this.scrollX += this.step;
+      this.candles.shift();
+      this.candles.push(this.createCandle());
+    }
+
+    this.candles.forEach((c, i) => {
+      const cx = this.x + i*this.step + this.scrollX;
+      const bull = c.close >= c.open;
+      const color = bull ? DIM_GREEN+'0.6)' : DIM_RED+'0.6)';
+
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+
+      const top = toY(Math.max(c.open, c.close));
+      const bot = toY(Math.min(c.open, c.close));
+
+      ctx.fillRect(cx, top, 6, bot-top);
+      ctx.beginPath();
+      ctx.moveTo(cx+3, toY(c.high));
+      ctx.lineTo(cx+3, toY(c.low));
+      ctx.stroke();
+    });
+  }
+}
+
+/* ===== LINE CHART ===== */
+class LineChart {
+  constructor(x,y,w,h){
+    this.x=x; this.y=y; this.w=w; this.h=h;
+    this.points = Array.from({length:100},()=>50);
+  }
+
   draw(){
-    ctx.fillStyle=this.dir?'rgba(0,220,150,0.3)':'rgba(255,92,92,0.3)';
-    ctx.fillRect(this.x,this.y,this.dir?6:-6,this.height);
+    for(let i=0;i<this.points.length;i++){
+      this.points[i]+= (Math.random()-0.5)*2;
+    }
+
+    const min = Math.min(...this.points);
+    const max = Math.max(...this.points);
+    const range = max-min||1;
+
+    ctx.beginPath();
+
+    this.points.forEach((p,i)=>{
+      const x = this.x + (i/this.points.length)*this.w;
+      const y = this.y + this.h - ((p-min)/range)*this.h;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+
+    ctx.strokeStyle='rgba(0,220,150,0.4)';
+    ctx.stroke();
   }
 }
 
-let candles=Array.from({length:50},(_,i)=>new Candle(i*15,200));
-
-function drawCandles(){
-  candles.forEach(c=>{
-    c.y+=Math.random()-0.5;
-    c.draw();
-  });
-}
-
-/* TICKERS */
-const tickers=Array.from({length:10},()=>({
+/* ===== FLOATING TICKERS ===== */
+const tickers = Array.from({length:10},()=>({
   x:Math.random()*window.innerWidth,
   y:Math.random()*window.innerHeight,
-  vx:(Math.random()-0.5)*0.5
+  vx:(Math.random()-0.5)*0.2
 }));
 
 function drawTickers(){
-  ctx.fillStyle='rgba(255,255,255,0.2)';
+  ctx.font='10px monospace';
   tickers.forEach(t=>{
     t.x+=t.vx;
-    ctx.fillText("NIFTY",t.x,t.y);
+    ctx.fillStyle='rgba(255,255,255,0.2)';
+    ctx.fillText("NIFTY "+(22000+Math.random()*1000).toFixed(0),t.x,t.y);
   });
 }
 
-/* PULSES */
-const pulses=Array.from({length:5},()=>({
+/* ===== PULSES ===== */
+const pulses = Array.from({length:5},()=>({
   x:Math.random()*window.innerWidth,
   y:Math.random()*window.innerHeight,
   r:0
@@ -255,18 +337,27 @@ function drawPulses(){
   });
 }
 
-/* LOOP */
+/* ===== INIT MULTI-CHART ===== */
+const charts = [
+  new CandlestickChart(50,50,400,200),
+  new CandlestickChart(500,50,400,200),
+  new LineChart(50,300,400,200),
+  new LineChart(500,300,400,200)
+];
+
+/* ===== LOOP ===== */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawGrid();
+  charts.forEach(c=>c.draw());
   drawMatrix();
-  drawCandles();
   drawTickers();
   drawPulses();
   requestAnimationFrame(draw);
 }
 draw();
 
+/* NAV */
 function goHome(){
   window.location.href="home.html";
 }
