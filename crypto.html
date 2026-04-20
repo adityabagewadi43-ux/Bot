@@ -2,111 +2,464 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Crypto Dashboard</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Pattern Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  --blue:   #44a6ff;
+  --green:  #34d399;
+  --red:    #f87171;
+  --gold:   #fbbf24;
+  --purple: #a78bfa;
 }
-.mini-chart {
-  pointer-events: none;
-}
-body {
-  font-family: 'Share Tech Mono', monospace;
-  background: #040608;
-  color: white;
-  padding: 40px;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',sans-serif; background:#020510; color:white; overflow-x:hidden; min-height:100vh; }
 
-/* BACK BUTTON */
-.back-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0,220,150,0.15);
-  border: 1px solid rgba(0,220,150,0.4);
-  color: #00dc96;
-  padding: 10px 16px;
-  cursor: pointer;
-}
+#bgCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+#coinLayer { position:fixed; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; overflow:hidden; }
+.coin { position:absolute; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:900; user-select:none; will-change:transform; }
+.scanlines { position:fixed; inset:0; z-index:2; pointer-events:none; background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px); }
+.vignette  { position:fixed; inset:0; z-index:3; pointer-events:none; background:radial-gradient(ellipse at center,transparent 28%,rgba(2,5,16,0.88) 100%); }
 
 /* HEADER */
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-}
+header { position:relative; z-index:10; text-align:center; padding:28px 20px 18px; background:rgba(4,8,22,0.65); backdrop-filter:blur(20px); border-bottom:1px solid rgba(68,166,255,0.14); }
+header h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.1rem,3.5vw,2rem); font-weight:900; letter-spacing:0.1em; background:linear-gradient(135deg,#fff 0%,var(--blue) 55%,var(--purple) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; background-size:200% 100%; animation:shimmer 5s ease-in-out infinite; }
+@keyframes shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.live-badge { display:inline-flex; align-items:center; gap:6px; margin-top:8px; font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:0.3em; color:rgba(68,166,255,0.5); }
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--blue); animation:blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
 
-.header h1 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2.5rem;
-  text-shadow: 0 0 25px rgba(0,220,150,0.6);
-}
+/* TICKER */
+.ticker { position:relative; z-index:10; background:rgba(3,7,20,0.82); backdrop-filter:blur(12px); border-bottom:1px solid rgba(68,166,255,0.1); overflow:hidden; padding:7px 0; white-space:nowrap; }
+.ticker-inner { display:inline-block; animation:scroll 38s linear infinite; }
+@keyframes scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.tick { display:inline-block; margin-right:34px; font-family:'Share Tech Mono',monospace; font-size:0.7rem; }
+.t-sym { color:rgba(255,255,255,0.4); }
+.t-p   { color:rgba(255,255,255,0.72); margin:0 5px; }
+.t-up  { color:var(--green); }
+.t-dn  { color:var(--red); }
 
-/* CARDS */
+/* LAYOUT */
+.container { position:relative; z-index:10; max-width:1100px; margin:auto; padding:28px 20px 80px; }
+
+/* GLASS CARDS */
 .card {
-  background: rgba(8,16,24,0.75);
-  border: 1px solid rgba(0,220,150,0.2);
-  padding: 20px;
-  margin-bottom: 20px;
+  background: rgba(8, 14, 30, 0.42);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(68,166,255,0.16);
+  border-radius: 14px; padding:22px 24px; margin-bottom:22px;
+  position:relative; overflow:hidden;
+  transition: border-color 0.35s, box-shadow 0.35s, transform 0.3s;
+  animation: fadeUp 0.6s ease both;
 }
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(68,166,255,0.55),rgba(167,139,250,0.45),transparent); opacity:0; transition:opacity 0.35s; }
+.card::after  { content:''; position:absolute; inset:0; border-radius:14px; background:linear-gradient(135deg,rgba(68,166,255,0.05),rgba(167,139,250,0.03)); opacity:0; transition:opacity 0.35s; pointer-events:none; }
+.card:hover { border-color:rgba(68,166,255,0.42); box-shadow:0 0 44px rgba(68,166,255,0.1),0 24px 50px rgba(0,0,0,0.45); transform:translateY(-2px); }
+.card:hover::before,.card:hover::after { opacity:1; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+.card h2 { font-size:1rem; font-weight:600; margin-bottom:16px; color:rgba(255,255,255,0.9); }
 
-/* INFO ROW */
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
+/* INFO ROWS */
+.info-box { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; color:rgba(255,255,255,0.6); }
+.info-box span:last-child { color:var(--blue); font-family:'Share Tech Mono',monospace; }
+
+/* GRID & PATTERNS */
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(228px,1fr)); gap:14px; }
+.pattern { background:rgba(4,9,22,0.52); border:1px solid rgba(68,166,255,0.12); border-radius:10px; padding:14px; transition:0.3s; cursor:zoom-in; }
+.pattern:hover { transform:translateY(-4px) scale(1.02); border-color:rgba(68,166,255,0.42); box-shadow:0 14px 36px rgba(68,166,255,0.1); }
+.pattern h3 { font-size:0.88rem; font-weight:600; margin-bottom:3px; }
+.pattern p  { font-size:0.72rem; color:rgba(255,255,255,0.38); margin-bottom:8px; }
+.pattern img { width:100%; border-radius:5px; }
+
+/* PILLS */
+.pill-grid { display:flex; flex-wrap:wrap; gap:10px; }
+.pill { padding:8px 14px; border-radius:6px; font-size:0.8rem; border:1px solid; backdrop-filter:blur(6px); }
+.pb { background:rgba(68,166,255,0.08);  border-color:rgba(68,166,255,0.22);  color:rgba(68,166,255,0.9); }
+.pg { background:rgba(52,211,153,0.08);  border-color:rgba(52,211,153,0.22);  color:rgba(52,211,153,0.9); }
+.pr { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.22); color:rgba(248,113,113,0.9); }
+.pp { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.22); color:rgba(167,139,250,0.9); }
+.pgo{ background:rgba(251,191,36,0.08);  border-color:rgba(251,191,36,0.22);  color:rgba(251,191,36,0.9); }
+
+/* TWO-COL RISK */
+.two-col { display:flex; gap:16px; flex-wrap:wrap; }
+.adv-col { flex:1; min-width:140px; }
+.col-lbl { font-size:0.65rem; letter-spacing:0.2em; margin-bottom:10px; }
+.col-lbl.g{color:var(--green)} .col-lbl.r{color:var(--red)}
+.adv-item { font-size:0.82rem; color:rgba(255,255,255,0.62); padding:5px 0; display:flex; align-items:center; gap:7px; }
+.adv-item::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.adv-item.g::before { background:var(--green); box-shadow:0 0 6px rgba(52,211,153,0.7); }
+.adv-item.r::before { background:var(--red);   box-shadow:0 0 6px rgba(248,113,113,0.7); }
+
+/* EXTRA INFO */
+.extra-info { line-height:1.75; font-size:0.88rem; color:rgba(255,255,255,0.7); }
+.extra-info h3 { color:var(--blue); font-size:0.92rem; margin:16px 0 7px; }
+.extra-info p  { margin-bottom:9px; }
+.extra-info ul { margin-left:18px; margin-bottom:8px; }
+.extra-info li { margin-bottom:4px; }
+
+/* AI */
+#aiText { font-family:'Share Tech Mono',monospace; font-size:0.9rem; color:var(--blue); padding:13px; border:1px solid rgba(68,166,255,0.15); border-radius:8px; background:rgba(68,166,255,0.04); margin:12px 0; min-height:2.5em; transition:opacity 0.4s; letter-spacing:0.03em; }
+.ai-btn { padding:11px 22px; font-family:'Share Tech Mono',monospace; background:linear-gradient(135deg,rgba(68,166,255,0.14),rgba(167,139,250,0.14)); border:1px solid rgba(68,166,255,0.3); border-radius:8px; color:var(--blue); cursor:pointer; font-size:0.85rem; letter-spacing:0.06em; transition:0.25s; }
+.ai-btn:hover { background:linear-gradient(135deg,rgba(68,166,255,0.28),rgba(167,139,250,0.24)); box-shadow:0 0 24px rgba(68,166,255,0.2); border-color:rgba(68,166,255,0.5); }
+
+/* LIGHTBOX */
+.lightbox { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.92); text-align:center; }
+.lightbox-content { max-width:88%; max-height:88%; margin-top:5vh; border-radius:10px; box-shadow:0 0 50px rgba(68,166,255,0.25); }
+.close-btn { position:absolute; top:18px; right:28px; color:white; font-size:2.5rem; font-weight:bold; cursor:pointer; }
+.close-btn:hover { color:var(--blue); }
 </style>
 </head>
-
 <body>
 
-<button class="back-btn" onclick="goHome()">⬅ Home</button>
+<canvas id="bgCanvas"></canvas>
+<div id="coinLayer"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
 
-<div class="header">
-  <h1>₿ Crypto Dashboard</h1>
-  <p>Bitcoin · Ethereum · Altcoins</p>
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <span class="close-btn">&times;</span>
+  <img id="lightbox-img" class="lightbox-content">
 </div>
 
-<!-- BASICS -->
-<div class="card">
-  <h2>Crypto Basics</h2>
-  <div class="info-row"><span>What is Crypto?</span><span>Digital Currency</span></div>
-  <div class="info-row"><span>Blockchain</span><span>Distributed Ledger</span></div>
-  <div class="info-row"><span>Market Cap</span><span>Price × Supply</span></div>
-  <div class="info-row"><span>Volatility</span><span>High</span></div>
+<header>
+  <h1>📊 Crypto Pattern Intelligence Dashboard</h1>
+  <div class="live-badge"><div class="live-dot"></div>MARKET INTELLIGENCE ACTIVE</div>
+</header>
+<div class="ticker"><div class="ticker-inner" id="tickerEl"></div></div>
+
+<div class="container">
+
+<div class="card" style="animation-delay:0.04s">
+  <h2>🪙 Crypto Basics</h2>
+  <div class="info-box"><span>What is Crypto?</span><span>Digital decentralized currency</span></div>
+  <div class="info-box"><span>Blockchain</span><span>Secure distributed ledger</span></div>
+  <div class="info-box"><span>Market Cap</span><span>Price × Circulating Supply</span></div>
+  <div class="info-box"><span>Volatility</span><span>Extremely High</span></div>
 </div>
 
-<!-- WHAT IS CRYPTO -->
-<div class="card">
-  <h2>What is Cryptocurrency?</h2>
-  <p>
-    Cryptocurrency is a decentralized digital currency that uses cryptography
-    and operates without central banks.
-  </p>
+<div class="card" style="animation-delay:0.1s">
+  <h2>🪙 What is Cryptocurrency?</h2>
+  <p style="color:rgba(255,255,255,0.7);line-height:1.75;font-size:0.9rem;margin-bottom:10px;">Cryptocurrency is a digital form of money operating independently of central banks. It uses cryptographic techniques to secure transactions and control new unit creation — running on decentralized blockchain networks.</p>
+  <p style="color:rgba(255,255,255,0.7);line-height:1.75;font-size:0.9rem;">The most popular is <b style="color:var(--gold)">Bitcoin (BTC)</b>, introduced in 2009. Thousands of cryptos have since emerged with unique features and use cases.</p>
 </div>
 
-<!-- TYPES -->
-<div class="card">
-  <h2>Types of Crypto</h2>
-  <ul>
-    <li>Bitcoin (BTC)</li>
-    <li>Ethereum (ETH)</li>
-    <li>Altcoins</li>
-    <li>Stablecoins</li>
-  </ul>
+<div class="card" style="animation-delay:0.16s">
+  <h2>🔗 Blockchain Technology</h2>
+  <p style="color:rgba(255,255,255,0.62);font-size:0.88rem;margin-bottom:14px;">A distributed tamper-proof ledger recording transactions across a global peer-to-peer network.</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:140px;padding:14px;border:1px solid rgba(68,166,255,0.15);border-radius:8px;background:rgba(68,166,255,0.05);">
+      <div style="color:var(--blue);font-size:0.62rem;letter-spacing:0.15em;margin-bottom:8px;">EACH BLOCK CONTAINS</div>
+      <div style="font-size:0.8rem;color:rgba(255,255,255,0.58);line-height:2.1;">→ Transaction data<br>→ Timestamp<br>→ Previous block hash</div>
+    </div>
+    <div style="flex:1;min-width:140px;padding:14px;border:1px solid rgba(52,211,153,0.15);border-radius:8px;background:rgba(52,211,153,0.05);">
+      <div style="color:var(--green);font-size:0.62rem;letter-spacing:0.15em;margin-bottom:8px;">KEY PROPERTIES</div>
+      <div style="font-size:0.8rem;color:rgba(255,255,255,0.58);line-height:2.1;">✔ Secure &amp; Immutable<br>✔ Transparent<br>✔ Fully Decentralized</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.22s">
+  <h2>⚙️ How Cryptocurrency Works</h2>
+  <p style="color:rgba(255,255,255,0.7);line-height:1.75;font-size:0.9rem;">Transactions are broadcast to a peer-to-peer network, verified by miners or validators using Proof of Work or Proof of Stake, then permanently etched onto the immutable blockchain ledger.</p>
+</div>
+
+<div class="card" style="animation-delay:0.28s">
+  <h2>📊 Crypto Metrics</h2>
+  <div class="info-box"><span>Market Cap</span><span>Total value of all coins</span></div>
+  <div class="info-box"><span>Volume</span><span>24h trading activity</span></div>
+  <div class="info-box"><span>Circulating Supply</span><span>Coins in active market</span></div>
+  <div class="info-box"><span>BTC Dominance</span><span>% of total market cap</span></div>
+</div>
+
+<div class="card" style="animation-delay:0.34s">
+  <h2>📈 Types of Cryptocurrencies</h2>
+  <div class="pill-grid">
+    <div class="pill pgo">₿ Bitcoin — Digital Gold</div>
+    <div class="pill pb">Ξ Ethereum — Smart Contracts</div>
+    <div class="pill pb">◎ Altcoins — Alternatives</div>
+    <div class="pill pg">💵 Stablecoins — Pegged to Fiat</div>
+    <div class="pill pp">◈ DeFi Tokens — Finance Protocols</div>
+    <div class="pill pr">🐕 Meme Coins — Speculative Risk</div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.4s">
+  <h2>⚠️ Advantages &amp; Risks</h2>
+  <div class="two-col">
+    <div class="adv-col">
+      <div class="col-lbl g">ADVANTAGES</div>
+      <div class="adv-item g">Decentralized — no central authority</div>
+      <div class="adv-item g">Fast borderless transactions</div>
+      <div class="adv-item g">Transparent &amp; auditable</div>
+      <div class="adv-item g">Potential for high returns</div>
+    </div>
+    <div class="adv-col">
+      <div class="col-lbl r">RISKS</div>
+      <div class="adv-item r">Extreme price volatility</div>
+      <div class="adv-item r">Regulatory uncertainty</div>
+      <div class="adv-item r">Hack &amp; scam exposure</div>
+      <div class="adv-item r">No consumer protection</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.46s">
+  <h2>📈 Chart Patterns</h2>
+  <div class="grid">
+    <div class="pattern"><h3>Head &amp; Shoulders</h3><p>Bearish reversal signal</p><img src="head and shoulder.jpg" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Double Top</h3><p>Strong resistance zone</p><img src="Double Top.jpg" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Double Bottom</h3><p>Bullish reversal</p><img src="Double Bottom.jpg" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Ascending Triangle</h3><p>Bullish breakout</p><img src="Ascending Triangle.jpg" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Symmetrical Triangle</h3><p>Continuation / reversal</p><img src="symmetrical triangle.jpg" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Descending Triangle</h3><p>Bearish continuation</p><img src="Descending Triangle.jpg" onclick="showLightbox(this.src)"></div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.52s">
+  <h2>🕯️ Candlestick Patterns</h2>
+  <div class="grid">
+    <div class="pattern"><h3>Long-Legged Doji</h3><p>Market indecision</p><img src="https://i.imgur.com/6v9QZxU.png" onclick="showLightbox(this.src)"></div>
+    <div class="pattern"><h3>Hammer</h3><p>Bullish reversal</p><img src="https://i.imgur.com/3kQZ6XH.png" onclick="showLightbox(this.src)"></div>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.58s">
+  <h2>📖 Extended Crypto Knowledge</h2>
+  <div class="extra-info">
+    <h3>What Is A Blockchain?</h3>
+    <p>A public tamper-proof ledger where every transaction is recorded in chronologically linked blocks. Each block contains a cryptographic hash of the previous one — making past data nearly impossible to alter.</p>
+    <h3>Proof of Work vs Proof of Stake</h3>
+    <p><b style="color:var(--gold)">PoW</b> — Miners solve complex math puzzles to add blocks and earn rewards (Bitcoin).</p>
+    <p><b style="color:var(--purple)">PoS</b> — Validators stake coins as collateral to propose and validate new blocks (Ethereum post-Merge).</p>
+    <h3>Wallets: Hot vs Cold</h3>
+    <p><b style="color:var(--blue)">Hot wallets</b> — internet-connected (apps, exchanges). Convenient but more vulnerable to attacks.</p>
+    <p><b style="color:var(--green)">Cold wallets</b> — offline hardware devices. Slower to access but far safer for long-term storage.</p>
+    <h3>How To Buy Crypto</h3>
+    <ul>
+      <li>Choose a trusted exchange (Binance, Coinbase, CoinDCX).</li>
+      <li>Verify identity and enable 2-factor authentication.</li>
+      <li>Fund via bank / UPI, then buy your chosen coin.</li>
+      <li>Transfer to a personal wallet for maximum security.</li>
+    </ul>
+    <h3>Trading vs Investing</h3>
+    <p><b style="color:var(--green)">Investing (HODLing)</b> — buy and hold long-term expecting value to grow over time.</p>
+    <p><b style="color:var(--blue)">Trading</b> — actively buy/sell to profit from short-term price swings (day/swing/scalping).</p>
+    <h3>Key Security Tips</h3>
+    <ul>
+      <li>Prices can drop 30–50% rapidly — size positions conservatively.</li>
+      <li>Use strong unique passwords + 2FA on every platform.</li>
+      <li>Never share your seed phrase or private keys with anyone.</li>
+      <li>Avoid "guaranteed returns" or giveaway scams at all costs.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card" style="animation-delay:0.64s">
+  <h2>🤖 AI Pattern Insight</h2>
+  <div id="aiText">Analyzing market patterns...</div>
+  <button class="ai-btn" onclick="window.open('https://quant-aura-insight.lovable.app/crypto','_blank')">Open Full AI Analysis 🚀</button>
+</div>
+
 </div>
 
 <script>
-function goHome() {
-  window.location.href = "home.html";
-}
-</script>
+/* ══ CANVAS BACKGROUND ══ */
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize(); window.addEventListener('resize',()=>{resize();initCharts();initMatrix();});
 
+const DG='rgba(52,211,153,',DR='rgba(248,113,113,',DB='rgba(68,166,255,';
+
+function drawGrid(){
+  for(let x=0;x<canvas.width;x+=60){ctx.strokeStyle='rgba(68,166,255,0.03)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+  for(let y=0;y<canvas.height;y+=60){ctx.strokeStyle='rgba(68,166,255,0.03)';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+}
+
+const CHARS='0123456789ABCDEF₿ΞΣΔΨΩ+-×%#';
+let mCols=[];
+function initMatrix(){
+  mCols=[];
+  const n=Math.floor(canvas.width/22);
+  for(let i=0;i<n;i++) mCols.push({x:i*22+11,y:Math.random()*-600,speed:0.3+Math.random()*1.0,length:5+Math.floor(Math.random()*12),chars:Array.from({length:20},()=>CHARS[Math.floor(Math.random()*CHARS.length)]),t:0});
+}
+initMatrix();
+function drawMatrix(){
+  mCols.forEach(col=>{
+    col.t++;
+    if(col.t>12){col.chars[Math.floor(Math.random()*col.chars.length)]=CHARS[Math.floor(Math.random()*CHARS.length)];col.t=0;}
+    for(let i=0;i<col.length;i++){const a=(1-i/col.length)*0.13;ctx.fillStyle=i===0?`rgba(160,210,255,${a*5})`:`rgba(68,166,255,${a})`;ctx.font='11px Share Tech Mono,monospace';ctx.fillText(col.chars[i],col.x,col.y-i*14);}
+    col.y+=col.speed;
+    if(col.y-col.length*14>canvas.height){col.y=-20;col.speed=0.3+Math.random()*1.0;}
+  });
+}
+
+class CandleChart{
+  constructor(x,y,w,h){this.x=x;this.y=y;this.w=w;this.h=h;this.cw=10;this.step=15;this.price=80+Math.random()*40;this.candles=[];this.sx=0;this.gen(Math.ceil(w/this.step)+6);}
+  gen(n){for(let i=0;i<n;i++)this.candles.push(this.nc());}
+  nc(){this.price=Math.max(15,this.price+(Math.random()-0.47)*4);const r=1+Math.random()*6,b=Math.random()*r,o=this.price-b/2,c=this.price+b/2;return{open:o,close:c,high:Math.max(o,c)+Math.random()*(r-b),low:Math.min(o,c)-Math.random()*(r-b)};}
+  draw(){
+    const prices=this.candles.flatMap(c=>[c.high,c.low]),mn=Math.min(...prices),mx=Math.max(...prices),rng=mx-mn||1,toY=p=>this.y+this.h-((p-mn)/rng)*this.h;
+    this.sx-=0.3;if(this.sx<-this.step){this.sx+=this.step;this.candles.shift();this.candles.push(this.nc());}
+    ctx.save();ctx.beginPath();ctx.rect(this.x,this.y-4,this.w,this.h+8);ctx.clip();
+    this.candles.forEach((c,i)=>{const cx=this.x+i*this.step+this.sx;if(cx<this.x-this.step||cx>this.x+this.w+this.step)return;const bull=c.close>=c.open;ctx.strokeStyle=bull?DG+'0.5)':DR+'0.5)';ctx.fillStyle=bull?DG+'0.28)':DR+'0.28)';ctx.lineWidth=1;const top=toY(Math.max(c.open,c.close)),bot=toY(Math.min(c.open,c.close)),bh=Math.max(1,bot-top);ctx.beginPath();ctx.moveTo(cx+this.cw/2,toY(c.high));ctx.lineTo(cx+this.cw/2,toY(c.low));ctx.stroke();ctx.fillRect(cx,top,this.cw,bh);ctx.strokeRect(cx,top,this.cw,bh);});
+    ctx.restore();
+  }
+}
+
+class LineChart{
+  constructor(x,y,w,h){this.x=x;this.y=y;this.w=w;this.h=h;this.price=50;this.pts=[];for(let i=0;i<100;i++){this.price=Math.max(5,Math.min(95,this.price+(Math.random()-0.49)*2.5));this.pts.push(this.price);}this.t=0;}
+  draw(){
+    this.t++;if(this.t%4===0){this.price=Math.max(5,Math.min(95,this.price+(Math.random()-0.49)*2));this.pts.push(this.price);this.pts.shift();}
+    const mn=Math.min(...this.pts),mx=Math.max(...this.pts),rng=mx-mn||1,toY=p=>this.y+this.h-((p-mn)/rng)*this.h,step=this.w/(this.pts.length-1),bull=this.pts[this.pts.length-1]>=this.pts[this.pts.length-2];
+    ctx.save();ctx.beginPath();this.pts.forEach((p,i)=>{i===0?ctx.moveTo(this.x+i*step,toY(p)):ctx.lineTo(this.x+i*step,toY(p));});
+    ctx.strokeStyle=bull?'rgba(52,211,153,0.45)':'rgba(248,113,113,0.45)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.lineTo(this.x+this.w,this.y+this.h);ctx.lineTo(this.x,this.y+this.h);ctx.closePath();
+    const g=ctx.createLinearGradient(0,this.y,0,this.y+this.h);g.addColorStop(0,bull?'rgba(52,211,153,0.12)':'rgba(248,113,113,0.12)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fill();ctx.restore();
+  }
+}
+
+const PULSES=Array.from({length:5},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*80,maxR:80+Math.random()*120,speed:0.35+Math.random()*0.55,bull:Math.random()>0.4}));
+function drawPulses(){PULSES.forEach(p=>{p.r+=p.speed;if(p.r>p.maxR){p.r=0;p.x=Math.random()*canvas.width;p.y=Math.random()*canvas.height;p.bull=Math.random()>0.4;}const a=(1-p.r/p.maxR)*0.09;ctx.strokeStyle=p.bull?`rgba(52,211,153,${a})`:`rgba(248,113,113,${a})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();});}
+
+let bgC=[],bgL=[];
+function initCharts(){
+  bgC=[];bgL=[];
+  const W=canvas.width,H=canvas.height,p=28;
+  bgC.push(new CandleChart(p,p,W*0.4-p*2,H*0.42-p*2));
+  bgC.push(new CandleChart(W*0.6+p,p,W*0.4-p*2,H*0.42-p*2));
+  bgL.push(new LineChart(W*0.4+p,p,W*0.2-p*2,H*0.42-p*2));
+  bgL.push(new LineChart(p,H*0.55+p,W*0.5-p*2,H*0.42-p*2));
+  bgL.push(new LineChart(W*0.5+p,H*0.55+p,W*0.5-p*2,H*0.42-p*2));
+}
+initCharts();
+
+(function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid();bgC.forEach(c=>c.draw());bgL.forEach(l=>l.draw());
+  drawMatrix();drawPulses();
+  requestAnimationFrame(loop);
+})();
+
+/* ══ FLOATING CRYPTO COINS ══ */
+const coinLayer=document.getElementById('coinLayer');
+const COIN_DEFS=[
+  {sym:'₿', label:'BTC',  color:'#f7931a', size:62, trail:'rgba(247,147,26,'},
+  {sym:'Ξ', label:'ETH',  color:'#627eea', size:54, trail:'rgba(98,126,234,'},
+  {sym:'◎', label:'SOL',  color:'#9945ff', size:48, trail:'rgba(153,69,255,'},
+  {sym:'B', label:'BNB',  color:'#f3ba2f', size:44, trail:'rgba(243,186,47,'},
+  {sym:'✕', label:'XRP',  color:'#00aae4', size:42, trail:'rgba(0,174,228,'},
+  {sym:'◆', label:'ADA',  color:'#0033ad', size:40, trail:'rgba(0,51,173,'},
+  {sym:'⬡', label:'MATIC',color:'#8247e5', size:38, trail:'rgba(130,71,229,'},
+  {sym:'Ð', label:'DOGE', color:'#c2a633', size:46, trail:'rgba(194,166,51,'},
+  {sym:'L', label:'LTC',  color:'#a0a0b0', size:38, trail:'rgba(160,160,176,'},
+  {sym:'●', label:'DOT',  color:'#e6007a', size:40, trail:'rgba(230,0,122,'},
+  {sym:'₮', label:'USDT', color:'#26a17b', size:38, trail:'rgba(38,161,123,'},
+  {sym:'A', label:'ATOM', color:'#6f7390', size:36, trail:'rgba(111,115,144,'},
+];
+
+const floaters=[];
+COIN_DEFS.forEach(def=>{
+  const el=document.createElement('div');
+  el.className='coin';
+  const s=def.size;
+  el.style.cssText=`
+    width:${s}px;height:${s}px;font-size:${Math.round(s*0.44)}px;
+    color:${def.color};
+    background:rgba(6,12,28,0.5);
+    border:1.5px solid ${def.color}55;
+    box-shadow:0 0 ${s*0.6}px ${def.trail}0.3),inset 0 0 ${s*0.3}px ${def.trail}0.1);
+    font-family:'Orbitron','Share Tech Mono',monospace;
+    text-shadow:0 0 10px ${def.color};
+    letter-spacing:-1px;
+  `;
+  el.textContent=def.sym;
+  coinLayer.appendChild(el);
+
+  /* Also render label */
+  const lbl=document.createElement('div');
+  lbl.style.cssText=`position:absolute;font-family:'Share Tech Mono',monospace;font-size:9px;color:${def.color};opacity:0.6;letter-spacing:0.1em;text-align:center;width:${s}px;margin-top:${s+3}px;pointer-events:none;`;
+  lbl.textContent=def.label;
+
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:absolute;display:flex;flex-direction:column;align-items:center;will-change:transform;';
+  wrap.appendChild(el);
+  wrap.appendChild(lbl);
+  coinLayer.appendChild(wrap);
+
+  floaters.push({
+    wrap, el,
+    x: Math.random()*(window.innerWidth-s),
+    y: Math.random()*(window.innerHeight-s),
+    vx:(Math.random()-0.5)*0.52,
+    vy:(Math.random()-0.5)*0.45,
+    angle:Math.random()*360,
+    rotSpeed:(Math.random()-0.5)*0.5,
+    pulseT:Math.random()*Math.PI*2,
+    pulseSpeed:0.01+Math.random()*0.012,
+    size:s, trail:def.trail, color:def.color,
+    baseGlow:s*0.6,
+  });
+});
+
+(function animateCoins(){
+  const W=window.innerWidth,H=window.innerHeight;
+  floaters.forEach(f=>{
+    f.x+=f.vx; f.y+=f.vy;
+    f.angle+=f.rotSpeed;
+    f.pulseT+=f.pulseSpeed;
+    if(f.x<0){f.x=0;f.vx=Math.abs(f.vx);}
+    if(f.x>W-f.size){f.x=W-f.size;f.vx=-Math.abs(f.vx);}
+    if(f.y<0){f.y=0;f.vy=Math.abs(f.vy);}
+    if(f.y>H-f.size){f.y=H-f.size;f.vy=-Math.abs(f.vy);}
+    const pulse=0.2+0.14*Math.sin(f.pulseT);
+    const glowR=f.baseGlow+22*Math.sin(f.pulseT);
+    f.wrap.style.transform=`translate(${f.x}px,${f.y}px) rotate(${f.angle}deg)`;
+    f.el.style.boxShadow=`0 0 ${glowR}px ${f.trail}${pulse}),0 0 ${glowR*1.8}px ${f.trail}${pulse*0.35}),inset 0 0 ${f.size*0.3}px ${f.trail}0.1)`;
+    f.el.style.opacity=String(0.5+0.28*Math.abs(Math.sin(f.pulseT)));
+  });
+  requestAnimationFrame(animateCoins);
+})();
+
+/* ══ TICKER TAPE ══ */
+const TDATA=[
+  {s:'BTC',p:'$84,231',c:'+2.45%',u:true},{s:'ETH',p:'$3,142',c:'-0.82%',u:false},
+  {s:'SOL',p:'$148.32',c:'+5.12%',u:true},{s:'BNB',p:'$614',c:'-0.44%',u:false},
+  {s:'DOGE',p:'$0.1423',c:'+3.18%',u:true},{s:'XRP',p:'$0.582',c:'+1.05%',u:true},
+  {s:'ADA',p:'$0.428',c:'-1.14%',u:false},{s:'XAU',p:'$3,121',c:'+1.12%',u:true},
+  {s:'MATIC',p:'$0.734',c:'+0.91%',u:true},{s:'DOT',p:'$6.84',c:'-0.55%',u:false},
+  {s:'BTC',p:'$84,231',c:'+2.45%',u:true},{s:'ETH',p:'$3,142',c:'-0.82%',u:false},
+  {s:'SOL',p:'$148.32',c:'+5.12%',u:true},{s:'BNB',p:'$614',c:'-0.44%',u:false},
+  {s:'DOGE',p:'$0.1423',c:'+3.18%',u:true},{s:'XRP',p:'$0.582',c:'+1.05%',u:true},
+];
+document.getElementById('tickerEl').innerHTML=TDATA.map(t=>
+  `<span class="tick"><span class="t-sym">${t.s}</span><span class="t-p">${t.p}</span><span class="${t.u?'t-up':'t-dn'}">${t.c}</span></span>`
+).join('');
+
+/* ══ AI INSIGHTS ══ */
+const insights=[
+  '⚡ Head & Shoulders detected → Bearish reversal incoming',
+  '📐 Ascending Triangle forming → Bullish breakout likely',
+  '🕯️ Doji candle spotted → Market indecision / trend reversal',
+  '🔻 Double Top confirmed → Potential downward move ahead',
+  '📈 RSI oversold on BTC → Bounce may be imminent',
+  '🔺 Golden Cross forming on ETH → Strong bullish momentum',
+  '📊 Volume spike detected → Major move incoming — watch levels',
+  '⚠️ Bearish engulfing on SOL → Monitor for further decline',
+];
+function updateAI(){
+  const el=document.getElementById('aiText');
+  el.style.opacity='0';
+  setTimeout(()=>{el.textContent=insights[Math.floor(Math.random()*insights.length)];el.style.opacity='1';},350);
+}
+setInterval(updateAI,3800); updateAI();
+
+/* ══ LIGHTBOX ══ */
+function showLightbox(src){document.getElementById('lightbox-img').src=src;document.getElementById('lightbox').style.display='block';}
+function closeLightbox(){document.getElementById('lightbox').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+</script>
 </body>
 </html>
