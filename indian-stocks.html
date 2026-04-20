@@ -1,112 +1,141 @@
-<div class="dashboard-section">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Indian Stocks</title>
 
-  <h2>📊 Indian Stock Market Intelligence</h2>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
-  <!-- STOCK BASICS -->
-  <div class="card">
-    <h3>📘 Stock Basics</h3>
-    <div class="info-row">
-      <span>What is a Stock?</span>
-      <span>Ownership in a company</span>
-    </div>
-    <div class="info-row">
-      <span>Stock Exchange</span>
-      <span>BSE & NSE</span>
-    </div>
-    <div class="info-row">
-      <span>Market Cap</span>
-      <span>Price × Shares</span>
-    </div>
-    <div class="info-row">
-      <span>Volatility</span>
-      <span>Medium to High</span>
-    </div>
-  </div>
+<style>
+body {
+  font-family: 'Share Tech Mono', monospace;
+  background: #040608;
+  color: white;
+  padding: 40px;
+}
 
-  <!-- WHAT IS STOCK -->
-  <div class="card">
-    <h3>📖 What are Stocks?</h3>
-    <p>
-      Stocks represent ownership in a company. When you buy shares of a company,
-      you become a partial owner and can benefit from its growth through price
-      appreciation and dividends.
-    </p>
-    <p>
-      In India, stocks are traded mainly on the National Stock Exchange (NSE)
-      and Bombay Stock Exchange (BSE). Popular indices include Nifty 50 and Sensex.
-    </p>
-  </div>
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
 
-  <!-- MARKET STRUCTURE -->
-  <div class="card">
-    <h3>🏛️ Indian Market Structure</h3>
-    <ul>
-      <li>Primary Market (IPO)</li>
-      <li>Secondary Market (Stock Trading)</li>
-      <li>Regulator: SEBI</li>
-      <li>Depositories: NSDL & CDSL</li>
-    </ul>
+.header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  text-shadow: 0 0 20px rgba(0,220,150,0.6);
+}
 
-    <ul>
-      <li><b>Regulated</b></li>
-      <li><b>Transparent</b></li>
-      <li><b>Electronic Trading</b></li>
-    </ul>
-  </div>
+/* BACK BUTTON */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,220,150,0.15);
+  border: 1px solid rgba(0,220,150,0.4);
+  color: #00dc96;
+  padding: 8px 14px;
+  cursor: pointer;
+}
 
-  <!-- HOW STOCK MARKET WORKS -->
-  <div class="card">
-    <h3>⚙️ How Stock Market Works</h3>
-    <p>
-      Investors buy and sell shares through brokers. Prices change based on
-      demand and supply. Orders are matched electronically on exchanges like NSE and BSE.
-    </p>
-  </div>
+/* CARD STYLE */
+.card {
+  background: rgba(8,16,24,0.75);
+  border: 1px solid rgba(0,220,150,0.2);
+  padding: 20px;
+  margin-bottom: 20px;
+}
 
-  <!-- STOCK METRICS -->
-  <div class="card">
-    <h3>📊 Stock Metrics</h3>
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+</style>
+</head>
 
-    <div class="info-row">
-      <span>Market Cap</span>
-      <span>Total company value</span>
-    </div>
-    <div class="info-row">
-      <span>P/E Ratio</span>
-      <span>Valuation indicator</span>
-    </div>
-    <div class="info-row">
-      <span>EPS</span>
-      <span>Earnings per share</span>
-    </div>
-    <div class="info-row">
-      <span>Volume</span>
-      <span>Shares traded</span>
-    </div>
-  </div>
+<body>
 
-  <!-- TYPES OF STOCKS -->
-  <div class="card">
-    <h3>📈 Types of Stocks</h3>
-    <ul>
-      <li>Large Cap (Reliance, TCS)</li>
-      <li>Mid Cap</li>
-      <li>Small Cap</li>
-      <li>Blue-chip Stocks</li>
-      <li>Dividend Stocks</li>
-    </ul>
-  </div>
+<button class="back-btn" onclick="goHome()">⬅ Home</button>
 
-  <!-- ADVANTAGES & RISKS -->
-  <div class="card">
-    <h3>⚠️ Advantages & Risks</h3>
-    <ul>
-      <li>High growth potential</li>
-      <li>Liquidity</li>
-      <li>Dividend income</li>
-      <li>Market volatility risk</li>
-      <li>Company performance risk</li>
-    </ul>
-  </div>
-
+<div class="header">
+  <h1>Indian Stock Market</h1>
+  <p>NSE · BSE · Nifty 50 · Sensex</p>
 </div>
+
+<!-- BASICS -->
+<div class="card">
+  <h2>Stock Basics</h2>
+  <div class="info-row"><span>What is Stock?</span><span>Ownership in company</span></div>
+  <div class="info-row"><span>Exchange</span><span>NSE & BSE</span></div>
+  <div class="info-row"><span>Market Cap</span><span>Price × Shares</span></div>
+  <div class="info-row"><span>Volatility</span><span>Medium</span></div>
+</div>
+
+<!-- WHAT IS STOCK -->
+<div class="card">
+  <h2>What are Stocks?</h2>
+  <p>
+    Stocks represent ownership in a company. When you buy shares,
+    you own a portion of that business.
+  </p>
+</div>
+
+<!-- MARKET STRUCTURE -->
+<div class="card">
+  <h2>Market Structure</h2>
+  <ul>
+    <li>Primary Market (IPO)</li>
+    <li>Secondary Market</li>
+    <li>Regulated by SEBI</li>
+  </ul>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="card">
+  <h2>How Market Works</h2>
+  <p>
+    Investors trade stocks through brokers. Prices move based on
+    demand and supply.
+  </p>
+</div>
+
+<!-- METRICS -->
+<div class="card">
+  <h2>Stock Metrics</h2>
+  <div class="info-row"><span>P/E Ratio</span><span>Valuation</span></div>
+  <div class="info-row"><span>EPS</span><span>Earnings per share</span></div>
+  <div class="info-row"><span>Volume</span><span>Shares traded</span></div>
+</div>
+
+<!-- TYPES -->
+<div class="card">
+  <h2>Types of Stocks</h2>
+  <ul>
+    <li>Large Cap</li>
+    <li>Mid Cap</li>
+    <li>Small Cap</li>
+    <li>Dividend Stocks</li>
+  </ul>
+</div>
+
+<!-- RISKS -->
+<div class="card">
+  <h2>Advantages & Risks</h2>
+  <ul>
+    <li>Growth potential</li>
+    <li>Liquidity</li>
+    <li>Market risk</li>
+    <li>Volatility</li>
+  </ul>
+</div>
+
+<script>
+function goHome() {
+  window.location.href = "home.html";
+}
+</script>
+
+</body>
+</html>
