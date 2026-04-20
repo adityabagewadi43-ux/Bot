@@ -673,8 +673,14 @@ setTimeout(() => {
 }, 100);
 
 /* ── CARD NAVIGATION ── */
-function openCrypto() { window.location.href = "crypto.html"; }
-function openIndianStocks() { window.location.href = "indian-stocks.html"; }
+function openCrypto() {
+  console.log("Opening Crypto...");
+  window.location.href = "./crypto.html";
+}
+function openIndianStocks() {
+  console.log("Opening Indian Stocks...");
+  window.location.href = "./indian-stocks.html";
+}
 function openUSStocks() { window.location.href = "us-stocks.html"; }
 function openForex() { window.location.href = "forex.html"; }
 function openOil() { window.location.href = "oil.html"; }
