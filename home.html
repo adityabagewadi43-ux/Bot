@@ -203,6 +203,7 @@ body {
   letter-spacing: 0.05em;
   padding: 4px 10px;
   border-radius: 2px;
+  margin-bottom: 14px;
 }
 
 .positive {
@@ -261,7 +262,8 @@ body {
       <canvas class="mini-chart" id="chart0"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openIndianStocks()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🇮🇳</span>
@@ -271,7 +273,8 @@ body {
       <canvas class="mini-chart" id="chart1"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openUSStocks()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🇺🇸</span>
@@ -281,7 +284,8 @@ body {
       <canvas class="mini-chart" id="chart2"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openForex()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">💱</span>
@@ -291,7 +295,8 @@ body {
       <canvas class="mini-chart" id="chart3"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openOil()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🛢️</span>
@@ -301,7 +306,8 @@ body {
       <canvas class="mini-chart" id="chart4"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openGold()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🏆</span>
@@ -434,17 +440,20 @@ class CandlestickChart {
       const cx = this.x + i * this.step + this.scrollX;
       if (cx < this.x - this.step || cx > this.x + this.w + this.step) return;
       const bull = c.close >= c.open;
-      const color = bull ? GREEN : RED;
-      const alpha = 0.55;
-      ctx.strokeStyle = bull ? DIM_GREEN + alpha + ')' : DIM_RED + alpha + ')';
-      ctx.fillStyle = bull ? DIM_GREEN + '0.35)' : DIM_RED + '0.35)';
+      
+      // ✅ FIXED: Proper rgba() template literals
+      ctx.strokeStyle = bull ? `rgba(0,220,150,0.55)` : `rgba(255,92,92,0.55)`;
+      ctx.fillStyle = bull ? `rgba(0,220,150,0.35)` : `rgba(255,92,92,0.35)`;
       ctx.lineWidth = 1;
 
       const top = toY(Math.max(c.open, c.close));
       const bot = toY(Math.min(c.open, c.close));
       const bodyH = Math.max(1, bot - top);
 
-      ctx.beginPath(); ctx.moveTo(cx + this.candleW / 2, toY(c.high)); ctx.lineTo(cx + this.candleW / 2, toY(c.low)); ctx.stroke();
+      ctx.beginPath(); 
+      ctx.moveTo(cx + this.candleW / 2, toY(c.high)); 
+      ctx.lineTo(cx + this.candleW / 2, toY(c.low)); 
+      ctx.stroke();
       ctx.fillRect(cx, top, this.candleW, bodyH);
       ctx.strokeRect(cx, top, this.candleW, bodyH);
     });
@@ -486,7 +495,11 @@ class LineChart {
     const last = this.points[this.points.length - 1];
     const prevLast = this.points[this.points.length - 2];
     const bull = last >= prevLast;
-    const clr = bull ? DIM_GREEN : DIM_RED;
+
+    // ✅ FIXED: Proper rgba() template literals
+    const strokeClr = bull ? 'rgba(0,220,150,0.5)' : 'rgba(255,92,92,0.5)';
+    const fillClr1 = bull ? 'rgba(0,220,150,0.18)' : 'rgba(255,92,92,0.18)';
+    const fillClr2 = bull ? 'rgba(0,220,150,0)' : 'rgba(255,92,92,0)';
 
     ctx.save();
     ctx.beginPath();
@@ -497,10 +510,10 @@ class LineChart {
     });
 
     const grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.h);
-    grad.addColorStop(0, clr + '0.18)');
-    grad.addColorStop(1, clr + '0)');
+    grad.addColorStop(0, fillClr1);
+    grad.addColorStop(1, fillClr2);
 
-    ctx.strokeStyle = clr + '0.5)';
+    ctx.strokeStyle = strokeClr;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -515,15 +528,15 @@ class LineChart {
 
 /* Floating price tickers */
 const tickers = [
-  { label: 'BTC/USDT', price: 84231.44, change: +2.45 },
+  { label: 'BTC/USDT', price: 84231.44, change: 2.45 },
   { label: 'ETH/USDT', price: 3142.88, change: -0.82 },
-  { label: 'SOL/USDT', price: 148.32, change: +5.12 },
-  { label: 'NIFTY50', price: 22847.6, change: +0.87 },
+  { label: 'SOL/USDT', price: 148.32, change: 5.12 },
+  { label: 'NIFTY50', price: 22847.6, change: 0.87 },
   { label: 'AAPL', price: 212.34, change: -1.23 },
-  { label: 'EUR/USD', price: 1.0845, change: +0.34 },
-  { label: 'XAU/USD', price: 3121.8, change: +1.12 },
+  { label: 'EUR/USD', price: 1.0845, change: 0.34 },
+  { label: 'XAU/USD', price: 3121.8, change: 1.12 },
   { label: 'CRUDE', price: 82.14, change: -0.76 },
-  { label: 'DOGE', price: 0.1423, change: +3.18 },
+  { label: 'DOGE', price: 0.1423, change: 3.18 },
   { label: 'BNB', price: 614.22, change: -0.44 }
 ];
 
@@ -657,7 +670,6 @@ function drawMiniChart(canvasEl, data, positive) {
   c.lineWidth = 1.5;
   c.stroke();
 
-  const last = data[data.length - 1];
   c.lineTo(W, H); c.lineTo(0, H); c.closePath();
   const g = c.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, positive ? 'rgba(0,220,150,0.3)' : 'rgba(255,92,92,0.3)');
@@ -673,9 +685,13 @@ setTimeout(() => {
   });
 }, 100);
 
-function openCrypto() {
-  window.location.href = "crypto.html";
-}
+/* ── CARD NAVIGATION ── */
+function openCrypto() { window.location.href = "crypto.html"; }
+function openIndianStocks() { window.location.href = "indian-stocks.html"; }
+function openUSStocks() { window.location.href = "us-stocks.html"; }
+function openForex() { window.location.href = "forex.html"; }
+function openOil() { window.location.href = "oil.html"; }
+function openGold() { window.location.href = "gold.html"; }
 </script>
 </body>
 </html>
