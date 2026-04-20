@@ -16,21 +16,46 @@ body {
   overflow-x: hidden;
 }
 
-/* BACKGROUND CANVAS */
-#bgCanvas {
+/* SAME BACKGROUND SYSTEM */
+#tradingCanvas {
   position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  z-index:0;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.85;
 }
 
-/* CONTAINER */
+.scanline-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+.vignette {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(4,6,8,0.7) 100%);
+}
+
+/* UI LAYER */
 .container {
   position: relative;
   z-index: 10;
-  padding: 40px;
   max-width: 1200px;
-  margin:auto;
+  margin: auto;
+  padding: 60px 40px 80px;
 }
 
 /* HEADER */
@@ -42,7 +67,7 @@ body {
 .header h1 {
   font-family: 'Orbitron';
   font-size: 2.5rem;
-  text-shadow: 0 0 30px rgba(0,220,150,0.6);
+  text-shadow: 0 0 40px rgba(0,220,150,0.6);
 }
 
 /* BACK BUTTON */
@@ -61,31 +86,30 @@ body {
 /* GRID */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
   gap: 20px;
 }
 
-/* GLASS CARD */
+/* GLASS CARD (SAME STYLE) */
 .card {
-  background: rgba(8,16,24,0.65);
+  background: rgba(8, 16, 24, 0.75);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0,220,150,0.2);
-  padding: 20px;
-  border-radius: 8px;
-  transition: 0.3s;
+  border: 1px solid rgba(0,220,150,0.15);
+  padding: 24px;
+  border-radius: 6px;
+  transition: 0.25s;
 }
 
 .card:hover {
-  border-color: rgba(0,220,150,0.5);
-  box-shadow: 0 0 25px rgba(0,220,150,0.15);
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  border-color: rgba(0,220,150,0.45);
+  box-shadow: 0 0 30px rgba(0,220,150,0.1);
 }
 
-/* TEXT */
 .card h2 {
   font-family: 'Orbitron';
   font-size: 0.9rem;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .value {
@@ -104,7 +128,9 @@ body {
 
 <body>
 
-<canvas id="bgCanvas"></canvas>
+<canvas id="tradingCanvas"></canvas>
+<div class="scanline-overlay"></div>
+<div class="vignette"></div>
 
 <button class="back-btn" onclick="goHome()">⬅ Home</button>
 
@@ -112,10 +138,9 @@ body {
 
 <div class="header">
   <h1>📊 Indian Stock Dashboard</h1>
-  <p>NSE · BSE · Live Market</p>
 </div>
 
-<!-- TOP METRICS -->
+<!-- TOP -->
 <div class="grid">
 
 <div class="card">
@@ -139,7 +164,6 @@ body {
 <div class="card">
   <h2>MARKET STATUS</h2>
   <div class="value">OPEN</div>
-  <div class="positive">LIVE</div>
 </div>
 
 </div>
@@ -168,53 +192,78 @@ body {
 
 <script>
 
-/* ===== BACKGROUND ANIMATION ===== */
+/* ===== EXACT SAME ENGINE FROM HOME ===== */
 
-const canvas = document.getElementById("bgCanvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('tradingCanvas');
+const ctx = canvas.getContext('2d');
 
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
 resize();
-window.addEventListener("resize", resize);
+window.addEventListener('resize', resize);
 
-let points = [];
+const GREEN = '#00dc96';
+const RED = '#ff5c5c';
 
-for (let i = 0; i < 80; i++) {
-  points.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 0.5,
-    vy: (Math.random() - 0.5) * 0.5
+/* GRID */
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(0,220,150,0.04)';
+  const spacing = 60;
+  for (let x = 0; x < canvas.width; x += spacing) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += spacing) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+}
+
+/* MATRIX STREAM */
+const columns = Array.from({length: 60}, (_,i)=>({
+  x:i*20, y:Math.random()*-500, speed:0.5+Math.random()
+}));
+
+function drawMatrix() {
+  columns.forEach(c=>{
+    ctx.fillStyle='rgba(0,220,150,0.15)';
+    ctx.fillText(Math.random()>0.5?'1':'0', c.x, c.y);
+    c.y+=c.speed;
+    if(c.y>canvas.height) c.y=0;
   });
 }
 
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+/* PULSE */
+const pulses = Array.from({length:5},()=>({
+  x:Math.random()*window.innerWidth,
+  y:Math.random()*window.innerHeight,
+  r:0
+}));
 
-  points.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-
-    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-    ctx.fillStyle = "rgba(0,220,150,0.4)";
+function drawPulses(){
+  pulses.forEach(p=>{
+    p.r+=0.5;
+    if(p.r>100){p.r=0;}
+    ctx.strokeStyle='rgba(0,220,150,0.1)';
     ctx.beginPath();
-    ctx.arc(p.x,p.y,2,0,Math.PI*2);
-    ctx.fill();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.stroke();
   });
+}
 
+/* LOOP */
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid();
+  drawMatrix();
+  drawPulses();
   requestAnimationFrame(draw);
 }
-
 draw();
 
-/* NAVIGATION */
-function goHome() {
-  window.location.href = "home.html";
+/* NAV */
+function goHome(){
+  window.location.href="home.html";
 }
 
 </script>
