@@ -257,57 +257,56 @@ body {
       <span class="icon">₿</span>
       <h2>Crypto</h2>
       <p class="subtitle">Bitcoin · Ethereum · Alt</p>
-      
       <canvas class="mini-chart" id="chart0"></canvas>
     </div>
 
     <div class="card" onclick="openIndianStocks()">
-  <div class="card-corner"></div>
-  <div class="card-corner-bl"></div>
-  <span class="icon">🇮🇳</span>
-  <h2>Indian Stocks</h2>
-  <p class="subtitle">Nifty 50 · Sensex</p>
-  
-  <canvas class="mini-chart" id="chart1"></canvas>
-</div>
+      <div class="status-badge">ACTIVE</div>
+      <div class="card-corner"></div>
+      <div class="card-corner-bl"></div>
+      <span class="icon">🇮🇳</span>
+      <h2>Indian Stocks</h2>
+      <p class="subtitle">Nifty 50 · Sensex</p>
+      <canvas class="mini-chart" id="chart1"></canvas>
+    </div>
 
-    <div class="card">
+    <div class="card" onclick="openUSStocks()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🇺🇸</span>
       <h2>US Stocks</h2>
       <p class="subtitle">NASDAQ · AAPL</p>
-      
       <canvas class="mini-chart" id="chart2"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openForex()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">💱</span>
       <h2>Forex</h2>
       <p class="subtitle">EUR/USD · GBP/JPY</p>
-      
       <canvas class="mini-chart" id="chart3"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openOil()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🛢️</span>
       <h2>Oil</h2>
       <p class="subtitle">Crude · Brent</p>
-      
       <canvas class="mini-chart" id="chart4"></canvas>
     </div>
 
-    <div class="card">
+    <div class="card" onclick="openGold()">
+      <div class="status-badge">ACTIVE</div>
       <div class="card-corner"></div>
       <div class="card-corner-bl"></div>
       <span class="icon">🏆</span>
       <h2>Gold</h2>
       <p class="subtitle">XAU/USD · Futures</p>
-      
       <canvas class="mini-chart" id="chart5"></canvas>
     </div>
   </div>
@@ -673,13 +672,13 @@ setTimeout(() => {
   });
 }, 100);
 
-function openCrypto() {
-  window.location.href = "crypto.html";
-}
-
-function openIndianStocks() {
-  window.location.href = "indian-stocks.html";
-}
+/* ── CARD NAVIGATION ── */
+function openCrypto() { window.location.href = "crypto.html"; }
+function openIndianStocks() { window.location.href = "indian-stocks.html"; }
+function openUSStocks() { window.location.href = "us-stocks.html"; }
+function openForex() { window.location.href = "forex.html"; }
+function openOil() { window.location.href = "oil.html"; }
+function openGold() { window.location.href = "gold.html"; }
 </script>
 </body>
 </html>
