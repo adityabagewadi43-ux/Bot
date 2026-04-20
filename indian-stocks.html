@@ -7,38 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
 <style>
+* { margin:0; padding:0; box-sizing:border-box; }
 
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* BODY */
 body {
   font-family: 'Share Tech Mono', monospace;
   background: #040608;
   color: white;
-  padding: 40px;
+  padding: 30px;
 }
 
 /* HEADER */
 .header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .header h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 2.5rem;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 30px rgba(0,220,150,0.6);
+  font-size: 2.2rem;
+  text-shadow: 0 0 20px rgba(0,220,150,0.6);
 }
 
 .header p {
   color: rgba(0,220,150,0.6);
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 /* BACK BUTTON */
@@ -49,73 +41,69 @@ body {
   background: rgba(0,220,150,0.15);
   border: 1px solid rgba(0,220,150,0.4);
   color: #00dc96;
-  padding: 10px 16px;
+  padding: 8px 14px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: 0.2s;
 }
 
-.back-btn:hover {
-  background: rgba(0,220,150,0.3);
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 20px;
 }
 
-/* CARD GRID */
-.container {
-  max-width: 1000px;
-  margin: auto;
-}
-
-/* CARD STYLE (MATCH HOME UI) */
+/* CARD */
 .card {
-  background: rgba(8, 16, 24, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0,220,150,0.15);
+  background: rgba(8,16,24,0.75);
+  border: 1px solid rgba(0,220,150,0.2);
+  padding: 20px;
   border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 20px;
   transition: 0.25s;
 }
 
 .card:hover {
   border-color: rgba(0,220,150,0.5);
   box-shadow: 0 0 25px rgba(0,220,150,0.1);
-  transform: translateY(-3px);
 }
 
-/* HEADINGS */
+/* TITLE */
 .card h2 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.12em;
-  margin-bottom: 12px;
-  color: rgba(255,255,255,0.9);
+  font-family: 'Orbitron';
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  letter-spacing: 0.1em;
 }
 
-/* TEXT */
-.card p {
-  color: rgba(255,255,255,0.7);
-  line-height: 1.6;
+/* VALUE */
+.value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* POSITIVE / NEGATIVE */
+.positive { color: #00dc96; }
+.negative { color: #ff5c5c; }
+
+/* SECTION */
+.section {
+  margin-top: 30px;
+}
+
+.section h3 {
+  font-family: 'Orbitron';
+  margin-bottom: 10px;
 }
 
 /* LIST */
-.card ul {
+ul {
   padding-left: 18px;
 }
 
-.card li {
+li {
   margin-bottom: 6px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.7);
 }
-
-/* INFO ROW */
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.8);
-}
-
 </style>
 </head>
 
@@ -124,80 +112,86 @@ body {
 <button class="back-btn" onclick="goHome()">⬅ Home</button>
 
 <div class="header">
-  <h1>📊 Indian Stock Market Intelligence</h1>
-  <p>NSE · BSE · Nifty 50 · Sensex</p>
+  <h1>📊 Indian Stock Dashboard</h1>
+  <p>NSE · BSE · Live Overview</p>
 </div>
 
-<div class="container">
+<!-- TOP METRICS -->
+<div class="grid">
 
-<!-- BASICS -->
-<div class="card">
-  <h2>📘 Stock Basics</h2>
-  <div class="info-row"><span>What is Stock?</span><span>Ownership</span></div>
-  <div class="info-row"><span>Exchange</span><span>NSE & BSE</span></div>
-  <div class="info-row"><span>Market Cap</span><span>Price × Shares</span></div>
-  <div class="info-row"><span>Volatility</span><span>Medium–High</span></div>
+  <div class="card">
+    <h2>NIFTY 50</h2>
+    <div class="value positive">22,847</div>
+    <div class="positive">▲ +0.87%</div>
+  </div>
+
+  <div class="card">
+    <h2>SENSEX</h2>
+    <div class="value positive">75,320</div>
+    <div class="positive">▲ +0.65%</div>
+  </div>
+
+  <div class="card">
+    <h2>BANK NIFTY</h2>
+    <div class="value negative">48,210</div>
+    <div class="negative">▼ -0.32%</div>
+  </div>
+
+  <div class="card">
+    <h2>MARKET STATUS</h2>
+    <div class="value">OPEN</div>
+    <div class="positive">LIVE</div>
+  </div>
+
 </div>
 
-<!-- WHAT IS STOCK -->
-<div class="card">
-  <h2>📖 What are Stocks?</h2>
-  <p>
-    Stocks represent ownership in a company. When you buy shares,
-    you become a partial owner and can benefit from growth and dividends.
-  </p>
+<!-- TOP GAINERS -->
+<div class="section">
+  <h3>🚀 Top Gainers</h3>
+  <div class="grid">
+    <div class="card">
+      <h2>RELIANCE</h2>
+      <div class="value positive">+2.3%</div>
+    </div>
+    <div class="card">
+      <h2>TCS</h2>
+      <div class="value positive">+1.8%</div>
+    </div>
+    <div class="card">
+      <h2>INFY</h2>
+      <div class="value positive">+1.5%</div>
+    </div>
+  </div>
 </div>
 
-<!-- MARKET STRUCTURE -->
-<div class="card">
-  <h2>🏛️ Indian Market Structure</h2>
+<!-- TOP LOSERS -->
+<div class="section">
+  <h3>📉 Top Losers</h3>
+  <div class="grid">
+    <div class="card">
+      <h2>HDFC</h2>
+      <div class="value negative">-1.2%</div>
+    </div>
+    <div class="card">
+      <h2>ICICI</h2>
+      <div class="value negative">-0.9%</div>
+    </div>
+    <div class="card">
+      <h2>AXIS</h2>
+      <div class="value negative">-0.7%</div>
+    </div>
+  </div>
+</div>
+
+<!-- BASIC INFO -->
+<div class="section">
+  <h3>📘 Stock Basics</h3>
   <ul>
-    <li>Primary Market (IPO)</li>
-    <li>Secondary Market</li>
+    <li>Ownership in companies</li>
+    <li>Traded on NSE & BSE</li>
     <li>Regulated by SEBI</li>
-    <li>Depositories: NSDL & CDSL</li>
+    <li>Prices depend on demand & supply</li>
   </ul>
-</div>
-
-<!-- HOW IT WORKS -->
-<div class="card">
-  <h2>⚙️ How Market Works</h2>
-  <p>
-    Investors trade stocks through brokers. Prices change based on
-    demand and supply on NSE and BSE.
-  </p>
-</div>
-
-<!-- METRICS -->
-<div class="card">
-  <h2>📊 Stock Metrics</h2>
-  <div class="info-row"><span>P/E Ratio</span><span>Valuation</span></div>
-  <div class="info-row"><span>EPS</span><span>Earnings</span></div>
-  <div class="info-row"><span>Volume</span><span>Trading Activity</span></div>
-</div>
-
-<!-- TYPES -->
-<div class="card">
-  <h2>📈 Types of Stocks</h2>
-  <ul>
-    <li>Large Cap</li>
-    <li>Mid Cap</li>
-    <li>Small Cap</li>
-    <li>Dividend Stocks</li>
-  </ul>
-</div>
-
-<!-- RISKS -->
-<div class="card">
-  <h2>⚠️ Advantages & Risks</h2>
-  <ul>
-    <li>High growth potential</li>
-    <li>Liquidity</li>
-    <li>Market volatility</li>
-    <li>Company risk</li>
-  </ul>
-</div>
-
 </div>
 
 <script>
