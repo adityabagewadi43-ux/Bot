@@ -23,7 +23,7 @@ body { font-family:'Segoe UI',sans-serif; background:#020510; color:white; overf
 .vignette  { position:fixed; inset:0; z-index:3; pointer-events:none; background:radial-gradient(ellipse at center,transparent 28%,rgba(2,5,16,0.88) 100%); }
 
 /* HEADER */
-header { position:relative; z-index:10; text-align:center; padding:28px 20px 18px; background:rgba(4,8,22,0.65); backdrop-filter:blur(20px); border-bottom:1px solid rgba(68,166,255,0.14); }
+header { position:relative; z-index:10; text-align:center; padding:28px 20px 18px; background:rgba(4,8,22,0.50); backdrop-filter:blur(20px); border-bottom:1px solid rgba(68,166,255,0.14); }
 header h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.1rem,3.5vw,2rem); font-weight:900; letter-spacing:0.1em; background:linear-gradient(135deg,#fff 0%,var(--blue) 55%,var(--purple) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; background-size:200% 100%; animation:shimmer 5s ease-in-out infinite; }
 @keyframes shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 .live-badge { display:inline-flex; align-items:center; gap:6px; margin-top:8px; font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:0.3em; color:rgba(68,166,255,0.5); }
@@ -31,7 +31,7 @@ header h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.1rem,3.5vw,2rem
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
 
 /* TICKER */
-.ticker { position:relative; z-index:10; background:rgba(3,7,20,0.82); backdrop-filter:blur(12px); border-bottom:1px solid rgba(68,166,255,0.1); overflow:hidden; padding:7px 0; white-space:nowrap; }
+.ticker { position:relative; z-index:10; background:rgba(3,7,20,0.60); backdrop-filter:blur(12px); border-bottom:1px solid rgba(68,166,255,0.1); overflow:hidden; padding:7px 0; white-space:nowrap; }
 .ticker-inner { display:inline-block; animation:scroll 38s linear infinite; }
 @keyframes scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 .tick { display:inline-block; margin-right:34px; font-family:'Share Tech Mono',monospace; font-size:0.7rem; }
@@ -45,17 +45,20 @@ header h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.1rem,3.5vw,2rem
 
 /* GLASS CARDS */
 .card {
-  background: rgba(8, 14, 30, 0.42);
+  background: rgba(8, 14, 30, 0.22);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(68,166,255,0.16);
-  border-radius: 14px; padding:22px 24px; margin-bottom:22px;
-  position:relative; overflow:hidden;
+  border-radius: 14px;
+  padding:22px 24px;
+  margin-bottom:22px;
+  position:relative;
+  overflow:hidden;
   transition: border-color 0.35s, box-shadow 0.35s, transform 0.3s;
   animation: fadeUp 0.6s ease both;
 }
 .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(68,166,255,0.55),rgba(167,139,250,0.45),transparent); opacity:0; transition:opacity 0.35s; }
-.card::after  { content:''; position:absolute; inset:0; border-radius:14px; background:linear-gradient(135deg,rgba(68,166,255,0.05),rgba(167,139,250,0.03)); opacity:0; transition:opacity 0.35s; pointer-events:none; }
+.card::after  { content:''; position:absolute; inset:0; border-radius:14px; background:linear-gradient(135deg,rgba(68,166,255,0.04),rgba(167,139,250,0.02)); opacity:0; transition:opacity 0.35s; pointer-events:none; }
 .card:hover { border-color:rgba(68,166,255,0.42); box-shadow:0 0 44px rgba(68,166,255,0.1),0 24px 50px rgba(0,0,0,0.45); transform:translateY(-2px); }
 .card:hover::before,.card:hover::after { opacity:1; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
@@ -67,7 +70,7 @@ header h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.1rem,3.5vw,2rem
 
 /* GRID & PATTERNS */
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(228px,1fr)); gap:14px; }
-.pattern { background:rgba(4,9,22,0.52); border:1px solid rgba(68,166,255,0.12); border-radius:10px; padding:14px; transition:0.3s; cursor:zoom-in; }
+.pattern { background:rgba(4,9,22,0.34); border:1px solid rgba(68,166,255,0.12); border-radius:10px; padding:14px; transition:0.3s; cursor:zoom-in; }
 .pattern:hover { transform:translateY(-4px) scale(1.02); border-color:rgba(68,166,255,0.42); box-shadow:0 14px 36px rgba(68,166,255,0.1); }
 .pattern h3 { font-size:0.88rem; font-weight:600; margin-bottom:3px; }
 .pattern p  { font-size:0.72rem; color:rgba(255,255,255,0.38); margin-bottom:8px; }
@@ -378,7 +381,6 @@ COIN_DEFS.forEach(def=>{
   el.textContent=def.sym;
   coinLayer.appendChild(el);
 
-  /* Also render label */
   const lbl=document.createElement('div');
   lbl.style.cssText=`position:absolute;font-family:'Share Tech Mono',monospace;font-size:9px;color:${def.color};opacity:0.6;letter-spacing:0.1em;text-align:center;width:${s}px;margin-top:${s+3}px;pointer-events:none;`;
   lbl.textContent=def.label;
