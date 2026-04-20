@@ -13,24 +13,36 @@ body {
   font-family: 'Share Tech Mono', monospace;
   background: #040608;
   color: white;
-  padding: 30px;
+  overflow-x: hidden;
+}
+
+/* BACKGROUND CANVAS */
+#bgCanvas {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  z-index:0;
+}
+
+/* CONTAINER */
+.container {
+  position: relative;
+  z-index: 10;
+  padding: 40px;
+  max-width: 1200px;
+  margin:auto;
 }
 
 /* HEADER */
 .header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .header h1 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2.2rem;
-  text-shadow: 0 0 20px rgba(0,220,150,0.6);
-}
-
-.header p {
-  color: rgba(0,220,150,0.6);
-  margin-top: 8px;
+  font-family: 'Orbitron';
+  font-size: 2.5rem;
+  text-shadow: 0 0 30px rgba(0,220,150,0.6);
 }
 
 /* BACK BUTTON */
@@ -38,166 +50,173 @@ body {
   position: fixed;
   top: 20px;
   left: 20px;
+  z-index: 20;
   background: rgba(0,220,150,0.15);
   border: 1px solid rgba(0,220,150,0.4);
   color: #00dc96;
-  padding: 8px 14px;
+  padding: 10px 16px;
   cursor: pointer;
 }
 
 /* GRID */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
   gap: 20px;
 }
 
-/* CARD */
+/* GLASS CARD */
 .card {
-  background: rgba(8,16,24,0.75);
+  background: rgba(8,16,24,0.65);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(0,220,150,0.2);
   padding: 20px;
-  border-radius: 6px;
-  transition: 0.25s;
+  border-radius: 8px;
+  transition: 0.3s;
 }
 
 .card:hover {
   border-color: rgba(0,220,150,0.5);
-  box-shadow: 0 0 25px rgba(0,220,150,0.1);
+  box-shadow: 0 0 25px rgba(0,220,150,0.15);
+  transform: translateY(-3px);
 }
 
-/* TITLE */
+/* TEXT */
 .card h2 {
   font-family: 'Orbitron';
   font-size: 0.9rem;
   margin-bottom: 10px;
-  letter-spacing: 0.1em;
 }
 
-/* VALUE */
 .value {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: bold;
-  margin-bottom: 5px;
 }
 
-/* POSITIVE / NEGATIVE */
-.positive { color: #00dc96; }
-.negative { color: #ff5c5c; }
+.positive { color:#00dc96; }
+.negative { color:#ff5c5c; }
 
-/* SECTION */
 .section {
-  margin-top: 30px;
-}
-
-.section h3 {
-  font-family: 'Orbitron';
-  margin-bottom: 10px;
-}
-
-/* LIST */
-ul {
-  padding-left: 18px;
-}
-
-li {
-  margin-bottom: 6px;
-  color: rgba(255,255,255,0.7);
+  margin-top: 40px;
 }
 </style>
 </head>
 
 <body>
 
+<canvas id="bgCanvas"></canvas>
+
 <button class="back-btn" onclick="goHome()">⬅ Home</button>
+
+<div class="container">
 
 <div class="header">
   <h1>📊 Indian Stock Dashboard</h1>
-  <p>NSE · BSE · Live Overview</p>
+  <p>NSE · BSE · Live Market</p>
 </div>
 
 <!-- TOP METRICS -->
 <div class="grid">
 
-  <div class="card">
-    <h2>NIFTY 50</h2>
-    <div class="value positive">22,847</div>
-    <div class="positive">▲ +0.87%</div>
-  </div>
+<div class="card">
+  <h2>NIFTY 50</h2>
+  <div class="value positive">22,847</div>
+  <div class="positive">▲ +0.87%</div>
+</div>
 
-  <div class="card">
-    <h2>SENSEX</h2>
-    <div class="value positive">75,320</div>
-    <div class="positive">▲ +0.65%</div>
-  </div>
+<div class="card">
+  <h2>SENSEX</h2>
+  <div class="value positive">75,320</div>
+  <div class="positive">▲ +0.65%</div>
+</div>
 
-  <div class="card">
-    <h2>BANK NIFTY</h2>
-    <div class="value negative">48,210</div>
-    <div class="negative">▼ -0.32%</div>
-  </div>
+<div class="card">
+  <h2>BANK NIFTY</h2>
+  <div class="value negative">48,210</div>
+  <div class="negative">▼ -0.32%</div>
+</div>
 
-  <div class="card">
-    <h2>MARKET STATUS</h2>
-    <div class="value">OPEN</div>
-    <div class="positive">LIVE</div>
-  </div>
+<div class="card">
+  <h2>MARKET STATUS</h2>
+  <div class="value">OPEN</div>
+  <div class="positive">LIVE</div>
+</div>
 
 </div>
 
-<!-- TOP GAINERS -->
+<!-- GAINERS -->
 <div class="section">
-  <h3>🚀 Top Gainers</h3>
+  <h2>🚀 Top Gainers</h2>
   <div class="grid">
-    <div class="card">
-      <h2>RELIANCE</h2>
-      <div class="value positive">+2.3%</div>
-    </div>
-    <div class="card">
-      <h2>TCS</h2>
-      <div class="value positive">+1.8%</div>
-    </div>
-    <div class="card">
-      <h2>INFY</h2>
-      <div class="value positive">+1.5%</div>
-    </div>
+    <div class="card"><h2>RELIANCE</h2><div class="value positive">+2.3%</div></div>
+    <div class="card"><h2>TCS</h2><div class="value positive">+1.8%</div></div>
+    <div class="card"><h2>INFY</h2><div class="value positive">+1.5%</div></div>
   </div>
 </div>
 
-<!-- TOP LOSERS -->
+<!-- LOSERS -->
 <div class="section">
-  <h3>📉 Top Losers</h3>
+  <h2>📉 Top Losers</h2>
   <div class="grid">
-    <div class="card">
-      <h2>HDFC</h2>
-      <div class="value negative">-1.2%</div>
-    </div>
-    <div class="card">
-      <h2>ICICI</h2>
-      <div class="value negative">-0.9%</div>
-    </div>
-    <div class="card">
-      <h2>AXIS</h2>
-      <div class="value negative">-0.7%</div>
-    </div>
+    <div class="card"><h2>HDFC</h2><div class="value negative">-1.2%</div></div>
+    <div class="card"><h2>ICICI</h2><div class="value negative">-0.9%</div></div>
+    <div class="card"><h2>AXIS</h2><div class="value negative">-0.7%</div></div>
   </div>
 </div>
 
-<!-- BASIC INFO -->
-<div class="section">
-  <h3>📘 Stock Basics</h3>
-  <ul>
-    <li>Ownership in companies</li>
-    <li>Traded on NSE & BSE</li>
-    <li>Regulated by SEBI</li>
-    <li>Prices depend on demand & supply</li>
-  </ul>
 </div>
 
 <script>
+
+/* ===== BACKGROUND ANIMATION ===== */
+
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+let points = [];
+
+for (let i = 0; i < 80; i++) {
+  points.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5
+  });
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  points.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+    ctx.fillStyle = "rgba(0,220,150,0.4)";
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+
+/* NAVIGATION */
 function goHome() {
   window.location.href = "home.html";
 }
+
 </script>
 
 </body>
