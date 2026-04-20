@@ -261,15 +261,15 @@ body {
       <canvas class="mini-chart" id="chart0"></canvas>
     </div>
 
-    <div class="card">
-      <div class="card-corner"></div>
-      <div class="card-corner-bl"></div>
-      <span class="icon">🇮🇳</span>
-      <h2>Indian Stocks</h2>
-      <p class="subtitle">Nifty 50 · Sensex</p>
-      <span class="price-change positive">▲ +0.87%</span>
-      <canvas class="mini-chart" id="chart1"></canvas>
-    </div>
+    <div class="card" onclick="openIndianStocks()">
+  <div class="card-corner"></div>
+  <div class="card-corner-bl"></div>
+  <span class="icon">🇮🇳</span>
+  <h2>Indian Stocks</h2>
+  <p class="subtitle">Nifty 50 · Sensex</p>
+  <span class="price-change positive">▲ +0.87%</span>
+  <canvas class="mini-chart" id="chart1"></canvas>
+</div>
 
     <div class="card">
       <div class="card-corner"></div>
@@ -675,6 +675,10 @@ setTimeout(() => {
 
 function openCrypto() {
   window.location.href = "crypto.html";
+}
+
+function openIndianStocks() {
+  window.location.href = "indian-stocks.html";
 }
 </script>
 </body>
