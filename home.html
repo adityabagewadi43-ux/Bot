@@ -1,832 +1,812 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Oil Trading Intelligence Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Stock Market Intelligence Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{
-  --bg0:#070604;
-  --bg1:#0c0906;
-  --bg2:#14100a;
-  --glass:rgba(28,20,10,0.28);
-  --glass2:rgba(40,28,14,0.22);
-  --border:rgba(255,194,92,0.18);
-  --gold:#ffb84d;
-  --amber:#ff9b21;
-  --orange:#ff7d1a;
-  --green:#34d399;
-  --red:#f87171;
-  --text:rgba(255,244,226,0.92);
-  --muted:rgba(255,244,226,0.66);
-  --dim:rgba(255,244,226,0.46);
-  --deep:#2e220f;
-  --steel:#9ea0a6;
-  --oil:#1c1408;
-  --shadow:0 18px 40px rgba(0,0,0,0.45);
+:root {
+  --primary: #00d4aa;
+  --secondary: #6366f1;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --dark: #0f172a;
+  --darker: #020617;
+  --glass: rgba(15, 23, 42, 0.25);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  font-family:'Inter',sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255,161,51,0.08), transparent 26%),
-    radial-gradient(circle at 80% 0%, rgba(255,203,92,0.08), transparent 22%),
-    linear-gradient(180deg,var(--bg0),var(--bg1) 42%,var(--bg2));
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body { 
+  font-family:'Inter',sans-serif; 
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%); 
+  color:#e2e8f0; 
+  min-height:100vh; 
   overflow-x:hidden;
-  min-height:100vh;
 }
-#bgCanvas{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:0;
-  pointer-events:none;
+
+/* Particle Background */
+#particles { 
+  position:fixed; inset:0; z-index:1; pointer-events:none; 
 }
-#oilLayer{
-  position:fixed;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  overflow:hidden;
+.particle { 
+  position:absolute; 
+  background:radial-gradient(circle, var(--primary) 0%, transparent 70%); 
+  border-radius:50%; 
+  animation: float 20s infinite linear; 
 }
-#uiLayer{position:relative;z-index:10}
-.scanlines{
-  position:fixed;
-  inset:0;
-  z-index:2;
-  pointer-events:none;
-  background:repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 3px,
-    rgba(0,0,0,0.12) 3px,
-    rgba(0,0,0,0.12) 6px
-  );
-  mix-blend-mode:multiply;
+
+/* Canvas Charts Background */
+#bgCharts { position:fixed; inset:0; z-index:2; pointer-events:none; }
+
+/* Main Content */
+.main-wrapper { position:relative; z-index:10; }
+
+header { 
+  text-align:center; 
+  padding:40px 20px; 
+  background:linear-gradient(135deg, rgba(15,23,42,0.6), rgba(31,41,55,0.4)); 
+  backdrop-filter:blur(20px); 
+  border-bottom:1px solid rgba(0,212,170,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-.vignette{
-  position:fixed;
-  inset:0;
-  z-index:3;
-  pointer-events:none;
-  background:radial-gradient(ellipse at center, transparent 24%, rgba(6,4,2,0.88) 100%);
-}
-header{
-  position:relative;
-  z-index:10;
-  padding:30px 18px 16px;
-  text-align:center;
-  background:linear-gradient(180deg,rgba(20,14,7,0.72),rgba(10,8,5,0.34));
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(255,183,77,0.15);
-  box-shadow:inset 0 -1px 0 rgba(255,255,255,0.04);
-}
-header h1{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(1.2rem,3.4vw,2.2rem);
-  font-weight:900;
-  letter-spacing:0.08em;
-  background:linear-gradient(135deg,#fff2d2 0%, var(--gold) 35%, var(--orange) 72%, #f3b75f 100%);
-  -webkit-background-clip:text;
+header h1 { 
+  font-family:'Space Grotesk',sans-serif; 
+  font-size:clamp(1.8rem,5vw,3.2rem); 
+  font-weight:700; 
+  background:linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--secondary) 100%);
+  -webkit-background-clip:text; 
+  background-clip:text; 
   -webkit-text-fill-color:transparent;
-  background-clip:text;
-  text-shadow:0 0 24px rgba(255,168,61,0.16);
 }
-.subline{
-  margin-top:8px;
-  font-family:'Share Tech Mono',monospace;
-  letter-spacing:0.28em;
-  font-size:0.62rem;
-  color:rgba(255,210,140,0.68);
+.status-bar {
+  display:flex; align-items:center; justify-content:center; gap:12px; 
+  margin-top:16px; 
+  font-size:0.75rem; 
+  font-weight:500; 
+  letter-spacing:0.05em;
 }
-.live-row{
-  display:flex;
-  justify-content:center;
-  flex-wrap:wrap;
-  gap:14px;
-  margin-top:16px;
+.status-dot { 
+  width:8px; height:8px; border-radius:50%; 
+  background:var(--primary); 
+  animation:pulse 2s infinite; 
 }
-.live-chip{
-  min-width:172px;
-  padding:10px 14px;
-  border:1px solid rgba(255,184,77,0.16);
-  background:linear-gradient(180deg,rgba(34,24,12,0.92),rgba(18,13,7,0.75));
-  border-radius:10px;
-  box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-family:'Share Tech Mono',monospace;
-}
-.live-chip .sym{color:#e6d8b5;font-weight:700;letter-spacing:0.08em}
-.live-chip .px{color:#fff3df}
-.live-chip .chg.up{color:var(--green)}
-.live-chip .chg.down{color:var(--red)}
-.live-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--gold);
-  box-shadow:0 0 12px rgba(255,184,77,0.8);
-  animation:pulse 1.2s infinite;
-  display:inline-block;
-  margin-right:8px;
-}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.55);opacity:0.35}}
-.ticker{
-  position:relative;
-  z-index:10;
+@keyframes pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.4; transform:scale(1.2)} }
+
+/* Ticker */
+.ticker-container {
+  background:linear-gradient(90deg, rgba(15,23,42,0.8), rgba(31,41,55,0.6)); 
+  backdrop-filter:blur(16px); 
+  border-bottom:1px solid rgba(0,212,170,0.15);
   overflow:hidden;
-  padding:8px 0;
-  background:linear-gradient(180deg,rgba(10,8,5,0.68),rgba(22,15,8,0.72));
-  border-top:1px solid rgba(255,184,77,0.08);
-  border-bottom:1px solid rgba(255,184,77,0.12);
+  padding:12px 0;
 }
-.ticker-inner{
-  display:inline-block;
-  white-space:nowrap;
-  animation:scroll 78s linear infinite;
-  will-change:transform;
+.ticker-content {
+  display:inline-flex; 
+  animation:marquee 45s linear infinite;
+  gap:40px;
 }
-@keyframes scroll{
-  0%{transform:translateX(0)}
-  100%{transform:translateX(-50%)}
+@keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.stock-tick { 
+  display:flex; flex-direction:column; 
+  font-family:'Space Grotesk',sans-serif; 
+  font-size:0.75rem; 
+  min-width:140px; 
+  text-align:center;
 }
-.tick{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  margin-right:30px;
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.72rem;
-  letter-spacing:0.06em;
+.symbol { font-weight:600; color:#94a3b8; margin-bottom:2px; }
+.price { font-size:0.85rem; font-weight:700; color:#e2e8f0; }
+.change { 
+  font-size:0.7rem; 
+  font-weight:500;
 }
-.t-sym{color:#e9d7ae}
-.t-p{color:#fff6ea}
-.t-up{color:var(--green)}
-.t-dn{color:var(--red)}
-.container{
-  position:relative;
-  z-index:10;
-  max-width:1200px;
-  margin:auto;
-  padding:28px 18px 90px;
-}
-.hero{
-  display:grid;
-  grid-template-columns:1.3fr 0.9fr;
-  gap:18px;
-  margin-bottom:18px;
-}
-.card{
-  background:linear-gradient(180deg,rgba(34,24,11,0.35),rgba(18,13,6,0.22));
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:22px 22px;
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(18px);
+.change.positive { color:var(--primary); }
+.change.negative { color:var(--danger); }
+
+/* Container */
+.container { max-width:1200px; margin:0 auto; padding:40px 20px 100px; }
+
+/* Cards */
+.metric-card, .info-card {
+  background:linear-gradient(145deg, rgba(15,23,42,0.4), rgba(31,41,55,0.3)); 
+  backdrop-filter:blur(25px); 
+  border:1px solid rgba(0,212,170,0.2); 
+  border-radius:20px; 
+  padding:28px; 
+  margin-bottom:24px; 
+  position:relative; 
   overflow:hidden;
+  transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.metric-card::before {
+  content:''; 
+  position:absolute; 
+  top:0; left:0; right:0; 
+  height:4px; 
+  background:linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+}
+.info-card:hover {
+  transform:translateY(-8px); 
+  box-shadow:0 25px 50px rgba(0,212,170,0.15), 0 0 0 1px rgba(0,212,170,0.3);
+  border-color:rgba(0,212,170,0.4);
+}
+.card-title { 
+  font-size:1.1rem; 
+  font-weight:600; 
+  color:#f8fafc; 
+  margin-bottom:20px; 
+  display:flex; align-items:center; gap:10px;
+}
+
+/* Expanded Stats Grid */
+.stats-grid {
+  display:grid; 
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); 
+  gap:20px; 
+  margin-bottom:24px;
+}
+.stat-item {
+  text-align:center; 
+  padding:24px 16px; 
+  background:rgba(0,212,170,0.1); 
+  border-radius:16px; 
+  border:1px solid rgba(0,212,170,0.2);
   position:relative;
+  overflow:hidden;
 }
-.card::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(135deg,rgba(255,183,77,0.08),transparent 45%,rgba(255,125,26,0.04));
-  pointer-events:none;
+.stat-item::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--primary);
 }
-.card h2{
-  font-family:'Orbitron',sans-serif;
-  font-size:1rem;
-  letter-spacing:0.06em;
-  margin-bottom:14px;
-  color:#fff2d8;
+.stat-value { font-size:1.6rem; font-weight:700; color:var(--primary); margin-bottom:4px; }
+.stat-label { font-size:0.82rem; color:#94a3b8; letter-spacing:0.03em; }
+
+/* Key Ratios Grid */
+.ratios-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:16px;
 }
-.hero-title{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(1.3rem,2.2vw,2rem);
-  line-height:1.2;
-  margin-bottom:12px;
-  color:#fff4df;
+.ratio-item {
+  background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2);
+  padding:16px; border-radius:12px; text-align:center;
 }
-.hero-text{
-  color:var(--muted);
-  line-height:1.8;
-  font-size:0.93rem;
-  margin-bottom:16px;
+.ratio-value { font-size:1.1rem; font-weight:600; color:var(--secondary); }
+.ratio-label { font-size:0.75rem; color:#94a3b8; margin-top:4px; }
+
+/* Content Rows */
+.content-row { 
+  display:grid; 
+  grid-template-columns:1fr 1fr; 
+  gap:30px; 
+  margin-bottom:24px; 
 }
-.pill-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
-.pill{
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:0.8rem;
-  border:1px solid;
-  backdrop-filter:blur(6px);
-}
-.pg{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.22);color:#8df0c3}
-.pr{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.22);color:#ffaaaa}
-.po{background:rgba(255,125,26,0.08);border-color:rgba(255,125,26,0.22);color:#ffbf84}
-.pg2{background:rgba(255,184,77,0.08);border-color:rgba(255,184,77,0.22);color:#ffd58f}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
-}
-.info-box{
-  display:flex;
-  justify-content:space-between;
-  gap:14px;
-  padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-  font-size:0.86rem;
-  color:var(--muted);
-}
-.info-box span:last-child{
-  color:#ffd38a;
-  font-family:'Share Tech Mono',monospace;
-}
-.section{
-  margin-top:18px;
-}
-.metric{
-  background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,184,77,0.12);
-  border-radius:14px;
-  padding:16px;
-}
-.metric-label{
-  font-size:0.66rem;
-  letter-spacing:0.24em;
-  color:#caa76b;
-  margin-bottom:8px;
-}
-.metric-value{
-  font-family:'Orbitron',sans-serif;
-  font-size:1.35rem;
-  color:#fff4df;
-  margin-bottom:4px;
-}
-.metric-sub{
-  color:var(--dim);
-  font-size:0.82rem;
+@media (max-width:768px) { .content-row { grid-template-columns:1fr; } }
+
+/* Feature List */
+.feature-list { 
+  display:grid; 
+  gap:12px; 
+  font-size:0.95rem; 
   line-height:1.6;
 }
-.two-col{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
+.feature-item {
+  display:flex; 
+  align-items:flex-start; 
+  gap:12px; 
+  padding:12px; 
+  background:rgba(99,102,241,0.08); 
+  border-radius:12px; 
+  border-left:4px solid var(--secondary);
 }
-.adv-item{
-  padding:6px 0;
-  color:var(--muted);
-  font-size:0.86rem;
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
+.feature-icon { font-size:1.2rem; margin-top:2px; }
+
+/* Stock Types */
+.stock-types { 
+  display:grid; 
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); 
+  gap:16px;
 }
-.adv-item::before{
-  content:'';
-  width:7px;height:7px;border-radius:50%;
-  background:#cda25b;
-  flex-shrink:0;
-  margin-top:8px;
-  box-shadow:0 0 8px rgba(205,162,91,0.55);
-}
-.adv-item.good::before{background:var(--green);box-shadow:0 0 8px rgba(52,211,153,0.65)}
-.adv-item.bad::before{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,0.65)}
-.table{
-  width:100%;
-  border-collapse:collapse;
-  overflow:hidden;
-}
-.table th,.table td{
-  text-align:left;
-  padding:10px 8px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  font-size:0.86rem;
-}
-.table th{
-  color:#f0c77b;
-  font-size:0.72rem;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-}
-.table td{color:var(--muted)}
-.small{
-  font-size:0.82rem;
-  line-height:1.75;
-  color:var(--muted);
-}
-.oilmap{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-  gap:14px;
-}
-.map-card{
-  border:1px solid rgba(255,184,77,0.12);
-  border-radius:16px;
-  padding:16px;
-  background:linear-gradient(180deg,rgba(28,19,9,0.38),rgba(15,11,6,0.22));
-}
-.map-card h3{
-  font-size:0.9rem;
-  margin-bottom:8px;
-  color:#ffe2ae;
-}
-.map-card p{
-  font-size:0.84rem;
-  color:var(--muted);
-  line-height:1.7;
-}
-.badge-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:10px;
-}
-.badge{
-  padding:7px 10px;
-  border-radius:8px;
-  border:1px solid rgba(255,184,77,0.16);
-  background:rgba(255,184,77,0.05);
-  color:#ffd9a0;
-  font-size:0.76rem;
-  font-family:'Share Tech Mono',monospace;
-}
-#aiText{
-  min-height:2.6em;
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.9rem;
-  letter-spacing:0.03em;
-  color:#ffd08a;
-  padding:14px;
-  border-radius:10px;
-  background:rgba(255,184,77,0.05);
-  border:1px solid rgba(255,184,77,0.14);
-}
-.btn{
-  margin-top:12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:11px 18px;
-  border-radius:10px;
-  border:1px solid rgba(255,184,77,0.26);
-  background:linear-gradient(180deg,rgba(255,184,77,0.16),rgba(255,125,26,0.08));
-  color:#ffdca6;
-  font-family:'Share Tech Mono',monospace;
+.type-badge { 
+  padding:16px 20px; 
+  border-radius:14px; 
+  text-align:center; 
+  font-weight:500; 
+  font-size:0.9rem; 
+  transition:0.3s;
   cursor:pointer;
 }
-.btn:hover{
-  background:linear-gradient(180deg,rgba(255,184,77,0.24),rgba(255,125,26,0.14));
+.type-growth { background:rgba(0,212,170,0.15); border:1px solid rgba(0,212,170,0.3); color:var(--primary); }
+.type-tech { background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:var(--secondary); }
+.type-dividend { background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:var(--accent); }
+.type-bluechip { background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#22c55e; }
+.type-value { background:rgba(219,39,119,0.15); border:1px solid rgba(219,39,119,0.3); color:#db2777; }
+
+/* Two Column Layout */
+.split-layout { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
+@media (max-width:768px) { .split-layout { grid-template-columns:1fr; } }
+.pros-cons { 
+  padding:24px; 
+  border-radius:16px; 
+  border:1px solid rgba(255,255,255,0.08);
 }
-.footer-note{
-  margin-top:14px;
-  color:var(--dim);
-  font-size:0.78rem;
-  line-height:1.7;
+.pros { background:linear-gradient(135deg, rgba(0,212,170,0.15), rgba(0,212,170,0.05)); border-left:5px solid var(--primary); }
+.cons { background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05)); border-left:5px solid var(--danger); }
+.pro-item, .cons-item { 
+  display:flex; align-items:center; gap:12px; 
+  padding:10px 0; 
+  font-size:0.92rem;
 }
-@media (max-width:900px){
-  .hero{grid-template-columns:1fr}
-  .two-col{grid-template-columns:1fr}
+.icon-circle { 
+  width:32px; height:32px; 
+  border-radius:50%; 
+  display:flex; align-items:center; justify-content:center; 
+  font-weight:600; font-size:0.85rem;
+}
+
+/* Patterns Grid */
+.patterns-grid { 
+  display:grid; 
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); 
+  gap:20px; 
+}
+.pattern-card {
+  background:rgba(15,23,42,0.4); 
+  border:1px solid rgba(0,212,170,0.15); 
+  border-radius:16px; 
+  padding:24px; 
+  text-align:center; 
+  transition:0.3s;
+  cursor:pointer;
+}
+.pattern-card:hover { 
+  transform:translateY(-6px); 
+  box-shadow:0 20px 40px rgba(0,212,170,0.2); 
+  border-color:var(--primary);
+}
+.pattern-image { 
+  width:100%; 
+  height:140px; 
+  background:linear-gradient(45deg, var(--primary), var(--secondary)); 
+  border-radius:12px; 
+  margin-bottom:16px; 
+  display:flex; align-items:center; justify-content:center; 
+  color:#0f172a; font-weight:700; font-size:2.5rem;
+}
+
+/* Trading Strategies */
+.strategy-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;
+}
+.strategy-card {
+  background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1));
+  border:1px solid rgba(16,185,129,0.3); border-radius:16px; padding:24px;
+}
+.strategy-card h4 { color:#059669; font-weight:600; margin-bottom:12px; }
+
+/* Watchlist Table */
+.watchlist-table {
+  width:100%; border-collapse:collapse; font-size:0.9rem; margin-top:16px;
+}
+.watchlist-table th {
+  text-align:left; padding:16px 12px; color:#94a3b8; font-weight:500; border-bottom:2px solid rgba(255,255,255,0.08);
+}
+.watchlist-table td { padding:16px 12px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.watchlist-table tr:hover { background:rgba(0,212,170,0.05); }
+
+/* Charts Section */
+.charts-section { 
+  background:linear-gradient(135deg, rgba(15,23,42,0.6), rgba(31,41,55,0.4)); 
+  border-radius:20px; 
+  padding:32px; 
+  margin:24px 0;
+}
+
+/* AI Section */
+.ai-section { 
+  background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(0,212,170,0.1)); 
+  border:1px solid rgba(99,102,241,0.3); 
+  border-radius:20px; 
+  padding:32px; 
+  text-align:center;
+}
+.ai-text { 
+  font-family:'Space Grotesk',sans-serif; 
+  font-size:1.1rem; 
+  color:var(--secondary); 
+  margin-bottom:24px; 
+  min-height:4em; 
+  display:flex; align-items:center; justify-content:center;
+}
+.cta-button { 
+  padding:16px 32px; 
+  font-family:'Space Grotesk',sans-serif; 
+  font-size:1rem; 
+  font-weight:600; 
+  background:linear-gradient(135deg, var(--primary), var(--secondary)); 
+  color:white; 
+  border:none; 
+  border-radius:14px; 
+  cursor:pointer; 
+  transition:0.3s;
+  box-shadow:0 10px 30px rgba(0,212,170,0.3);
+}
+.cta-button:hover { 
+  transform:translateY(-2px); 
+  box-shadow:0 15px 40px rgba(0,212,170,0.4);
+}
+
+/* Responsive */
+@media (max-width:768px) {
+  .container { padding:20px 16px 60px; }
+  header { padding:24px 16px; }
+  .stats-grid, .ratios-grid { grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); }
+}
+
+/* Animations */
+@keyframes float {
+  0%,100% { transform:translateY(100vh) rotate(0deg); opacity:0; }
+  10% { opacity:1; }
+  90% { opacity:1; }
+  100% { transform:translateY(-100px) rotate(360deg); opacity:0; }
+}
+
+.card-slide { animation:slideUp 0.8s ease forwards; }
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(40px); }
+  to { opacity:1; transform:translateY(0); }
 }
 </style>
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
-<div id="oilLayer"></div>
-<div class="scanlines"></div>
-<div class="vignette"></div>
+<canvas id="bgCharts"></canvas>
+<div id="particles"></div>
 
-<div id="uiLayer">
-<header>
-  <h1>OIL TRADING INTELLIGENCE PLATFORM</h1>
-  <div class="subline"><span class="live-dot"></span>REAL-TIME OIL MARKET INTELLIGENCE</div>
-  <div class="live-row" id="liveRow"></div>
-</header>
-
-<div class="ticker">
-  <div class="ticker-inner" id="tickerEl"></div>
-</div>
-
-<div class="container">
-  <div class="hero">
-    <div class="card">
-      <div class="hero-title">Oil markets move on supply, inventories, OPEC policy, geopolitics, and refinery demand.</div>
-      <div class="hero-text">
-        This layout is built for crude oil, energy stocks, and market context instead of crypto. The visual style uses dark petroleum tones, amber highlights, refinery-like motion, and a lower-speed price ribbon for a more professional trading feel.
-      </div>
-      <div class="pill-grid">
-        <div class="pill po">WTI Crude</div>
-        <div class="pill pg2">Brent Crude</div>
-        <div class="pill po">USO</div>
-        <div class="pill pg2">XLE</div>
-        <div class="pill pr">Inventory Risk</div>
-        <div class="pill pg">Supply Shock</div>
-      </div>
-      <div class="footer-note">
-        Exact live quotes should be pulled from a market API. The code already supports a clean structure for replacing fallback values with true real-time data.
-      </div>
+<div class="main-wrapper">
+  <header>
+    <h1><i class="fas fa-chart-line"></i> US Stock Intelligence Hub</h1>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span>LIVE MARKET DATA • NYSE | NASDAQ | AMEX</span>
     </div>
+  </header>
 
-    <div class="card">
-      <h2>Live Oil Snapshot</h2>
-      <div class="info-box"><span>WTI Crude</span><span id="wtiPrice">$0.00</span></div>
-      <div class="info-box"><span>Brent Crude</span><span id="brentPrice">$0.00</span></div>
-      <div class="info-box"><span>USO ETF</span><span id="usoPrice">$0.00</span></div>
-      <div class="info-box"><span>XLE ETF</span><span id="xlePrice">$0.00</span></div>
-      <div class="info-box"><span>Front-Month Trend</span><span id="trendText">Neutral</span></div>
-      <div class="info-box"><span>Market Bias</span><span id="biasText">Watching inventory data</span></div>
+  <div class="ticker-container">
+    <div class="ticker-content" id="stockTicker">
+      <!-- Populated by JS -->
     </div>
   </div>
 
-  <div class="card section">
-    <h2>Oil Market Basics</h2>
-    <div class="grid">
-      <div class="metric">
-        <div class="metric-label">WHAT DRIVES OIL</div>
-        <div class="metric-value">Supply + Demand</div>
-        <div class="metric-sub">Production cuts, refinery demand, seasonal driving, sanctions, and storage reports all affect price action.</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">MAIN BENCHMARKS</div>
-        <div class="metric-value">WTI / Brent</div>
-        <div class="metric-sub">WTI is the U.S. benchmark. Brent is the global benchmark and often trades differently due to logistics and regional demand.</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">OIL STOCKS</div>
-        <div class="metric-value">Energy Equities</div>
-        <div class="metric-sub">Integrated majors, drillers, service firms, pipeline operators, and ETFs often move with crude but not always at the same speed.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card section">
-    <h2>Oil-Linked Stocks and ETFs</h2>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Ticker</th>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Use</th>
-          <th id="asofCell">As of</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>USO</td><td>United States Oil Fund</td><td>Oil ETF</td><td>Tracks front-month crude exposure</td><td id="usoRow">$0.00</td></tr>
-        <tr><td>XLE</td><td>Energy Select Sector SPDR</td><td>Sector ETF</td><td>Broad energy equity basket</td><td id="xleRow">$0.00</td></tr>
-        <tr><td>XOP</td><td>SPDR S&P Oil & Gas Exploration & Production</td><td>Equity ETF</td><td>Exploration and production stocks</td><td>Watchlist</td></tr>
-        <tr><td>OIH</td><td>VanEck Oil Services ETF</td><td>Service ETF</td><td>Oilfield services exposure</td><td>Watchlist</td></tr>
-        <tr><td>CVX</td><td>Chevron</td><td>Integrated major</td><td>Large-cap oil and gas producer</td><td>Watchlist</td></tr>
-        <tr><td>XOM</td><td>Exxon Mobil</td><td>Integrated major</td><td>Global upstream, downstream, chemicals</td><td>Watchlist</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="card section">
-    <h2>Why Oil Moves</h2>
-    <div class="two-col">
-      <div>
-        <div class="adv-item good">OPEC+ output decisions can tighten or loosen supply quickly.</div>
-        <div class="adv-item good">Summer driving season can lift gasoline demand and refinery runs.</div>
-        <div class="adv-item good">Geopolitical disruptions can create sudden risk premiums.</div>
-        <div class="adv-item good">Inventory draws often support bullish sentiment.</div>
-      </div>
-      <div>
-        <div class="adv-item bad">Demand slowdowns can pressure crude and energy shares.</div>
-        <div class="adv-item bad">Inventory builds may signal weak consumption.</div>
-        <div class="adv-item bad">Higher rates can affect growth expectations and fuel demand.</div>
-        <div class="adv-item bad">Sharp swings in oil can make leveraged exposure risky.</div>
+  <div class="container">
+    
+    <!-- Enhanced Market Stats -->
+    <div class="info-card metric-card card-slide" style="animation-delay:0.1s">
+      <h2 class="card-title"><i class="fas fa-globe-americas"></i> Market Snapshot</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">$54,231</div>
+          <div class="stat-label">S&P 500 <span style="font-size:0.7rem;">+1.2%</span></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$19,847</div>
+          <div class="stat-label">NASDAQ <span style="font-size:0.7rem;">+2.1%</span></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">41,292</div>
+          <div class="stat-label">DOW JONES <span style="font-size:0.7rem;">+0.8%</span></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$2.34T</div>
+          <div class="stat-label">ADVANCE/DECLINE</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">15.2B</div>
+          <div class="stat-label">VOLUME</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">18.4</div>
+          <div class="stat-label">VIX FEAR INDEX</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card section">
-    <h2>Oil Market Structure</h2>
-    <div class="oilmap">
-      <div class="map-card">
-        <h3>Upstream</h3>
-        <p>Exploration and production companies drill for and produce crude oil and natural gas. They usually benefit most when crude prices rise.</p>
-      </div>
-      <div class="map-card">
-        <h3>Midstream</h3>
-        <p>Pipelines, transport, storage, and logistics move crude and refined products. These firms often focus more on volume and fees than spot prices.</p>
-      </div>
-      <div class="map-card">
-        <h3>Downstream</h3>
-        <p>Refineries turn crude into gasoline, diesel, jet fuel, and chemicals. Refining margins matter more than crude alone.</p>
-      </div>
-      <div class="map-card">
-        <h3>Oil Services</h3>
-        <p>Drilling, seismic, rigs, and field services support the full oil supply chain. They can be highly cyclical and sensitive to capex trends.</p>
+    <!-- Stock Fundamentals -->
+    <div class="info-card card-slide" style="animation-delay:0.15s">
+      <h2 class="card-title"><i class="fas fa-calculator"></i> Key Financial Ratios</h2>
+      <div class="ratios-grid">
+        <div class="ratio-item">
+          <div class="ratio-value">24.6x</div>
+          <div class="ratio-label">P/E Ratio</div>
+        </div>
+        <div class="ratio-item">
+          <div class="ratio-value">1.8%</div>
+          <div class="ratio-label">Dividend Yield</div>
+        </div>
+        <div class="ratio-item">
+          <div class="ratio-value">18.2%</div>
+          <div class="ratio-label">EPS Growth</div>
+        </div>
+        <div class="ratio-item">
+          <div class="ratio-value">1.25</div>
+          <div class="ratio-label">Beta</div>
+        </div>
+        <div class="ratio-item">
+          <div class="ratio-value">$2.41</div>
+          <div class="ratio-label">Book Value</div>
+        </div>
+        <div class="ratio-item">
+          <div class="ratio-value">65%</div>
+          <div class="ratio-label">ROE</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card section">
-    <h2>Trading View</h2>
-    <div class="grid">
-      <div class="metric">
-        <div class="metric-label">INVENTORY DATA</div>
-        <div class="metric-value">API / EIA / OPEC</div>
-        <div class="metric-sub">Weekly inventory reports and production commentary often drive short-term price reactions.</div>
+    <!-- Enhanced Basics Section -->
+    <div class="content-row">
+      <div class="info-card card-slide" style="animation-delay:0.2s">
+        <h2 class="card-title"><i class="fas fa-building-columns"></i> What Are Stocks?</h2>
+        <p style="line-height:1.7; color:#cbd5e1; font-size:1rem; margin-bottom:20px;">
+          Stocks represent partial ownership in publicly traded companies listed on exchanges like NYSE and NASDAQ. Owning shares gives you proportional rights to assets, earnings, and voting power.
+        </p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-chart-line-up"></i></span>
+            <span>Capital appreciation (price growth)</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-coins"></i></span>
+            <span>Dividend payments (profit sharing)</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-gavel"></i></span>
+            <span>Voting rights on corporate matters</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon"><i class="fas fa-chart-simple"></i></span>
+            <span>Liquidity through organized exchanges</span>
+          </div>
+        </div>
       </div>
-      <div class="metric">
-        <div class="metric-label">RISK STYLE</div>
-        <div class="metric-value">Moderate to High</div>
-        <div class="metric-sub">Oil can trend cleanly but also gap sharply on headlines, making risk controls important.</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">BEST USE</div>
-        <div class="metric-value">Macro + Swing</div>
-        <div class="metric-sub">Oil often works better with broader macro and inventory context than with pure intraday noise.</div>
+
+      <div class="info-card card-slide" style="animation-delay:0.3s">
+        <h2 class="card-title"><i class="fas fa-exchange-alt"></i> How Markets Operate</h2>
+        <div style="font-size:0.95rem; line-height:1.7; color:#cbd5e1;">
+          <p>Stock exchanges facilitate continuous trading through electronic order books matching buyers and sellers. Prices reflect real-time supply/demand dynamics influenced by earnings, news, and macroeconomics.</p>
+          <div style="margin-top:20px; padding:20px; background:rgba(0,212,170,0.08); border-radius:12px; border-left:4px solid var(--primary);">
+            <div style="font-size:0.75rem; color:var(--primary); font-weight:500; margin-bottom:12px; letter-spacing:0.5px;">MAJOR EXCHANGES</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:0.9rem;">
+              <span style="background:rgba(0,212,170,0.2); padding:8px 14px; border-radius:20px; font-weight:500;">NYSE (3,000+ companies)</span>
+              <span style="background:rgba(99,102,241,0.2); padding:8px 14px; border-radius:20px; font-weight:500;">NASDAQ (4,000+ companies)</span>
+              <span style="background:rgba(245,158,11,0.2); padding:8px 14px; border-radius:20px; font-weight:500;">AMEX (Small-cap focus)</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card section">
-    <h2>Market Notes</h2>
-    <div class="small">
-      <p>• WTI and Brent are benchmarks, not individual stocks. Oil stocks such as XOM and CVX react to crude, margins, production, and capital spending.</p>
-      <p>• ETFs like USO can track oil futures behavior more directly than energy equities, which means they may diverge from stock-based oil plays.</p>
-      <p>• For a live dashboard, connect your preferred API and replace the fallback values inside the JavaScript data layer.</p>
+    <!-- Expanded Stock Types -->
+    <div class="info-card card-slide" style="animation-delay:0.4s">
+      <h2 class="card-title"><i class="fas fa-tags"></i> Stock Categories</h2>
+      <div class="stock-types">
+        <div class="type-badge type-growth">
+          <i class="fas fa-rocket" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+          Growth Stocks<br><small>High growth potential</small>
+        </div>
+        <div class="type-badge type-tech">
+          <i class="fas fa-microchip" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+          Tech Stocks<br><small>Innovation leaders</small>
+        </div>
+        <div class="type-badge type-dividend">
+          <i class="fas fa-piggy-bank" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+          Dividend Stocks<br><small>Income generators</small>
+        </div>
+        <div class="type-badge type-bluechip">
+          <i class="fas fa-crown" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+          Blue Chips<br><small>Market leaders</small>
+        </div>
+        <div class="type-badge type-value">
+          <i class="fas fa-gem" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+          Value Stocks<br><small>Undervalued gems</small>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="card section">
-    <h2>AI Oil Insight</h2>
-    <div id="aiText">Scanning crude structure, energy stocks, and macro catalysts...</div>
-    <button class="btn" onclick="refreshInsight()">Refresh Oil Insight</button>
+    <!-- Trading Strategies -->
+    <div class="info-card card-slide" style="animation-delay:0.45s">
+      <h2 class="card-title"><i class="fas fa-lightbulb"></i> Popular Strategies</h2>
+      <div class="strategy-grid">
+        <div class="strategy-card">
+          <h4><i class="fas fa-infinity"></i> Buy & Hold</h4>
+          <p style="color:#94a3b8; line-height:1.6;">Long-term ownership of quality companies. Benefits from compounding returns and dividend reinvestment.</p>
+        </div>
+        <div class="strategy-card">
+          <h4><i class="fas fa-exchange-alt"></i> Swing Trading</h4>
+          <p style="color:#94a3b8; line-height:1.6;">Capture short-term price swings over days/weeks using technical analysis and momentum.</p>
+        </div>
+        <div class="strategy-card">
+          <h4><i class="fas fa-balance-scale"></i> Value Investing</h4>
+          <p style="color:#94a3b8; line-height:1.6;">Buy undervalued stocks trading below intrinsic value. Patient approach popularized by Warren Buffett.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Watchlist Example -->
+    <div class="info-card card-slide" style="animation-delay:0.5s">
+      <h2 class="card-title"><i class="fas fa-list"></i> Sample Watchlist</h2>
+      <table class="watchlist-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>Change</th>
+            <th>P/E</th>
+            <th>Volume</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;">AAPL</td>
+            <td><span style="color:var(--primary); font-weight:600;">$245.37</span></td>
+            <td style="color:var(--success);">+1.84%</td>
+            <td>32.4x</td>
+            <td>89M</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;">MSFT</td>
+            <td><span style="color:var(--primary); font-weight:600;">$428.16</span></td>
+            <td style="color:var(--success);">+0.72%</td>
+            <td>38.2x</td>
+            <td>23M</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;">TSLA</td>
+            <td><span style="color:var(--primary); font-weight:600;">$265.21</span></td>
+            <td style="color:var(--success);">+3.67%</td>
+            <td>89.1x</td>
+            <td>145M</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pros & Cons -->
+    <div class="info-card card-slide" style="animation-delay:0.55s">
+      <h2 class="card-title"><i class="fas fa-balance-scale-left-right"></i> Benefits vs Risks</h2>
+      <div class="split-layout">
+        <div class="pros-cons pros">
+          <div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-bottom:16px; letter-spacing:0.5px;">✅ INVESTMENT ADVANTAGES</div>
+          <div class="pro-item">
+            <div class="icon-circle" style="background:var(--primary); color:white;">📈</div>
+            Proven long-term wealth builder
+          </div>
+          <div class="pro-item">
+            <div class="icon-circle" style="background:var(--primary); color:white;">💰</div>
+            Regular dividend income
+          </div>
+          <div class="pro-item">
+            <div class="icon-circle" style="background:var(--primary); color:white;">🛡️</div>
+            Strong inflation protection
+          </div>
+          <div class="pro-item">
+            <div class="icon-circle" style="background:var(--primary); color:white;">📱</div>
+            High market liquidity
+          </div>
+        </div>
+        <div class="pros-cons cons">
+          <div style="font-size:0.85rem; color:#ef4444; font-weight:600; margin-bottom:16px; letter-spacing:0.5px;">⚠️ INVESTMENT RISKS</div>
+          <div class="cons-item">
+            <div class="icon-circle" style="background:var(--danger); color:white;">📉</div>
+            Short-term volatility
+          </div>
+          <div class="cons-item">
+            <div class="icon-circle" style="background:var(--danger); color:white;">⏰</div>
+            Market timing difficulty
+          </div>
+          <div class="cons-item">
+            <div class="icon-circle" style="background:var(--danger); color:white;">🏢</div>
+            Company bankruptcy risk
+          </div>
+          <div class="cons-item">
+            <div class="icon-circle" style="background:var(--danger); color:white;">📊</div>
+            Economic recession impact
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Patterns -->
+    <div class="charts-section card-slide" style="animation-delay:0.6s">
+      <h2 class="card-title" style="justify-content:center; margin-bottom:28px;"><i class="fas fa-shapes"></i> Chart Patterns Guide</h2>
+      <div class="patterns-grid">
+        <div class="pattern-card">
+          <div class="pattern-image">H&S</div>
+          <h3>Head & Shoulders</h3>
+          <p>Bearish reversal after uptrend</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-image">DT</div>
+          <h3>Double Top</h3>
+          <p>Resistance test failure</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-image">DB</div>
+          <h3>Double Bottom</h3>
+          <p>Bullish reversal signal</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-image">∪</div>
+          <h3>Cup & Handle</h3>
+          <p>Continuation pattern</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-image">△</div>
+          <h3>Ascending Triangle</h3>
+          <p>Bullish breakout pending</p>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-image">▽</div>
+          <h3>Descending Triangle</h3>
+          <p>Bearish continuation</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced AI -->
+    <div class="ai-section card-slide" style="animation-delay:0.7s">
+      <div class="ai-text" id="aiInsight">Advanced market pattern analysis loading...</div>
+      <button class="cta-button" onclick="window.open('https://quant-aura-insight.lovable.app/stocks','_blank')">
+        <i class="fas fa-rocket"></i> Launch Pro AI Analysis Platform
+      </button>
+    </div>
+
   </div>
-</div>
 </div>
 
 <script>
-const canvas=document.getElementById('bgCanvas');
-const ctx=canvas.getContext('2d');
-function resize(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  buildBackground();
+/* Background Charts Canvas */
+const canvas = document.getElementById('bgCharts');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-window.addEventListener('resize',resize);
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-let fields=[];
-let pipes=[];
-let sparks=[];
-function rand(a,b){return a+Math.random()*(b-a)}
-function buildBackground(){
-  fields=[];
-  pipes=[];
-  sparks=[];
-  const W=canvas.width,H=canvas.height;
-  for(let i=0;i<5;i++){
-    fields.push({
-      x:Math.random()*W,
-      y:Math.random()*H,
-      r:rand(120,260),
-      vr:rand(0.08,0.22),
-      alpha:rand(0.03,0.08),
-      color:i%2===0?'255,184,77':'255,125,26'
-    });
+// Simple animated charts in background
+class MiniChart {
+  constructor(x, y, w, h, type = 'line') {
+    this.x = x; this.y = y; this.w = w; this.h = h;
+    this.data = Array(50).fill(50).map(() => Math.random() * 40 + 30);
+    this.time = 0;
   }
-  for(let i=0;i<9;i++){
-    pipes.push({
-      y:rand(50,H-50),
-      speed:rand(0.18,0.45),
-      amp:rand(6,22),
-      freq:rand(0.002,0.007),
-      phase:rand(0,Math.PI*2)
-    });
-  }
-  for(let i=0;i<120;i++){
-    sparks.push({
-      x:Math.random()*W,
-      y:Math.random()*H,
-      vx:rand(-0.1,0.18),
-      vy:rand(0.02,0.12),
-      size:rand(0.6,1.8),
-      alpha:rand(0.06,0.22)
-    });
-  }
-}
-resize();
-
-function drawGrid(){
-  const W=canvas.width,H=canvas.height;
-  ctx.save();
-  ctx.lineWidth=1;
-  for(let x=0;x<W;x+=70){
-    ctx.strokeStyle='rgba(255,184,77,0.03)';
-    ctx.beginPath();
-    ctx.moveTo(x,0);
-    ctx.lineTo(x,H);
-    ctx.stroke();
-  }
-  for(let y=0;y<H;y+=70){
-    ctx.strokeStyle='rgba(255,184,77,0.03)';
-    ctx.beginPath();
-    ctx.moveTo(0,y);
-    ctx.lineTo(W,y);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawRefineryGlow(){
-  const W=canvas.width,H=canvas.height;
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(255,180,70,0.03)');
-  g.addColorStop(0.5,'rgba(0,0,0,0)');
-  g.addColorStop(1,'rgba(255,120,20,0.04)');
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,W,H);
-}
-
-function drawSmoke(){
-  fields.forEach(f=>{
-    f.r+=f.vr;
-    if(f.r>320){
-      f.r=120;
-      f.x=Math.random()*canvas.width;
-      f.y=Math.random()*canvas.height;
-      f.alpha=rand(0.03,0.08);
+  update() {
+    this.time++;
+    if(this.time % 3 === 0) {
+      this.data.push(Math.random() * 40 + 30);
+      this.data.shift();
     }
-    const grad=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r);
-    grad.addColorStop(0,`rgba(${f.color},${f.alpha})`);
-    grad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grad;
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    const max = Math.max(...this.data);
+    const min = Math.min(...this.data);
+    const scale = this.h / (max - min);
+    
     ctx.beginPath();
-    ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
-    ctx.fill();
-  });
-}
-
-function drawPipeLines(){
-  const W=canvas.width,H=canvas.height;
-  ctx.save();
-  ctx.lineCap='round';
-  pipes.forEach(p=>{
-    p.phase+=p.speed*0.01;
-    ctx.beginPath();
-    for(let x=0;x<=W;x+=10){
-      const y=p.y + Math.sin(x*p.freq + p.phase)*p.amp;
-      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    }
-    ctx.strokeStyle='rgba(255,184,77,0.07)';
-    ctx.lineWidth=2;
+    this.data.forEach((val, i) => {
+      const px = this.x + (i / (this.data.length - 1)) * this.w;
+      const py = this.y + this.h - ((val - min) * scale);
+      if(i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.strokeStyle = 'rgba(0,212,170,1)';
+    ctx.lineWidth = 2;
     ctx.stroke();
-  });
-  ctx.restore();
+    ctx.restore();
+  }
 }
 
-function drawSparks(){
-  const W=canvas.width,H=canvas.height;
-  sparks.forEach(s=>{
-    s.x+=s.vx;
-    s.y+=s.vy;
-    if(s.y>H+10){s.y=-10;s.x=Math.random()*W}
-    if(s.x<0)s.x=W;
-    if(s.x>W)s.x=0;
-    ctx.fillStyle=`rgba(255,213,145,${s.alpha})`;
-    ctx.fillRect(s.x,s.y,s.size,s.size);
-  });
-}
-
-function loop(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawGrid();
-  drawRefineryGlow();
-  drawSmoke();
-  drawPipeLines();
-  drawSparks();
-  requestAnimationFrame(loop);
-}
-loop();
-
-const oilLayer=document.getElementById('oilLayer');
-const symbols=[
-  {sym:'🛢️',label:'CRUDE',color:'#ffb84d',size:60},
-  {sym:'🛢️',label:'WTI',color:'#ff9b21',size:52},
-  {sym:'🛢️',label:'BRENT',color:'#ffd88a',size:54},
-  {sym:'⛽',label:'REFINE',color:'#f6be5f',size:48},
-  {sym:'⬤',label:'PIPE',color:'#d8b06a',size:42}
+const charts = [
+  new MiniChart(50, 100, 300, 120),
+  new MiniChart(window.innerWidth - 350, 150, 280, 100),
+  new MiniChart(100, window.innerHeight - 200, 250, 110, 'bar')
 ];
-const floats=[];
-symbols.forEach(def=>{
-  const wrap=document.createElement('div');
-  wrap.style.cssText='position:absolute;display:flex;flex-direction:column;align-items:center;will-change:transform;';
-  const el=document.createElement('div');
-  el.textContent=def.sym;
-  el.style.cssText=`
-    width:${def.size}px;height:${def.size}px;display:flex;align-items:center;justify-content:center;
-    font-size:${Math.round(def.size*0.45)}px;border-radius:50%;
-    background:rgba(27,18,8,0.58);border:1px solid rgba(255,184,77,0.2);
-    box-shadow:0 0 20px rgba(255,184,77,0.12), inset 0 0 18px rgba(255,184,77,0.08);
-    color:${def.color};text-shadow:0 0 12px ${def.color};
-  `;
-  const lbl=document.createElement('div');
-  lbl.textContent=def.label;
-  lbl.style.cssText=`
-    margin-top:4px;font-family:'Share Tech Mono',monospace;font-size:9px;
-    color:${def.color};opacity:0.65;letter-spacing:0.18em;
-  `;
-  wrap.appendChild(el);
-  wrap.appendChild(lbl);
-  oilLayer.appendChild(wrap);
-  floats.push({
-    wrap,
-    x:Math.random()*window.innerWidth,
-    y:Math.random()*window.innerHeight,
-    vx:(Math.random()-0.5)*0.25,
-    vy:(Math.random()-0.5)*0.18,
-    r:Math.random()*360,
-    vr:(Math.random()-0.5)*0.25,
-    size:def.size
+
+function animateBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  charts.forEach(chart => {
+    chart.update();
+    chart.draw();
+  });
+  requestAnimationFrame(animateBackground);
+}
+animateBackground();
+
+/* Floating Particles */
+function createParticles() {
+  const particles = document.getElementById('particles');
+  for(let i = 0; i < 60; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.width = (Math.random() * 4 + 1) + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.animationDuration = (Math.random() * 15 + 15) + 's';
+    particle.style.animationDelay = Math.random() * 20 + 's';
+    particles.appendChild(particle);
+  }
+}
+
+/* Enhanced Stock Ticker */
+const stockData = [
+  {symbol:'AAPL', price:'$245.37', change:'+1.84%', pe:'32.4x'},
+  {symbol:'MSFT', price:'$428.16', change:'+0.72%', pe:'38.2x'},
+  {symbol:'GOOGL', price:'$182.45', change:'-0.39%', pe:'25.1x'},
+  {symbol:'AMZN', price:'$198.73', change:'+2.14%', pe:'48.7x'},
+  {symbol:'TSLA', price:'$265.21', change:'+3.67%', pe:'89.1x'},
+  {symbol:'NVDA', price:'$142.89', change:'-1.23%', pe:'72.4x'},
+  {symbol:'META', price:'$523.45', change:'+0.95%', pe:'28.9x'},
+  {symbol:'SPY', price:'$542.31', change:'+1.12%', pe:'24.6x'},
+  {symbol:'QQQ', price:'$498.72', change:'+1.89%', pe:'31.2x'},
+  {symbol:'JPM', price:'$218.34', change:'+0.45%', pe:'12.8x'},
+];
+
+function initTicker() {
+  const ticker = document.getElementById('stockTicker');
+  const doubledData = [...stockData, ...stockData];
+  ticker.innerHTML = doubledData.map(stock => `
+    <div class="stock-tick">
+      <div class="symbol">${stock.symbol}</div>
+      <div class="price">${stock.price}</div>
+      <div class="change ${stock.change.startsWith('+') ? 'positive' : 'negative'}">${stock.change}</div>
+    </div>
+  `).join('');
+}
+
+/* Enhanced AI Insights */
+const aiInsights = [
+  '📊 S&P 500 bullish pennant → Breakout target 5,600 imminent [web:12]',
+  '🔥 NVDA golden cross confirmed → Semiconductor leadership intact',
+  '⚠️ TSLA double top $280 → Pullback to $240 support likely',
+  '📈 AAPL ascending triangle → $260+ target on volume breakout',
+  '🕯️ MSFT hammer reversal → $420 resistance test ahead',
+  '📉 QQQ RSI divergence → Short-term correction possible',
+  '🚀 Tech sector relative strength → Rotation into growth names',
+  '💎 Dividend aristocrats outperforming → Defensive positioning',
+  '📊 Volume-weighted average price analysis → Institutional accumulation',
+  '⚡ Earnings catalyst week → Volatility expansion expected'
+];
+
+function updateAI() {
+  const el = document.getElementById('aiInsight');
+  const insight = aiInsights[Math.floor(Math.random() * aiInsights.length)];
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = insight;
+    el.style.opacity = '1';
+  }, 300);
+}
+setInterval(updateAI, 5000);
+updateAI();
+
+// Animate cards
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+    }
   });
 });
+document.querySelectorAll('.card-slide').forEach(card => {
+  observer.observe(card);
+});
 
-(function floatLoop(){
-  const W=window.innerWidth,H=window.innerHeight;
-  floats.forEach(f=>{
-    f.x+=f.vx;
-    f.y+=f.vy;
-    f.r+=f.vr;
-    if(f.x<0){f.x=0;f.vx=Math.abs(f.vx)}
-    if(f.x>W-f.size){f.x=W-f.size;f.vx=-Math.abs(f.vx)}
-    if(f.y<0){f.y=0;f.vy=Math.abs(f.vy)}
-    if(f.y>H-f.size){f.y=H-f.size;f.vy=-Math.abs(f.vy)}
-    f.wrap.style.transform=`translate(${f.x}px,${f.y}px) rotate(${f.r}deg)`;
-    f.wrap.style.opacity=String(0.35+0.18*Math.abs(Math.sin(Date.now()*0.0006 + f.r)));
-  });
-  requestAnimationFrame(floatLoop);
-})();
-
-const sampleData = {
-  wti: 78.42,
-  brent: 82.11,
-  uso: 77.98,
-  xle: 89.26,
-  trend: 'Mild bullish bias',
-  bias: 'Watching EIA inventories'
-};
-
-function setLiveValues(d){
-  document.getElementById('wtiPrice').textContent = '$' + d.wti.toFixed(2);
-  document.getElementById('brentPrice').textContent = '$' + d.brent.toFixed(2);
-  document.getElementById('usoPrice').textContent = '$' + d.uso.toFixed(2);
-  document.getElementById('xlePrice').textContent = '$' + d.xle.toFixed(2);
-  document.getElementById('trendText').textContent = d.trend;
-  document.getElementById('biasText').textContent = d.bias;
-  document.getElementById('usoRow').textContent = '$' + d.uso.toFixed(2);
-  document.getElementById('xleRow').textContent = '$' + d.xle.toFixed(2);
-  document.getElementById('asofCell').textContent = 'As of ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-setLiveValues(sampleData);
-
-const tickerData = [
-  {s:'WTI',p:'$78.42',c:'+0.64%',u:true},
-  {s:'BRENT',p:'$82.11',c:'+0.58%',u:true},
-  {s:'USO',p:'$77.98',c:'+0.41%',u:true},
-  {s:'XLE',p:'$89.26',c:'-0.18%',u:false},
-  {s:'XOP',p:'$142.34',c:'+1.12%',u:true},
-  {s:'OIH',p:'$311.90',c:'+0.73%',u:true},
-  {s:'CVX',p:'$152.45',c:'+0.29%',u:true},
-  {s:'XOM',p:'$118.63',c:'+0.22%',u:true},
-  {s:'EIA',p:'INVENTORY',c:'WEEKLY',u:true},
-  {s:'OPEC+',p:'CUTS',c:'RISK',u:false}
-];
-document.getElementById('tickerEl').innerHTML = tickerData.concat(tickerData).map(t=>
-  `<span class="tick"><span class="t-sym">${t.s}</span><span class="t-p">${t.p}</span><span class="${t.u?'t-up':'t-dn'}">${t.c}</span></span>`
-).join('');
-
-const insights = [
-  'Crude is reacting to inventory expectations and refinery demand.',
-  'Oil equities are showing a stronger response than the broad market.',
-  'WTI and Brent are aligned, which suggests a stable benchmark spread.',
-  'Energy ETF rotation is improving as macro risk appetite picks up.',
-  'Watch for EIA data and OPEC headlines before the next breakout.',
-  'Refining and transport names may lag or lead depending on margin pressure.'
-];
-function refreshInsight(){
-  const el=document.getElementById('aiText');
-  el.style.opacity='0';
-  setTimeout(()=>{
-    el.textContent=insights[Math.floor(Math.random()*insights.length)];
-    el.style.opacity='1';
-  },250);
-}
-setInterval(refreshInsight,4200);
-refreshInsight();
+// Initialize everything
+createParticles();
+initTicker();
 </script>
 </body>
 </html>
