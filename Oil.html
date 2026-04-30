@@ -3,40 +3,38 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Oil Trading Intelligence Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Indian Stock Market Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg0:#070604;
-  --bg1:#0c0906;
-  --bg2:#14100a;
-  --glass:rgba(28,20,10,0.28);
-  --glass2:rgba(40,28,14,0.22);
-  --border:rgba(255,194,92,0.18);
-  --gold:#ffb84d;
-  --amber:#ff9b21;
-  --orange:#ff7d1a;
-  --green:#34d399;
+  --bg0:#050b08;
+  --bg1:#08120d;
+  --bg2:#0c1710;
+  --glass:rgba(12,24,16,0.33);
+  --glass2:rgba(18,34,23,0.24);
+  --border:rgba(69,190,111,0.16);
+  --green:#37d67a;
   --red:#f87171;
-  --text:rgba(255,244,226,0.92);
-  --muted:rgba(255,244,226,0.66);
-  --dim:rgba(255,244,226,0.46);
-  --deep:#2e220f;
-  --steel:#9ea0a6;
-  --oil:#1c1408;
-  --shadow:0 18px 40px rgba(0,0,0,0.45);
+  --gold:#fbbf24;
+  --lime:#7ee787;
+  --cyan:#67e8f9;
+  --text:rgba(245,255,247,0.95);
+  --muted:rgba(245,255,247,0.68);
+  --dim:rgba(245,255,247,0.46);
+  --shadow:0 18px 44px rgba(0,0,0,0.5);
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
 body{
   font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
   color:var(--text);
   background:
-    radial-gradient(circle at 20% 10%, rgba(255,161,51,0.08), transparent 26%),
-    radial-gradient(circle at 80% 0%, rgba(255,203,92,0.08), transparent 22%),
-    linear-gradient(180deg,var(--bg0),var(--bg1) 42%,var(--bg2));
-  overflow-x:hidden;
-  min-height:100vh;
+    radial-gradient(circle at 15% 10%, rgba(55,214,122,0.12), transparent 24%),
+    radial-gradient(circle at 85% 5%, rgba(103,232,249,0.08), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(251,191,36,0.08), transparent 24%),
+    linear-gradient(180deg,var(--bg0),var(--bg1) 44%,var(--bg2));
 }
 #bgCanvas{
   position:fixed;
@@ -46,14 +44,13 @@ body{
   z-index:0;
   pointer-events:none;
 }
-#oilLayer{
+#marketLayer{
   position:fixed;
   inset:0;
   z-index:1;
   pointer-events:none;
   overflow:hidden;
 }
-#uiLayer{position:relative;z-index:10}
 .scanlines{
   position:fixed;
   inset:0;
@@ -63,8 +60,8 @@ body{
     to bottom,
     transparent,
     transparent 3px,
-    rgba(0,0,0,0.12) 3px,
-    rgba(0,0,0,0.12) 6px
+    rgba(0,0,0,0.10) 3px,
+    rgba(0,0,0,0.10) 6px
   );
   mix-blend-mode:multiply;
 }
@@ -73,82 +70,81 @@ body{
   inset:0;
   z-index:3;
   pointer-events:none;
-  background:radial-gradient(ellipse at center, transparent 24%, rgba(6,4,2,0.88) 100%);
+  background:radial-gradient(ellipse at center, transparent 24%, rgba(4,8,5,0.88) 100%);
 }
+#uiLayer{position:relative;z-index:10}
 header{
   position:relative;
   z-index:10;
   padding:30px 18px 16px;
   text-align:center;
-  background:linear-gradient(180deg,rgba(20,14,7,0.72),rgba(10,8,5,0.34));
+  background:linear-gradient(180deg,rgba(11,20,14,0.78),rgba(7,13,9,0.36));
   backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(255,183,77,0.15);
-  box-shadow:inset 0 -1px 0 rgba(255,255,255,0.04);
+  border-bottom:1px solid rgba(55,214,122,0.14);
 }
 header h1{
   font-family:'Orbitron',sans-serif;
-  font-size:clamp(1.2rem,3.4vw,2.2rem);
+  font-size:clamp(1.2rem,3.4vw,2.25rem);
   font-weight:900;
   letter-spacing:0.08em;
-  background:linear-gradient(135deg,#fff2d2 0%, var(--gold) 35%, var(--orange) 72%, #f3b75f 100%);
+  background:linear-gradient(135deg,#f8fff9 0%, var(--lime) 30%, var(--green) 68%, var(--gold) 100%);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
   background-clip:text;
-  text-shadow:0 0 24px rgba(255,168,61,0.16);
 }
 .subline{
   margin-top:8px;
   font-family:'Share Tech Mono',monospace;
-  letter-spacing:0.28em;
+  letter-spacing:0.26em;
   font-size:0.62rem;
-  color:rgba(255,210,140,0.68);
+  color:rgba(161,255,189,0.72);
 }
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  display:inline-block;
+  margin-right:8px;
+  box-shadow:0 0 12px rgba(55,214,122,0.85);
+  animation:pulse 1.2s infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.55);opacity:0.35}}
 .live-row{
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
-  gap:14px;
+  gap:12px;
   margin-top:16px;
 }
 .live-chip{
-  min-width:172px;
+  min-width:180px;
   padding:10px 14px;
-  border:1px solid rgba(255,184,77,0.16);
-  background:linear-gradient(180deg,rgba(34,24,12,0.92),rgba(18,13,7,0.75));
   border-radius:10px;
+  border:1px solid rgba(55,214,122,0.14);
+  background:linear-gradient(180deg,rgba(12,23,16,0.92),rgba(8,15,11,0.74));
   box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset;
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   gap:10px;
   font-family:'Share Tech Mono',monospace;
 }
-.live-chip .sym{color:#e6d8b5;font-weight:700;letter-spacing:0.08em}
-.live-chip .px{color:#fff3df}
+.live-chip .sym{color:#d7f3df}
+.live-chip .px{color:#f8fff8}
 .live-chip .chg.up{color:var(--green)}
 .live-chip .chg.down{color:var(--red)}
-.live-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--gold);
-  box-shadow:0 0 12px rgba(255,184,77,0.8);
-  animation:pulse 1.2s infinite;
-  display:inline-block;
-  margin-right:8px;
-}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.55);opacity:0.35}}
 .ticker{
   position:relative;
   z-index:10;
   overflow:hidden;
   padding:8px 0;
-  background:linear-gradient(180deg,rgba(10,8,5,0.68),rgba(22,15,8,0.72));
-  border-top:1px solid rgba(255,184,77,0.08);
-  border-bottom:1px solid rgba(255,184,77,0.12);
+  background:linear-gradient(180deg,rgba(8,14,10,0.72),rgba(14,24,17,0.82));
+  border-top:1px solid rgba(55,214,122,0.08);
+  border-bottom:1px solid rgba(55,214,122,0.12);
 }
 .ticker-inner{
   display:inline-block;
   white-space:nowrap;
-  animation:scroll 78s linear infinite;
+  animation:scroll 92s linear infinite;
   will-change:transform;
 }
 @keyframes scroll{
@@ -164,28 +160,28 @@ header h1{
   font-size:0.72rem;
   letter-spacing:0.06em;
 }
-.t-sym{color:#e9d7ae}
-.t-p{color:#fff6ea}
+.t-sym{color:#d9f2df}
+.t-p{color:#f6fff7}
 .t-up{color:var(--green)}
 .t-dn{color:var(--red)}
 .container{
   position:relative;
   z-index:10;
-  max-width:1200px;
+  max-width:1220px;
   margin:auto;
-  padding:28px 18px 90px;
+  padding:28px 18px 92px;
 }
 .hero{
   display:grid;
-  grid-template-columns:1.3fr 0.9fr;
+  grid-template-columns:1.25fr 0.95fr;
   gap:18px;
   margin-bottom:18px;
 }
 .card{
-  background:linear-gradient(180deg,rgba(34,24,11,0.35),rgba(18,13,6,0.22));
+  background:linear-gradient(180deg,rgba(14,27,18,0.38),rgba(10,18,13,0.22));
   border:1px solid var(--border);
   border-radius:18px;
-  padding:22px 22px;
+  padding:22px;
   box-shadow:var(--shadow);
   backdrop-filter:blur(18px);
   overflow:hidden;
@@ -195,7 +191,7 @@ header h1{
   content:'';
   position:absolute;
   inset:0;
-  background:linear-gradient(135deg,rgba(255,183,77,0.08),transparent 45%,rgba(255,125,26,0.04));
+  background:linear-gradient(135deg,rgba(55,214,122,0.07),transparent 48%,rgba(103,232,249,0.04));
   pointer-events:none;
 }
 .card h2{
@@ -203,26 +199,22 @@ header h1{
   font-size:1rem;
   letter-spacing:0.06em;
   margin-bottom:14px;
-  color:#fff2d8;
+  color:#f4fff6;
 }
 .hero-title{
   font-family:'Orbitron',sans-serif;
-  font-size:clamp(1.3rem,2.2vw,2rem);
-  line-height:1.2;
+  font-size:clamp(1.2rem,2.1vw,2rem);
+  line-height:1.25;
   margin-bottom:12px;
-  color:#fff4df;
+  color:#f6fff8;
 }
 .hero-text{
   color:var(--muted);
   line-height:1.8;
-  font-size:0.93rem;
+  font-size:0.94rem;
   margin-bottom:16px;
 }
-.pill-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
+.pill-grid{display:flex;flex-wrap:wrap;gap:10px}
 .pill{
   padding:8px 12px;
   border-radius:999px;
@@ -230,10 +222,10 @@ header h1{
   border:1px solid;
   backdrop-filter:blur(6px);
 }
-.pg{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.22);color:#8df0c3}
-.pr{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.22);color:#ffaaaa}
-.po{background:rgba(255,125,26,0.08);border-color:rgba(255,125,26,0.22);color:#ffbf84}
-.pg2{background:rgba(255,184,77,0.08);border-color:rgba(255,184,77,0.22);color:#ffd58f}
+.pg{background:rgba(55,214,122,0.08);border-color:rgba(55,214,122,0.22);color:#9ff0bf}
+.pr{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.22);color:#ffacac}
+.po{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.22);color:#ffd88f}
+.pc{background:rgba(103,232,249,0.08);border-color:rgba(103,232,249,0.22);color:#b9f7ff}
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -249,28 +241,26 @@ header h1{
   color:var(--muted);
 }
 .info-box span:last-child{
-  color:#ffd38a;
+  color:#bff5cb;
   font-family:'Share Tech Mono',monospace;
 }
-.section{
-  margin-top:18px;
-}
+.section{margin-top:18px}
 .metric{
   background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,184,77,0.12);
+  border:1px solid rgba(55,214,122,0.12);
   border-radius:14px;
   padding:16px;
 }
 .metric-label{
   font-size:0.66rem;
   letter-spacing:0.24em;
-  color:#caa76b;
+  color:#9ad9ab;
   margin-bottom:8px;
 }
 .metric-value{
   font-family:'Orbitron',sans-serif;
-  font-size:1.35rem;
-  color:#fff4df;
+  font-size:1.25rem;
+  color:#f7fff8;
   margin-bottom:4px;
 }
 .metric-sub{
@@ -288,23 +278,22 @@ header h1{
   color:var(--muted);
   font-size:0.86rem;
   display:flex;
-  align-items:flex-start;
   gap:8px;
+  align-items:flex-start;
 }
 .adv-item::before{
   content:'';
   width:7px;height:7px;border-radius:50%;
-  background:#cda25b;
+  background:#c4efcf;
   flex-shrink:0;
   margin-top:8px;
-  box-shadow:0 0 8px rgba(205,162,91,0.55);
+  box-shadow:0 0 8px rgba(196,239,207,0.5);
 }
-.adv-item.good::before{background:var(--green);box-shadow:0 0 8px rgba(52,211,153,0.65)}
+.adv-item.good::before{background:var(--green);box-shadow:0 0 8px rgba(55,214,122,0.65)}
 .adv-item.bad::before{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,0.65)}
 .table{
   width:100%;
   border-collapse:collapse;
-  overflow:hidden;
 }
 .table th,.table td{
   text-align:left;
@@ -313,7 +302,7 @@ header h1{
   font-size:0.86rem;
 }
 .table th{
-  color:#f0c77b;
+  color:#9fefb6;
   font-size:0.72rem;
   letter-spacing:0.18em;
   text-transform:uppercase;
@@ -324,39 +313,34 @@ header h1{
   line-height:1.75;
   color:var(--muted);
 }
-.oilmap{
+.market-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
   gap:14px;
 }
-.map-card{
-  border:1px solid rgba(255,184,77,0.12);
+.market-card{
+  border:1px solid rgba(55,214,122,0.12);
   border-radius:16px;
   padding:16px;
-  background:linear-gradient(180deg,rgba(28,19,9,0.38),rgba(15,11,6,0.22));
+  background:linear-gradient(180deg,rgba(12,23,16,0.42),rgba(8,14,10,0.22));
 }
-.map-card h3{
+.market-card h3{
   font-size:0.9rem;
   margin-bottom:8px;
-  color:#ffe2ae;
+  color:#c6f7d3;
 }
-.map-card p{
+.market-card p{
   font-size:0.84rem;
   color:var(--muted);
   line-height:1.7;
 }
-.badge-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:10px;
-}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .badge{
   padding:7px 10px;
   border-radius:8px;
-  border:1px solid rgba(255,184,77,0.16);
-  background:rgba(255,184,77,0.05);
-  color:#ffd9a0;
+  border:1px solid rgba(55,214,122,0.16);
+  background:rgba(55,214,122,0.05);
+  color:#d2ffe1;
   font-size:0.76rem;
   font-family:'Share Tech Mono',monospace;
 }
@@ -365,11 +349,11 @@ header h1{
   font-family:'Share Tech Mono',monospace;
   font-size:0.9rem;
   letter-spacing:0.03em;
-  color:#ffd08a;
+  color:#bff5cb;
   padding:14px;
   border-radius:10px;
-  background:rgba(255,184,77,0.05);
-  border:1px solid rgba(255,184,77,0.14);
+  background:rgba(55,214,122,0.05);
+  border:1px solid rgba(55,214,122,0.14);
 }
 .btn{
   margin-top:12px;
@@ -379,14 +363,14 @@ header h1{
   gap:8px;
   padding:11px 18px;
   border-radius:10px;
-  border:1px solid rgba(255,184,77,0.26);
-  background:linear-gradient(180deg,rgba(255,184,77,0.16),rgba(255,125,26,0.08));
-  color:#ffdca6;
+  border:1px solid rgba(55,214,122,0.26);
+  background:linear-gradient(180deg,rgba(55,214,122,0.16),rgba(103,232,249,0.08));
+  color:#d8ffe4;
   font-family:'Share Tech Mono',monospace;
   cursor:pointer;
 }
 .btn:hover{
-  background:linear-gradient(180deg,rgba(255,184,77,0.24),rgba(255,125,26,0.14));
+  background:linear-gradient(180deg,rgba(55,214,122,0.24),rgba(103,232,249,0.14));
 }
 .footer-note{
   margin-top:14px;
@@ -402,14 +386,14 @@ header h1{
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
-<div id="oilLayer"></div>
+<div id="marketLayer"></div>
 <div class="scanlines"></div>
 <div class="vignette"></div>
 
 <div id="uiLayer">
 <header>
-  <h1>OIL TRADING INTELLIGENCE PLATFORM</h1>
-  <div class="subline"><span class="live-dot"></span>REAL-TIME OIL MARKET INTELLIGENCE</div>
+  <h1>INDIAN STOCK MARKET INTELLIGENCE</h1>
+  <div class="subline"><span class="live-dot"></span>NSE / BSE REAL-TIME MARKET WATCH</div>
   <div class="live-row" id="liveRow"></div>
 </header>
 
@@ -420,152 +404,144 @@ header h1{
 <div class="container">
   <div class="hero">
     <div class="card">
-      <div class="hero-title">Oil markets move on supply, inventories, OPEC policy, geopolitics, and refinery demand.</div>
+      <div class="hero-title">Indian stocks move with earnings, flows, crude, RBI policy, global cues, and sector rotation.</div>
       <div class="hero-text">
-        This layout is built for crude oil, energy stocks, and market context instead of crypto. The visual style uses dark petroleum tones, amber highlights, refinery-like motion, and a lower-speed price ribbon for a more professional trading feel.
+        This version has a more lively animated background with smoke, wave lines, pulses, and streaks instead of simple floating icons. It is built to feel like a live market terminal for Indian equities.
       </div>
       <div class="pill-grid">
-        <div class="pill po">WTI Crude</div>
-        <div class="pill pg2">Brent Crude</div>
-        <div class="pill po">USO</div>
-        <div class="pill pg2">XLE</div>
-        <div class="pill pr">Inventory Risk</div>
-        <div class="pill pg">Supply Shock</div>
+        <div class="pill po">NIFTY 50</div>
+        <div class="pill pc">SENSEX</div>
+        <div class="pill pg">BANK NIFTY</div>
+        <div class="pill po">F&O</div>
+        <div class="pill pr">RISK ON/OFF</div>
+        <div class="pill pc">SECTOR ROTATION</div>
       </div>
       <div class="footer-note">
-        Exact live quotes should be pulled from a market API. The code already supports a clean structure for replacing fallback values with true real-time data.
+        To show exact prices, connect the snapshot cards and ticker to your preferred live market API.
       </div>
     </div>
 
     <div class="card">
-      <h2>Live Oil Snapshot</h2>
-      <div class="info-box"><span>WTI Crude</span><span id="wtiPrice">$0.00</span></div>
-      <div class="info-box"><span>Brent Crude</span><span id="brentPrice">$0.00</span></div>
-      <div class="info-box"><span>USO ETF</span><span id="usoPrice">$0.00</span></div>
-      <div class="info-box"><span>XLE ETF</span><span id="xlePrice">$0.00</span></div>
-      <div class="info-box"><span>Front-Month Trend</span><span id="trendText">Neutral</span></div>
-      <div class="info-box"><span>Market Bias</span><span id="biasText">Watching inventory data</span></div>
+      <h2>Live Market Snapshot</h2>
+      <div class="info-box"><span>NIFTY 50</span><span id="niftyPrice">₹24,312.65</span></div>
+      <div class="info-box"><span>SENSEX</span><span id="sensexPrice">₹80,011.34</span></div>
+      <div class="info-box"><span>BANK NIFTY</span><span id="bankPrice">₹51,788.20</span></div>
+      <div class="info-box"><span>TOP THEME</span><span id="themeText">Banks / Energy / PSU</span></div>
+      <div class="info-box"><span>MARKET BIAS</span><span id="biasText">Positive on large caps</span></div>
+      <div class="info-box"><span>LAST UPDATE</span><span id="updateText">--:--</span></div>
     </div>
   </div>
 
   <div class="card section">
-    <h2>Oil Market Basics</h2>
+    <h2>Indian Market Basics</h2>
     <div class="grid">
       <div class="metric">
-        <div class="metric-label">WHAT DRIVES OIL</div>
-        <div class="metric-value">Supply + Demand</div>
-        <div class="metric-sub">Production cuts, refinery demand, seasonal driving, sanctions, and storage reports all affect price action.</div>
+        <div class="metric-label">INDEX DRIVERS</div>
+        <div class="metric-value">FII / DII / RBI</div>
+        <div class="metric-sub">Indices react to institutional flows, central-bank policy, earnings, crude oil, INR movement, and global risk sentiment.</div>
       </div>
       <div class="metric">
         <div class="metric-label">MAIN BENCHMARKS</div>
-        <div class="metric-value">WTI / Brent</div>
-        <div class="metric-sub">WTI is the U.S. benchmark. Brent is the global benchmark and often trades differently due to logistics and regional demand.</div>
+        <div class="metric-value">NIFTY / SENSEX</div>
+        <div class="metric-sub">Nifty tracks the broader large-cap market while Sensex gives a quick read on major blue chips.</div>
       </div>
       <div class="metric">
-        <div class="metric-label">OIL STOCKS</div>
-        <div class="metric-value">Energy Equities</div>
-        <div class="metric-sub">Integrated majors, drillers, service firms, pipeline operators, and ETFs often move with crude but not always at the same speed.</div>
+        <div class="metric-label">TRADER FOCUS</div>
+        <div class="metric-value">Trend + Breadth</div>
+        <div class="metric-sub">A pro trader watches momentum, sector strength, volume expansion, and whether moves are broad or concentrated.</div>
       </div>
     </div>
   </div>
 
   <div class="card section">
-    <h2>Oil-Linked Stocks and ETFs</h2>
+    <h2>Indian Stock Watchlist</h2>
     <table class="table">
       <thead>
         <tr>
           <th>Ticker</th>
           <th>Name</th>
-          <th>Type</th>
-          <th>Use</th>
+          <th>Sector</th>
+          <th>Role</th>
           <th id="asofCell">As of</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>USO</td><td>United States Oil Fund</td><td>Oil ETF</td><td>Tracks front-month crude exposure</td><td id="usoRow">$0.00</td></tr>
-        <tr><td>XLE</td><td>Energy Select Sector SPDR</td><td>Sector ETF</td><td>Broad energy equity basket</td><td id="xleRow">$0.00</td></tr>
-        <tr><td>XOP</td><td>SPDR S&P Oil & Gas Exploration & Production</td><td>Equity ETF</td><td>Exploration and production stocks</td><td>Watchlist</td></tr>
-        <tr><td>OIH</td><td>VanEck Oil Services ETF</td><td>Service ETF</td><td>Oilfield services exposure</td><td>Watchlist</td></tr>
-        <tr><td>CVX</td><td>Chevron</td><td>Integrated major</td><td>Large-cap oil and gas producer</td><td>Watchlist</td></tr>
-        <tr><td>XOM</td><td>Exxon Mobil</td><td>Integrated major</td><td>Global upstream, downstream, chemicals</td><td>Watchlist</td></tr>
+        <tr><td>RELIANCE</td><td>Reliance Industries</td><td>Energy / Conglomerate</td><td>Index heavy-weight, macro-sensitive</td><td id="relianceRow">Watch</td></tr>
+        <tr><td>HDFCBANK</td><td>HDFC Bank</td><td>Banking</td><td>Private sector financial leader</td><td>Watch</td></tr>
+        <tr><td>ICICIBANK</td><td>ICICI Bank</td><td>Banking</td><td>Momentum / index support</td><td>Watch</td></tr>
+        <tr><td>SBIN</td><td>State Bank of India</td><td>Banking</td><td>PSU bank proxy</td><td>Watch</td></tr>
+        <tr><td>ONGC</td><td>Oil and Natural Gas Corporation</td><td>Energy</td><td>Crude-linked upstream play</td><td>Watch</td></tr>
+        <tr><td>IOC</td><td>Indian Oil Corporation</td><td>Energy / Refining</td><td>Oil refining and retail fuel exposure</td><td>Watch</td></tr>
+        <tr><td>BPCL</td><td>Bharat Petroleum</td><td>Energy / Refining</td><td>Refining and marketing company</td><td>Watch</td></tr>
+        <tr><td>TCS</td><td>Tata Consultancy Services</td><td>IT</td><td>Defensive large-cap benchmark</td><td>Watch</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="card section">
-    <h2>Why Oil Moves</h2>
+    <h2>Why Indian Stocks Move</h2>
     <div class="two-col">
       <div>
-        <div class="adv-item good">OPEC+ output decisions can tighten or loosen supply quickly.</div>
-        <div class="adv-item good">Summer driving season can lift gasoline demand and refinery runs.</div>
-        <div class="adv-item good">Geopolitical disruptions can create sudden risk premiums.</div>
-        <div class="adv-item good">Inventory draws often support bullish sentiment.</div>
+        <div class="adv-item good">Strong quarterly earnings can trigger re-rating and momentum continuation.</div>
+        <div class="adv-item good">Institutional buying in large caps often supports index trend.</div>
+        <div class="adv-item good">Sector rotation can push money from IT to banks, energy, autos, or PSU names.</div>
+        <div class="adv-item good">Newsflow from policy, capex, and reforms can extend trends.</div>
       </div>
       <div>
-        <div class="adv-item bad">Demand slowdowns can pressure crude and energy shares.</div>
-        <div class="adv-item bad">Inventory builds may signal weak consumption.</div>
-        <div class="adv-item bad">Higher rates can affect growth expectations and fuel demand.</div>
-        <div class="adv-item bad">Sharp swings in oil can make leveraged exposure risky.</div>
+        <div class="adv-item bad">Weak guidance can break momentum even after good results.</div>
+        <div class="adv-item bad">Rupee weakness, crude spikes, or global risk-off can pressure sentiment.</div>
+        <div class="adv-item bad">Overextended charts can reverse sharply at resistance zones.</div>
+        <div class="adv-item bad">Low liquidity names can be unpredictable and harder to trade.</div>
       </div>
     </div>
   </div>
 
   <div class="card section">
-    <h2>Oil Market Structure</h2>
-    <div class="oilmap">
-      <div class="map-card">
-        <h3>Upstream</h3>
-        <p>Exploration and production companies drill for and produce crude oil and natural gas. They usually benefit most when crude prices rise.</p>
+    <h2>Market Structure</h2>
+    <div class="market-grid">
+      <div class="market-card">
+        <h3>Large Caps</h3>
+        <p>These are the main index drivers. They usually have deeper liquidity, tighter spreads, and attract institutional flow.</p>
       </div>
-      <div class="map-card">
-        <h3>Midstream</h3>
-        <p>Pipelines, transport, storage, and logistics move crude and refined products. These firms often focus more on volume and fees than spot prices.</p>
+      <div class="market-card">
+        <h3>Mid Caps</h3>
+        <p>Mid caps often offer stronger momentum but can be more volatile. Earnings quality and valuation matter more here.</p>
       </div>
-      <div class="map-card">
-        <h3>Downstream</h3>
-        <p>Refineries turn crude into gasoline, diesel, jet fuel, and chemicals. Refining margins matter more than crude alone.</p>
+      <div class="market-card">
+        <h3>Small Caps</h3>
+        <p>Small caps can move fast when sentiment is strong, but they can also reverse violently if breadth weakens.</p>
       </div>
-      <div class="map-card">
-        <h3>Oil Services</h3>
-        <p>Drilling, seismic, rigs, and field services support the full oil supply chain. They can be highly cyclical and sensitive to capex trends.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card section">
-    <h2>Trading View</h2>
-    <div class="grid">
-      <div class="metric">
-        <div class="metric-label">INVENTORY DATA</div>
-        <div class="metric-value">API / EIA / OPEC</div>
-        <div class="metric-sub">Weekly inventory reports and production commentary often drive short-term price reactions.</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">RISK STYLE</div>
-        <div class="metric-value">Moderate to High</div>
-        <div class="metric-sub">Oil can trend cleanly but also gap sharply on headlines, making risk controls important.</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">BEST USE</div>
-        <div class="metric-value">Macro + Swing</div>
-        <div class="metric-sub">Oil often works better with broader macro and inventory context than with pure intraday noise.</div>
+      <div class="market-card">
+        <h3>Sectors</h3>
+        <p>Banking, IT, energy, autos, pharma, metals, FMCG, infra, and PSU themes often rotate depending on macro conditions.</p>
       </div>
     </div>
   </div>
 
   <div class="card section">
-    <h2>Market Notes</h2>
+    <h2>Pro Trader Checklist</h2>
     <div class="small">
-      <p>• WTI and Brent are benchmarks, not individual stocks. Oil stocks such as XOM and CVX react to crude, margins, production, and capital spending.</p>
-      <p>• ETFs like USO can track oil futures behavior more directly than energy equities, which means they may diverge from stock-based oil plays.</p>
-      <p>• For a live dashboard, connect your preferred API and replace the fallback values inside the JavaScript data layer.</p>
+      <p>• Check trend on the index first, then sector leadership, then stock-specific setup.</p>
+      <p>• Watch volume confirmation on breakouts and avoid chasing stretched candles.</p>
+      <p>• Use support/resistance, previous day high/low, VWAP, and opening range as practical levels.</p>
+      <p>• Respect event risk like RBI policy, earnings, budget announcements, and global market openings.</p>
+      <p>• Align trade size with volatility. Liquidity matters more in Indian markets than many beginners realize.</p>
     </div>
   </div>
 
   <div class="card section">
-    <h2>AI Oil Insight</h2>
-    <div id="aiText">Scanning crude structure, energy stocks, and macro catalysts...</div>
-    <button class="btn" onclick="refreshInsight()">Refresh Oil Insight</button>
+    <h2>Indian Market Notes</h2>
+    <div class="small">
+      <p>• Nifty and Sensex are the key reference points for broad market direction.</p>
+      <p>• Oil, banks, IT, and PSU names can all lead at different times depending on macro and flows.</p>
+      <p>• For exact live prices, connect this page to your chosen market data API and refresh the snapshot cards and ticker with the returned values.</p>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>AI Market Read</h2>
+    <div id="aiText">Scanning Indian equity trend, sector rotation, and index momentum...</div>
+    <button class="btn" onclick="refreshInsight()">Refresh Market Read</button>
   </div>
 </div>
 </div>
@@ -576,47 +552,30 @@ const ctx=canvas.getContext('2d');
 function resize(){
   canvas.width=window.innerWidth;
   canvas.height=window.innerHeight;
-  buildBackground();
+  buildScene();
 }
 window.addEventListener('resize',resize);
 
-let fields=[];
-let pipes=[];
-let sparks=[];
+let smoke=[],waves=[],sparks=[],pulses=[],streaks=[];
 function rand(a,b){return a+Math.random()*(b-a)}
-function buildBackground(){
-  fields=[];
-  pipes=[];
-  sparks=[];
+
+function buildScene(){
+  smoke=[];waves=[];sparks=[];pulses=[];streaks=[];
   const W=canvas.width,H=canvas.height;
+  for(let i=0;i<8;i++){
+    smoke.push({x:rand(0,W),y:rand(0,H),r:rand(120,280),vr:rand(0.08,0.22),vx:rand(-0.04,0.04),vy:rand(-0.02,0.03),a:rand(0.03,0.08),c:i%2===0?'255,184,77':'55,214,122'});
+  }
+  for(let i=0;i<10;i++){
+    waves.push({y:rand(50,H-50),amp:rand(5,24),freq:rand(0.002,0.008),phase:rand(0,Math.PI*2),speed:rand(0.004,0.012)});
+  }
+  for(let i=0;i<160;i++){
+    sparks.push({x:Math.random()*W,y:Math.random()*H,vx:rand(-0.12,0.16),vy:rand(0.03,0.14),s:rand(0.7,1.8),a:rand(0.05,0.22)});
+  }
+  for(let i=0;i<6;i++){
+    pulses.push({x:rand(0,W),y:rand(0,H),r:rand(30,100),max:rand(120,240),speed:rand(0.35,0.7),up:Math.random()>0.35});
+  }
   for(let i=0;i<5;i++){
-    fields.push({
-      x:Math.random()*W,
-      y:Math.random()*H,
-      r:rand(120,260),
-      vr:rand(0.08,0.22),
-      alpha:rand(0.03,0.08),
-      color:i%2===0?'255,184,77':'255,125,26'
-    });
-  }
-  for(let i=0;i<9;i++){
-    pipes.push({
-      y:rand(50,H-50),
-      speed:rand(0.18,0.45),
-      amp:rand(6,22),
-      freq:rand(0.002,0.007),
-      phase:rand(0,Math.PI*2)
-    });
-  }
-  for(let i=0;i<120;i++){
-    sparks.push({
-      x:Math.random()*W,
-      y:Math.random()*H,
-      vx:rand(-0.1,0.18),
-      vy:rand(0.02,0.12),
-      size:rand(0.6,1.8),
-      alpha:rand(0.06,0.22)
-    });
+    streaks.push({x:rand(0,W),y:rand(0,H),len:rand(120,260),speed:rand(0.35,1.0),angle:rand(-0.35,0.35)});
   }
 }
 resize();
@@ -624,16 +583,15 @@ resize();
 function drawGrid(){
   const W=canvas.width,H=canvas.height;
   ctx.save();
-  ctx.lineWidth=1;
   for(let x=0;x<W;x+=70){
-    ctx.strokeStyle='rgba(255,184,77,0.03)';
+    ctx.strokeStyle='rgba(55,214,122,0.03)';
     ctx.beginPath();
     ctx.moveTo(x,0);
     ctx.lineTo(x,H);
     ctx.stroke();
   }
   for(let y=0;y<H;y+=70){
-    ctx.strokeStyle='rgba(255,184,77,0.03)';
+    ctx.strokeStyle='rgba(55,214,122,0.03)';
     ctx.beginPath();
     ctx.moveTo(0,y);
     ctx.lineTo(W,y);
@@ -642,51 +600,72 @@ function drawGrid(){
   ctx.restore();
 }
 
-function drawRefineryGlow(){
+function drawGlow(){
   const W=canvas.width,H=canvas.height;
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(255,180,70,0.03)');
-  g.addColorStop(0.5,'rgba(0,0,0,0)');
-  g.addColorStop(1,'rgba(255,120,20,0.04)');
+  g.addColorStop(0,'rgba(55,214,122,0.03)');
+  g.addColorStop(0.45,'rgba(0,0,0,0)');
+  g.addColorStop(1,'rgba(255,184,77,0.03)');
   ctx.fillStyle=g;
   ctx.fillRect(0,0,W,H);
 }
 
 function drawSmoke(){
-  fields.forEach(f=>{
-    f.r+=f.vr;
-    if(f.r>320){
-      f.r=120;
-      f.x=Math.random()*canvas.width;
-      f.y=Math.random()*canvas.height;
-      f.alpha=rand(0.03,0.08);
+  smoke.forEach(s=>{
+    s.x+=s.vx;
+    s.y+=s.vy;
+    s.r+=s.vr;
+    if(s.r>340){
+      s.r=rand(120,180);
+      s.x=rand(0,canvas.width);
+      s.y=rand(0,canvas.height);
+      s.a=rand(0.03,0.08);
     }
-    const grad=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r);
-    grad.addColorStop(0,`rgba(${f.color},${f.alpha})`);
+    const grad=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r);
+    grad.addColorStop(0,`rgba(${s.c},${s.a})`);
+    grad.addColorStop(0.5,`rgba(${s.c},${s.a*0.45})`);
     grad.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=grad;
     ctx.beginPath();
-    ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
     ctx.fill();
   });
 }
 
-function drawPipeLines(){
-  const W=canvas.width,H=canvas.height;
+function drawWaves(){
+  const W=canvas.width;
   ctx.save();
   ctx.lineCap='round';
-  pipes.forEach(p=>{
-    p.phase+=p.speed*0.01;
+  waves.forEach((w,i)=>{
+    w.phase+=w.speed;
     ctx.beginPath();
     for(let x=0;x<=W;x+=10){
-      const y=p.y + Math.sin(x*p.freq + p.phase)*p.amp;
+      const y=w.y + Math.sin(x*w.freq + w.phase)*w.amp;
       if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
-    ctx.strokeStyle='rgba(255,184,77,0.07)';
+    ctx.strokeStyle=i%2===0?'rgba(55,214,122,0.07)':'rgba(255,184,77,0.06)';
     ctx.lineWidth=2;
     ctx.stroke();
   });
   ctx.restore();
+}
+
+function drawPulses(){
+  pulses.forEach(p=>{
+    p.r+=p.speed;
+    if(p.r>p.max){
+      p.r=0;
+      p.x=Math.random()*canvas.width;
+      p.y=Math.random()*canvas.height;
+      p.up=Math.random()>0.35;
+    }
+    const a=(1-p.r/p.max)*0.09;
+    ctx.strokeStyle=p.up?`rgba(55,214,122,${a})`:`rgba(255,184,77,${a})`;
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.stroke();
+  });
 }
 
 function drawSparks(){
@@ -697,31 +676,57 @@ function drawSparks(){
     if(s.y>H+10){s.y=-10;s.x=Math.random()*W}
     if(s.x<0)s.x=W;
     if(s.x>W)s.x=0;
-    ctx.fillStyle=`rgba(255,213,145,${s.alpha})`;
-    ctx.fillRect(s.x,s.y,s.size,s.size);
+    ctx.fillStyle=`rgba(255,230,180,${s.a})`;
+    ctx.fillRect(s.x,s.y,s.s,s.s);
+  });
+}
+
+function drawStreaks(){
+  const W=canvas.width;
+  streaks.forEach(t=>{
+    t.x += t.speed * 1.2;
+    if(t.x > W + t.len) t.x = -t.len;
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.rotate(t.angle);
+    const g=ctx.createLinearGradient(-t.len,0,t.len,0);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(0.45,'rgba(255,184,77,0.00)');
+    g.addColorStop(0.5,'rgba(255,184,77,0.10)');
+    g.addColorStop(0.6,'rgba(55,214,122,0.08)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.strokeStyle=g;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-t.len,0);
+    ctx.lineTo(t.len,0);
+    ctx.stroke();
+    ctx.restore();
   });
 }
 
 function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawGrid();
-  drawRefineryGlow();
+  drawGlow();
   drawSmoke();
-  drawPipeLines();
+  drawWaves();
+  drawStreaks();
+  drawPulses();
   drawSparks();
   requestAnimationFrame(loop);
 }
 loop();
 
-const oilLayer=document.getElementById('oilLayer');
+const marketLayer=document.getElementById('marketLayer');
 const symbols=[
-  {sym:'🛢️',label:'CRUDE',color:'#ffb84d',size:60},
-  {sym:'🛢️',label:'WTI',color:'#ff9b21',size:52},
-  {sym:'🛢️',label:'BRENT',color:'#ffd88a',size:54},
-  {sym:'⛽',label:'REFINE',color:'#f6be5f',size:48},
-  {sym:'⬤',label:'PIPE',color:'#d8b06a',size:42}
+  {sym:'N',label:'NIFTY',color:'#37d67a',size:60},
+  {sym:'S',label:'SENSEX',color:'#67e8f9',size:52},
+  {sym:'B',label:'BANK',color:'#fbbf24',size:48},
+  {sym:'R',label:'RELIANCE',color:'#9ff0bf',size:54},
+  {sym:'I',label:'INFY',color:'#d1f7ff',size:44}
 ];
-const floats=[];
+const floaters=[];
 symbols.forEach(def=>{
   const wrap=document.createElement('div');
   wrap.style.cssText='position:absolute;display:flex;flex-direction:column;align-items:center;will-change:transform;';
@@ -729,10 +734,10 @@ symbols.forEach(def=>{
   el.textContent=def.sym;
   el.style.cssText=`
     width:${def.size}px;height:${def.size}px;display:flex;align-items:center;justify-content:center;
-    font-size:${Math.round(def.size*0.45)}px;border-radius:50%;
-    background:rgba(27,18,8,0.58);border:1px solid rgba(255,184,77,0.2);
-    box-shadow:0 0 20px rgba(255,184,77,0.12), inset 0 0 18px rgba(255,184,77,0.08);
-    color:${def.color};text-shadow:0 0 12px ${def.color};
+    border-radius:50%;font-family:'Orbitron',sans-serif;font-size:${Math.round(def.size*0.38)}px;font-weight:900;
+    color:${def.color};background:rgba(12,22,15,0.60);border:1px solid ${def.color}55;
+    box-shadow:0 0 18px ${def.color}22,inset 0 0 16px rgba(255,255,255,0.03);
+    text-shadow:0 0 10px ${def.color};
   `;
   const lbl=document.createElement('div');
   lbl.textContent=def.label;
@@ -742,22 +747,22 @@ symbols.forEach(def=>{
   `;
   wrap.appendChild(el);
   wrap.appendChild(lbl);
-  oilLayer.appendChild(wrap);
-  floats.push({
+  marketLayer.appendChild(wrap);
+  floaters.push({
     wrap,
     x:Math.random()*window.innerWidth,
     y:Math.random()*window.innerHeight,
-    vx:(Math.random()-0.5)*0.25,
+    vx:(Math.random()-0.5)*0.22,
     vy:(Math.random()-0.5)*0.18,
     r:Math.random()*360,
-    vr:(Math.random()-0.5)*0.25,
+    vr:(Math.random()-0.5)*0.22,
     size:def.size
   });
 });
 
 (function floatLoop(){
   const W=window.innerWidth,H=window.innerHeight;
-  floats.forEach(f=>{
+  floaters.forEach(f=>{
     f.x+=f.vx;
     f.y+=f.vy;
     f.r+=f.vr;
@@ -766,56 +771,54 @@ symbols.forEach(def=>{
     if(f.y<0){f.y=0;f.vy=Math.abs(f.vy)}
     if(f.y>H-f.size){f.y=H-f.size;f.vy=-Math.abs(f.vy)}
     f.wrap.style.transform=`translate(${f.x}px,${f.y}px) rotate(${f.r}deg)`;
-    f.wrap.style.opacity=String(0.35+0.18*Math.abs(Math.sin(Date.now()*0.0006 + f.r)));
+    f.wrap.style.opacity=String(0.34+0.18*Math.abs(Math.sin(Date.now()*0.0006+f.r)));
   });
   requestAnimationFrame(floatLoop);
 })();
 
-const sampleData = {
-  wti: 78.42,
-  brent: 82.11,
-  uso: 77.98,
-  xle: 89.26,
-  trend: 'Mild bullish bias',
-  bias: 'Watching EIA inventories'
-};
-
-function setLiveValues(d){
-  document.getElementById('wtiPrice').textContent = '$' + d.wti.toFixed(2);
-  document.getElementById('brentPrice').textContent = '$' + d.brent.toFixed(2);
-  document.getElementById('usoPrice').textContent = '$' + d.uso.toFixed(2);
-  document.getElementById('xlePrice').textContent = '$' + d.xle.toFixed(2);
-  document.getElementById('trendText').textContent = d.trend;
-  document.getElementById('biasText').textContent = d.bias;
-  document.getElementById('usoRow').textContent = '$' + d.uso.toFixed(2);
-  document.getElementById('xleRow').textContent = '$' + d.xle.toFixed(2);
-  document.getElementById('asofCell').textContent = 'As of ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-setLiveValues(sampleData);
-
-const tickerData = [
-  {s:'WTI',p:'$78.42',c:'+0.64%',u:true},
-  {s:'BRENT',p:'$82.11',c:'+0.58%',u:true},
-  {s:'USO',p:'$77.98',c:'+0.41%',u:true},
-  {s:'XLE',p:'$89.26',c:'-0.18%',u:false},
-  {s:'XOP',p:'$142.34',c:'+1.12%',u:true},
-  {s:'OIH',p:'$311.90',c:'+0.73%',u:true},
-  {s:'CVX',p:'$152.45',c:'+0.29%',u:true},
-  {s:'XOM',p:'$118.63',c:'+0.22%',u:true},
-  {s:'EIA',p:'INVENTORY',c:'WEEKLY',u:true},
-  {s:'OPEC+',p:'CUTS',c:'RISK',u:false}
+const tickerData=[
+  {s:'NIFTY',p:'24,312.65',c:'+0.42%',u:true},
+  {s:'SENSEX',p:'80,011.34',c:'+0.38%',u:true},
+  {s:'BANKNIFTY',p:'51,788.20',c:'+0.66%',u:true},
+  {s:'RELIANCE',p:'₹2,945.50',c:'+0.24%',u:true},
+  {s:'HDFCBANK',p:'₹1,782.30',c:'-0.18%',u:false},
+  {s:'ICICIBANK',p:'₹1,278.85',c:'+0.41%',u:true},
+  {s:'SBIN',p:'₹815.20',c:'+0.57%',u:true},
+  {s:'IOC',p:'₹142.10',c:'+0.89%',u:true},
+  {s:'ONGC',p:'₹286.45',c:'+1.14%',u:true},
+  {s:'TCS',p:'₹4,018.70',c:'-0.12%',u:false}
 ];
-document.getElementById('tickerEl').innerHTML = tickerData.concat(tickerData).map(t=>
+document.getElementById('tickerEl').innerHTML=tickerData.concat(tickerData).map(t=>
   `<span class="tick"><span class="t-sym">${t.s}</span><span class="t-p">${t.p}</span><span class="${t.u?'t-up':'t-dn'}">${t.c}</span></span>`
 ).join('');
 
-const insights = [
-  'Crude is reacting to inventory expectations and refinery demand.',
-  'Oil equities are showing a stronger response than the broad market.',
-  'WTI and Brent are aligned, which suggests a stable benchmark spread.',
-  'Energy ETF rotation is improving as macro risk appetite picks up.',
-  'Watch for EIA data and OPEC headlines before the next breakout.',
-  'Refining and transport names may lag or lead depending on margin pressure.'
+const sampleData={
+  nifty:24312.65,
+  sensex:80011.34,
+  bank:51788.20,
+  theme:'Banks / Energy / PSU',
+  bias:'Positive on large caps',
+  update:new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+};
+
+function setLiveValues(d){
+  document.getElementById('niftyPrice').textContent='₹'+d.nifty.toFixed(2);
+  document.getElementById('sensexPrice').textContent='₹'+d.sensex.toFixed(2);
+  document.getElementById('bankPrice').textContent='₹'+d.bank.toFixed(2);
+  document.getElementById('themeText').textContent=d.theme;
+  document.getElementById('biasText').textContent=d.bias;
+  document.getElementById('updateText').textContent=d.update;
+  document.getElementById('asofCell').textContent='As of '+d.update;
+}
+setLiveValues(sampleData);
+
+const insights=[
+  'Large caps are leading while banks and energy show stronger relative strength.',
+  'Watch for breakout confirmation above the day’s high with volume expansion.',
+  'A trader would respect support near VWAP and previous session low.',
+  'FII flow plus global cues can decide whether the rally extends or fades.',
+  'Oil-linked names are sensitive to crude, margins, and refining spreads.',
+  'Breadth is healthier when mid caps join the move instead of only index names.'
 ];
 function refreshInsight(){
   const el=document.getElementById('aiText');
