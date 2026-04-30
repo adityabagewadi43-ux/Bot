@@ -1,735 +1,832 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🛢️ US Oil Trading Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Oil Trading Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --oil-gold:    #D4AF37;
-  --oil-orange:  #FF8C42;
-  --oil-black:   #1A1A1A;
-  --oil-drill:   #2A4A2A;
-  --steel-blue:  #4682B4;
-  --rust-red:    #B7410E;
+:root{
+  --bg0:#070604;
+  --bg1:#0c0906;
+  --bg2:#14100a;
+  --glass:rgba(28,20,10,0.28);
+  --glass2:rgba(40,28,14,0.22);
+  --border:rgba(255,194,92,0.18);
+  --gold:#ffb84d;
+  --amber:#ff9b21;
+  --orange:#ff7d1a;
+  --green:#34d399;
+  --red:#f87171;
+  --text:rgba(255,244,226,0.92);
+  --muted:rgba(255,244,226,0.66);
+  --dim:rgba(255,244,226,0.46);
+  --deep:#2e220f;
+  --steel:#9ea0a6;
+  --oil:#1c1408;
+  --shadow:0 18px 40px rgba(0,0,0,0.45);
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { 
-  font-family:'Segoe UI',Tahoma,sans-serif; 
-  background: linear-gradient(135deg, #0F1419 0%, #1A1A1A 50%, #2D2D2D 100%); 
-  color:#E8E8E8; 
-  overflow-x:hidden; 
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,161,51,0.08), transparent 26%),
+    radial-gradient(circle at 80% 0%, rgba(255,203,92,0.08), transparent 22%),
+    linear-gradient(180deg,var(--bg0),var(--bg1) 42%,var(--bg2));
+  overflow-x:hidden;
   min-height:100vh;
+}
+#bgCanvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+#oilLayer{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+}
+#uiLayer{position:relative;z-index:10}
+.scanlines{
+  position:fixed;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.12) 3px,
+    rgba(0,0,0,0.12) 6px
+  );
+  mix-blend-mode:multiply;
+}
+.vignette{
+  position:fixed;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 24%, rgba(6,4,2,0.88) 100%);
+}
+header{
   position:relative;
+  z-index:10;
+  padding:30px 18px 16px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(20,14,7,0.72),rgba(10,8,5,0.34));
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,183,77,0.15);
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,0.04);
 }
-
-#oilCanvas { 
-  position:fixed; 
-  inset:0; 
-  width:100%; 
-  height:100%; 
-  z-index:0; 
-  pointer-events:none; 
+header h1{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(1.2rem,3.4vw,2.2rem);
+  font-weight:900;
+  letter-spacing:0.08em;
+  background:linear-gradient(135deg,#fff2d2 0%, var(--gold) 35%, var(--orange) 72%, #f3b75f 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 0 24px rgba(255,168,61,0.16);
 }
-#rigLayer { 
-  position:fixed; 
-  inset:0; 
-  width:100%; 
-  height:100%; 
-  z-index:1; 
-  pointer-events:none; 
-  overflow:hidden; 
+.subline{
+  margin-top:8px;
+  font-family:'Share Tech Mono',monospace;
+  letter-spacing:0.28em;
+  font-size:0.62rem;
+  color:rgba(255,210,140,0.68);
 }
-.oil-rig { 
-  position:absolute; 
-  font-size:28px; 
-  opacity:0.06; 
-  animation: rigFloat 20s ease-in-out infinite; 
-  filter: drop-shadow(0 0 8px var(--oil-gold));
+.live-row{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:16px;
 }
-@keyframes rigFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(2deg)} }
-
-.pipe-flow { 
-  position:fixed; 
-  inset:0; 
-  z-index:2; 
-  pointer-events:none; 
-  background: 
-    linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.02) 25%, rgba(212,175,55,0.06) 50%, rgba(212,175,55,0.02) 75%, transparent 100%),
-    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255,140,66,0.08) 4px, rgba(255,140,66,0.08) 6px);
-  animation: flow 15s linear infinite;
+.live-chip{
+  min-width:172px;
+  padding:10px 14px;
+  border:1px solid rgba(255,184,77,0.16);
+  background:linear-gradient(180deg,rgba(34,24,12,0.92),rgba(18,13,7,0.75));
+  border-radius:10px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-family:'Share Tech Mono',monospace;
 }
-@keyframes flow { 0%{background-position:0 0, 0 0} 100%{background-position:-100px 0, 20px 0} }
-
-.dust-overlay { 
-  position:fixed; 
-  inset:0; 
-  z-index:3; 
-  pointer-events:none; 
-  background: radial-gradient(ellipse at center, transparent 35%, rgba(45,45,45,0.6) 100%);
-  mix-blend-mode: multiply;
+.live-chip .sym{color:#e6d8b5;font-weight:700;letter-spacing:0.08em}
+.live-chip .px{color:#fff3df}
+.live-chip .chg.up{color:var(--green)}
+.live-chip .chg.down{color:var(--red)}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 12px rgba(255,184,77,0.8);
+  animation:pulse 1.2s infinite;
+  display:inline-block;
+  margin-right:8px;
 }
-
-/* HEADER */
-header { 
-  position:relative; 
-  z-index:10; 
-  text-align:center; 
-  padding:32px 20px 24px; 
-  background: linear-gradient(135deg, rgba(26,26,26,0.85), rgba(45,45,45,0.7)); 
-  backdrop-filter: blur(25px); 
-  border-bottom: 2px solid rgba(212,175,55,0.3);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-}
-header h1 { 
-  font-family:'Orbitron',sans-serif; 
-  font-size: clamp(1.4rem,4vw,2.4rem); 
-  font-weight:900; 
-  letter-spacing:0.08em; 
-  background: linear-gradient(90deg, #E8E8E8 0%, var(--oil-gold) 40%, var(--oil-orange) 70%, #FF6B35 100%);
-  -webkit-background-clip: text; 
-  -webkit-text-fill-color: transparent; 
-  background-clip: text; 
-  text-shadow: 0 0 30px rgba(212,175,55,0.6);
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.55);opacity:0.35}}
+.ticker{
   position:relative;
+  z-index:10;
+  overflow:hidden;
+  padding:8px 0;
+  background:linear-gradient(180deg,rgba(10,8,5,0.68),rgba(22,15,8,0.72));
+  border-top:1px solid rgba(255,184,77,0.08);
+  border-bottom:1px solid rgba(255,184,77,0.12);
 }
-header h1::after {
-  content: '🛢️'; position:absolute; top:-8px; right:-40px; font-size:1.2em; animation: oilDrop 3s ease-in-out infinite;
-}
-@keyframes oilDrop { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
-.live-status { 
-  display:inline-flex; 
-  align-items:center; 
-  gap:8px; 
-  margin-top:12px; 
-  font-family:'Roboto Mono',monospace; 
-  font-size:0.7rem; 
-  letter-spacing:0.25em; 
-  color: rgba(212,175,55,0.8);
-  text-shadow: 0 0 10px rgba(212,175,55,0.4);
-}
-.live-pump { 
-  width:8px; 
-  height:8px; 
-  border-radius:50%; 
-  background: var(--oil-gold); 
-  animation: pump 1s infinite;
-  box-shadow: 0 0 12px var(--oil-gold);
-}
-@keyframes pump { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.2; transform:scale(1.3)} }
-
-/* TICKER */
-.ticker-container { 
-  position:relative; 
-  z-index:10; 
-  background: linear-gradient(90deg, rgba(26,26,26,0.9), rgba(45,45,45,0.8)); 
-  backdrop-filter: blur(15px); 
-  border-bottom: 1px solid rgba(212,175,55,0.2);
-  overflow:hidden; 
-  padding:10px 0; 
-}
-.ticker-scroll { 
-  display:inline-block; 
-  animation: tickerFlow 45s linear infinite; 
+.ticker-inner{
+  display:inline-block;
   white-space:nowrap;
+  animation:scroll 78s linear infinite;
+  will-change:transform;
 }
-@keyframes tickerFlow { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
-.ticker-item { 
-  display:inline-block; 
-  margin-right:45px; 
-  font-family:'Roboto Mono',monospace; 
-  font-size:0.8rem; 
-  padding: 4px 12px;
-  background: rgba(212,175,55,0.08);
-  border: 1px solid rgba(212,175,55,0.15);
-  border-radius: 6px;
-  transition: all 0.3s ease;
+@keyframes scroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
 }
-.ticker-item:hover { 
-  background: rgba(212,175,55,0.2); 
-  box-shadow: 0 0 20px rgba(212,175,55,0.4);
+.tick{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-right:30px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.72rem;
+  letter-spacing:0.06em;
 }
-.t-sym { color: rgba(232,232,232,0.7); font-weight:500; }
-.t-price { color: rgba(232,232,232,0.85); margin:0 8px; font-weight:500; }
-.t-change-up { color: #32CD32; font-weight:600; }
-.t-change-down { color: #FF4500; font-weight:600; }
-
-/* MAIN CONTAINER */
-.main-container { 
-  position:relative; 
-  z-index:10; 
-  max-width:1200px; 
-  margin: 0 auto; 
-  padding: 35px 25px 100px;
+.t-sym{color:#e9d7ae}
+.t-p{color:#fff6ea}
+.t-up{color:var(--green)}
+.t-dn{color:var(--red)}
+.container{
+  position:relative;
+  z-index:10;
+  max-width:1200px;
+  margin:auto;
+  padding:28px 18px 90px;
 }
-
-/* OIL CARDS */
-.oil-card {
-  background: linear-gradient(145deg, rgba(26,26,26,0.75), rgba(45,45,45,0.6));
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(212,175,55,0.25);
-  border-radius: 18px;
-  padding: 28px 30px;
-  margin-bottom: 28px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
-  animation: slideUpOil 0.8s ease-out forwards;
+.hero{
+  display:grid;
+  grid-template-columns:1.3fr 0.9fr;
+  gap:18px;
+  margin-bottom:18px;
 }
-.oil-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--oil-gold), var(--oil-orange), transparent);
-  transform: scaleX(0);
-  transition: transform 0.4s ease;
+.card{
+  background:linear-gradient(180deg,rgba(34,24,11,0.35),rgba(18,13,6,0.22));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px 22px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(18px);
+  overflow:hidden;
+  position:relative;
 }
-.oil-card:hover::before { transform: scaleX(1); }
-.oil-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  background: linear-gradient(45deg, rgba(212,175,55,0.06), rgba(255,140,66,0.04));
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
+.card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,183,77,0.08),transparent 45%,rgba(255,125,26,0.04));
+  pointer-events:none;
 }
-.oil-card:hover::after { opacity: 1; }
-.oil-card:hover {
-  border-color: rgba(212,175,55,0.5);
-  box-shadow: 0 20px 60px rgba(212,175,55,0.15), 0 0 40px rgba(255,140,66,0.1);
-  transform: translateY(-6px);
+.card h2{
+  font-family:'Orbitron',sans-serif;
+  font-size:1rem;
+  letter-spacing:0.06em;
+  margin-bottom:14px;
+  color:#fff2d8;
 }
-@keyframes slideUpOil {
-  from { opacity: 0; transform: translateY(30px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.hero-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(1.3rem,2.2vw,2rem);
+  line-height:1.2;
+  margin-bottom:12px;
+  color:#fff4df;
 }
-.oil-card h2 { 
-  font-size: 1.2rem; 
-  font-weight: 700; 
-  margin-bottom: 20px; 
-  color: #F5F5F5; 
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Orbitron', sans-serif;
-  letter-spacing: 0.05em;
+.hero-text{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:0.93rem;
+  margin-bottom:16px;
 }
-
-/* INFO ROWS */
-.info-row { 
-  display: flex; 
-  justify-content: space-between; 
-  padding: 12px 0; 
-  border-bottom: 1px solid rgba(232,232,232,0.08); 
-  font-size: 0.92rem; 
+.pill-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
 }
-.info-row:last-child { border-bottom: none; }
-.info-row span:last-child { 
-  color: var(--oil-gold); 
-  font-family: 'Roboto Mono', monospace; 
-  font-weight: 500;
+.pill{
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:0.8rem;
+  border:1px solid;
+  backdrop-filter:blur(6px);
 }
-
-/* FLEX GRID */
-.flex-grid { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
-  gap: 18px; 
+.pg{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.22);color:#8df0c3}
+.pr{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.22);color:#ffaaaa}
+.po{background:rgba(255,125,26,0.08);border-color:rgba(255,125,26,0.22);color:#ffbf84}
+.pg2{background:rgba(255,184,77,0.08);border-color:rgba(255,184,77,0.22);color:#ffd58f}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
 }
-.pattern-box { 
-  background: rgba(42,74,42,0.3); 
-  border: 1px solid rgba(212,175,55,0.2); 
-  border-radius: 12px; 
-  padding: 18px; 
-  transition: all 0.3s ease; 
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
+.info-box{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:0.86rem;
+  color:var(--muted);
 }
-.pattern-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.1), transparent);
-  transition: left 0.5s;
+.info-box span:last-child{
+  color:#ffd38a;
+  font-family:'Share Tech Mono',monospace;
 }
-.pattern-box:hover::before { left: 100%; }
-.pattern-box:hover { 
-  transform: translateY(-8px) scale(1.02); 
-  border-color: var(--oil-gold); 
-  box-shadow: 0 20px 40px rgba(212,175,55,0.2);
+.section{
+  margin-top:18px;
 }
-.pattern-box h3 { 
-  font-size: 1rem; 
-  margin-bottom: 6px; 
-  color: var(--oil-gold);
+.metric{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,184,77,0.12);
+  border-radius:14px;
+  padding:16px;
 }
-.pattern-box p { 
-  font-size: 0.8rem; 
-  color: rgba(232,232,232,0.7); 
-  margin-bottom: 12px; 
+.metric-label{
+  font-size:0.66rem;
+  letter-spacing:0.24em;
+  color:#caa76b;
+  margin-bottom:8px;
 }
-.pattern-img { 
-  width: 100%; 
-  height: 120px; 
-  object-fit: cover; 
-  border-radius: 8px; 
-  border: 1px solid rgba(212,175,55,0.2);
+.metric-value{
+  font-family:'Orbitron',sans-serif;
+  font-size:1.35rem;
+  color:#fff4df;
+  margin-bottom:4px;
 }
-
-/* STATUS PILLS */
-.status-grid { 
-  display: flex; 
-  flex-wrap: wrap; 
-  gap: 12px; 
+.metric-sub{
+  color:var(--dim);
+  font-size:0.82rem;
+  line-height:1.6;
 }
-.status-pill { 
-  padding: 10px 16px; 
-  border-radius: 25px; 
-  font-size: 0.85rem; 
-  font-weight: 500;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  border: 1px solid;
-  flex: 1;
-  min-width: 140px;
-  text-align: center;
+.two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
 }
-.pill-gold { 
-  background: rgba(212,175,55,0.15); 
-  border-color: rgba(212,175,55,0.4); 
-  color: var(--oil-gold); 
+.adv-item{
+  padding:6px 0;
+  color:var(--muted);
+  font-size:0.86rem;
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
 }
-.pill-green { 
-  background: rgba(50,205,50,0.15); 
-  border-color: rgba(50,205,50,0.4); 
-  color: #32CD32; 
+.adv-item::before{
+  content:'';
+  width:7px;height:7px;border-radius:50%;
+  background:#cda25b;
+  flex-shrink:0;
+  margin-top:8px;
+  box-shadow:0 0 8px rgba(205,162,91,0.55);
 }
-.pill-red { 
-  background: rgba(255,69,0,0.15); 
-  border-color: rgba(255,69,0,0.4); 
-  color: #FF4500; 
+.adv-item.good::before{background:var(--green);box-shadow:0 0 8px rgba(52,211,153,0.65)}
+.adv-item.bad::before{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,0.65)}
+.table{
+  width:100%;
+  border-collapse:collapse;
+  overflow:hidden;
 }
-.status-pill:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-
-/* TWO COLUMN */
-.split-view { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 24px; 
+.table th,.table td{
+  text-align:left;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:0.86rem;
 }
-.pro-col { 
-  min-height: 200px; 
+.table th{
+  color:#f0c77b;
+  font-size:0.72rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
 }
-.col-header { 
-  font-size: 0.75rem; 
-  letter-spacing: 0.2em; 
-  margin-bottom: 15px; 
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(212,175,55,0.3);
+.table td{color:var(--muted)}
+.small{
+  font-size:0.82rem;
+  line-height:1.75;
+  color:var(--muted);
 }
-.col-header.gold { color: var(--oil-gold); }
-.col-header.red { color: var(--rust-red); }
-.pro-item { 
-  font-size: 0.88rem; 
-  color: rgba(232,232,232,0.75); 
-  padding: 8px 0; 
-  display: flex; 
-  align-items: center; 
-  gap: 10px; 
+.oilmap{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
 }
-.pro-item::before { 
-  content: ''; 
-  width: 8px; 
-  height: 8px; 
-  border-radius: 50%; 
-  flex-shrink: 0; 
+.map-card{
+  border:1px solid rgba(255,184,77,0.12);
+  border-radius:16px;
+  padding:16px;
+  background:linear-gradient(180deg,rgba(28,19,9,0.38),rgba(15,11,6,0.22));
 }
-.pro-item.gold::before { 
-  background: var(--oil-gold); 
-  box-shadow: 0 0 8px var(--oil-gold); 
+.map-card h3{
+  font-size:0.9rem;
+  margin-bottom:8px;
+  color:#ffe2ae;
 }
-.pro-item.red::before { 
-  background: var(--rust-red); 
-  box-shadow: 0 0 8px var(--rust-red); 
+.map-card p{
+  font-size:0.84rem;
+  color:var(--muted);
+  line-height:1.7;
 }
-
-/* CONTENT TEXT */
-.content-text { 
-  line-height: 1.8; 
-  font-size: 0.95rem; 
-  color: rgba(232,232,232,0.85); 
+.badge-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:10px;
 }
-.content-text h3 { 
-  color: var(--oil-gold); 
-  font-size: 1rem; 
-  margin: 20px 0 10px; 
-  font-family: 'Orbitron', sans-serif;
+.badge{
+  padding:7px 10px;
+  border-radius:8px;
+  border:1px solid rgba(255,184,77,0.16);
+  background:rgba(255,184,77,0.05);
+  color:#ffd9a0;
+  font-size:0.76rem;
+  font-family:'Share Tech Mono',monospace;
 }
-.content-text p { margin-bottom: 12px; }
-.content-text ul { 
-  margin: 0 0 12px 22px; 
+#aiText{
+  min-height:2.6em;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.9rem;
+  letter-spacing:0.03em;
+  color:#ffd08a;
+  padding:14px;
+  border-radius:10px;
+  background:rgba(255,184,77,0.05);
+  border:1px solid rgba(255,184,77,0.14);
 }
-.content-text li { 
-  margin-bottom: 6px; 
+.btn{
+  margin-top:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:11px 18px;
+  border-radius:10px;
+  border:1px solid rgba(255,184,77,0.26);
+  background:linear-gradient(180deg,rgba(255,184,77,0.16),rgba(255,125,26,0.08));
+  color:#ffdca6;
+  font-family:'Share Tech Mono',monospace;
+  cursor:pointer;
 }
-
-/* AI SECTION */
-.ai-section { 
-  text-align: center; 
+.btn:hover{
+  background:linear-gradient(180deg,rgba(255,184,77,0.24),rgba(255,125,26,0.14));
 }
-#aiOutput { 
-  font-family: 'Roboto Mono', monospace; 
-  font-size: 1rem; 
-  color: var(--oil-gold); 
-  padding: 18px; 
-  border: 2px solid rgba(212,175,55,0.3); 
-  border-radius: 12px; 
-  background: rgba(212,175,55,0.08); 
-  margin: 18px 0; 
-  min-height: 3em; 
-  letter-spacing: 0.02em;
-  position: relative;
-  overflow: hidden;
+.footer-note{
+  margin-top:14px;
+  color:var(--dim);
+  font-size:0.78rem;
+  line-height:1.7;
 }
-#aiOutput::before {
-  content: '🛢️';
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 1.5em;
-  opacity: 0.3;
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
 }
-.ai-button { 
-  padding: 14px 28px; 
-  font-family: 'Roboto Mono', monospace; 
-  background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(255,140,66,0.2)); 
-  border: 2px solid rgba(212,175,55,0.5); 
-  border-radius: 12px; 
-  color: var(--oil-gold); 
-  cursor: pointer; 
-  font-size: 0.9rem; 
-  font-weight: 500;
-  letter-spacing: 0.05em; 
-  transition: all 0.3s ease; 
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
-}
-.ai-button:hover { 
-  background: linear-gradient(135deg, rgba(212,175,55,0.35), rgba(255,140,66,0.35)); 
-  box-shadow: 0 0 30px rgba(212,175,55,0.4); 
-  transform: translateY(-2px);
-}
-
-/* LIGHTBOX */
-.lightbox-modal { 
-  display: none; 
-  position: fixed; 
-  inset: 0; 
-  z-index: 1000; 
-  background: rgba(0,0,0,0.95); 
-  text-align: center; 
-}
-.lightbox-content { 
-  max-width: 90%; 
-  max-height: 90%; 
-  margin-top: 5vh; 
-  border-radius: 16px; 
-  box-shadow: 0 0 80px rgba(212,175,55,0.3); 
-  border: 2px solid rgba(212,175,55,0.2);
-}
-.close-x { 
-  position: absolute; 
-  top: 25px; 
-  right: 35px; 
-  color: #E8E8E8; 
-  font-size: 3rem; 
-  font-weight: bold; 
-  cursor: pointer; 
-  text-shadow: 0 0 20px rgba(212,175,55,0.5);
-}
-.close-x:hover { color: var(--oil-gold); }
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
+<div id="oilLayer"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
 
-<canvas id="oilCanvas"></canvas>
-<div id="rigLayer"></div>
-<div class="pipe-flow"></div>
-<div class="dust-overlay"></div>
-
-<div id="lightbox" class="lightbox-modal" onclick="closeModal()">
-  <span class="close-x" onclick="closeModal()">&times;</span>
-  <img id="modalImage" class="lightbox-content">
-</div>
-
+<div id="uiLayer">
 <header>
-  <h1>US Oil Trading Intelligence Platform</h1>
-  <div class="live-status">
-    <div class="live-pump"></div>
-    REAL-TIME OIL MARKET INTELLIGENCE
-  </div>
+  <h1>OIL TRADING INTELLIGENCE PLATFORM</h1>
+  <div class="subline"><span class="live-dot"></span>REAL-TIME OIL MARKET INTELLIGENCE</div>
+  <div class="live-row" id="liveRow"></div>
 </header>
 
-<div class="ticker-container">
-  <div class="ticker-scroll" id="oilTicker"></div>
+<div class="ticker">
+  <div class="ticker-inner" id="tickerEl"></div>
 </div>
 
-<div class="main-container">
-
-<div class="oil-card" style="animation-delay: 0.1s">
-  <h2>🛢️ Oil Trading Essentials</h2>
-  <div class="info-row"><span>Crude Oil (WTI)</span><span>West Texas Intermediate</span></div>
-  <div class="info-row"><span>Brent Crude</span><span>North Sea Benchmark</span></div>
-  <div class="info-row"><span>API Gravity</span><span>39.6° (Light Sweet)</span></div>
-  <div class="info-row"><span>Daily Volume</span><span>~5M Barrels</span></div>
-</div>
-
-<div class="oil-card" style="animation-delay: 0.2s">
-  <h2>📈 What Drives Oil Prices?</h2>
-  <p class="content-text">Oil prices are primarily determined by global supply-demand dynamics, geopolitical events, OPEC+ production decisions, and inventory reports from the EIA and API. WTI crude trades on NYMEX while Brent trades on ICE, serving as global benchmarks.</p>
-  <p class="content-text">Key factors include US shale production, Saudi spare capacity, China demand growth, and seasonal refinery maintenance schedules that impact crack spreads and refining margins.</p>
-</div>
-
-<div class="oil-card" style="animation-delay: 0.3s">
-  <h2>⚡ Oil Market Metrics</h2>
-  <div class="flex-grid">
-    <div class="info-row"><span>Current WTI</span><span>$78.45</span></div>
-    <div class="info-row"><span>24h Change</span><span>+1.23%</span></div>
-    <div class="info-row"><span>Weekly Range</span><span>$76.20 - $80.15</span></div>
-    <div class="info-row"><span>Implied Vol</span><span>28.4%</span></div>
-  </div>
-</div>
-
-<div class="oil-card" style="animation-delay: 0.4s">
-  <h2>🏭 Oil Contract Specifications</h2>
-  <div class="status-grid">
-    <div class="status-pill pill-gold">CL Futures • 1,000 Barrels</div>
-    <div class="status-pill pill-green">Tick Size • $0.01 ($10)</div>
-    <div class="status-pill pill-gold">Trading Hours • 6PM-5PM ET</div>
-    <div class="status-pill pill-red">Expiration • 3rd Business Day</div>
-  </div>
-</div>
-
-<div class="oil-card" style="animation-delay: 0.5s">
-  <h2>📊 Key Chart Patterns</h2>
-  <div class="flex-grid">
-    <div class="pattern-box" onclick="openModal('head-shoulders-oil.jpg')">
-      <h3>Head & Shoulders</h3>
-      <p>Bearish reversal after uptrend</p>
-      <div class="pattern-img" style="background: linear-gradient(45deg, #2A4A2A, #4682B4); display:flex;align-items:center;justify-content:center;color:#E8E8E8;font-size:12px;">H&S Pattern</div>
+<div class="container">
+  <div class="hero">
+    <div class="card">
+      <div class="hero-title">Oil markets move on supply, inventories, OPEC policy, geopolitics, and refinery demand.</div>
+      <div class="hero-text">
+        This layout is built for crude oil, energy stocks, and market context instead of crypto. The visual style uses dark petroleum tones, amber highlights, refinery-like motion, and a lower-speed price ribbon for a more professional trading feel.
+      </div>
+      <div class="pill-grid">
+        <div class="pill po">WTI Crude</div>
+        <div class="pill pg2">Brent Crude</div>
+        <div class="pill po">USO</div>
+        <div class="pill pg2">XLE</div>
+        <div class="pill pr">Inventory Risk</div>
+        <div class="pill pg">Supply Shock</div>
+      </div>
+      <div class="footer-note">
+        Exact live quotes should be pulled from a market API. The code already supports a clean structure for replacing fallback values with true real-time data.
+      </div>
     </div>
-    <div class="pattern-box" onclick="openModal('double-top-oil.jpg')">
-      <h3>Double Top</h3>
-      <p>Resistance rejection signal</p>
-      <div class="pattern-img" style="background: linear-gradient(45deg, #B7410E, #FF8C42); display:flex;align-items:center;justify-content:center;color:#E8E8E8;font-size:12px;">M Pattern</div>
-    </div>
-    <div class="pattern-box" onclick="openModal('bull-flag-oil.jpg')">
-      <h3>Bull Flag</h3>
-      <p>Continuation after breakout</p>
-      <div class="pattern-img" style="background: linear-gradient(45deg, #32CD32, #90EE90); display:flex;align-items:center;justify-content:center;color:#E8E8E8;font-size:12px;">Bull Flag</div>
-    </div>
-    <div class="pattern-box" onclick="openModal('oil-triangle.jpg')">
-      <h3>Triangle</h3>
-      <p>Consolidation breakout</p>
-      <div class="pattern-img" style="background: linear-gradient(45deg, #4682B4, #D4AF37); display:flex;align-items:center;justify-content:center;color:#E8E8E8;font-size:12px;">△ Pattern</div>
+
+    <div class="card">
+      <h2>Live Oil Snapshot</h2>
+      <div class="info-box"><span>WTI Crude</span><span id="wtiPrice">$0.00</span></div>
+      <div class="info-box"><span>Brent Crude</span><span id="brentPrice">$0.00</span></div>
+      <div class="info-box"><span>USO ETF</span><span id="usoPrice">$0.00</span></div>
+      <div class="info-box"><span>XLE ETF</span><span id="xlePrice">$0.00</span></div>
+      <div class="info-box"><span>Front-Month Trend</span><span id="trendText">Neutral</span></div>
+      <div class="info-box"><span>Market Bias</span><span id="biasText">Watching inventory data</span></div>
     </div>
   </div>
-</div>
 
-<div class="oil-card" style="animation-delay: 0.6s">
-  <h2>⚖️ Trading Pros & Cons</h2>
-  <div class="split-view">
-    <div class="pro-col">
-      <div class="col-header gold">ADVANTAGES</div>
-      <div class="pro-item gold">High daily liquidity</div>
-      <div class="pro-item gold">Clear fundamental drivers</div>
-      <div class="pro-item gold">24/5 market access</div>
-      <div class="pro-item gold">Multiple trading vehicles</div>
-    </div>
-    <div class="pro-col">
-      <div class="col-header red">RISKS</div>
-      <div class="pro-item red">Geopolitical shocks</div>
-      <div class="pro-item red">Inventory surprises</div>
-      <div class="pro-item red">OPEC+ decisions</div>
-      <div class="pro-item red">Contango storage costs</div>
+  <div class="card section">
+    <h2>Oil Market Basics</h2>
+    <div class="grid">
+      <div class="metric">
+        <div class="metric-label">WHAT DRIVES OIL</div>
+        <div class="metric-value">Supply + Demand</div>
+        <div class="metric-sub">Production cuts, refinery demand, seasonal driving, sanctions, and storage reports all affect price action.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">MAIN BENCHMARKS</div>
+        <div class="metric-value">WTI / Brent</div>
+        <div class="metric-sub">WTI is the U.S. benchmark. Brent is the global benchmark and often trades differently due to logistics and regional demand.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">OIL STOCKS</div>
+        <div class="metric-value">Energy Equities</div>
+        <div class="metric-sub">Integrated majors, drillers, service firms, pipeline operators, and ETFs often move with crude but not always at the same speed.</div>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="oil-card" style="animation-delay: 0.7s">
-  <h2>🛢️ Advanced Oil Knowledge</h2>
-  <div class="content-text">
-    <h3>WTI vs Brent Spread</h3>
-    <p>The price differential typically ranges $2-8/bbl, reflecting US Gulf Coast logistics vs global benchmark dynamics. Widening spreads often signal US supply constraints.</p>
-    
-    <h3>Key Reports Schedule</h3>
-    <ul>
-      <li><strong>Wed 10:30AM ET:</strong> API Weekly Inventory</li>
-      <li><strong>Thu 10:30AM ET:</strong> EIA Weekly Petroleum Status</li>
-      <li><strong>Fri Monthly:</strong> OPEC Monthly Oil Market Report</li>
-    </ul>
-    
-    <h3>Trading Strategies</h3>
-    <p><strong>Crack Spreads:</strong> Long heating oil/gasoline vs short crude. <strong>Calendar Spreads:</strong> Near vs deferred months. <strong>Options:</strong> Straddles for inventory reports.</p>
-    
-    <h3>Risk Management</h3>
-    <ul>
-      <li>Position size max 2-3% account risk</li>
-      <li>Pre-define stop losses before entry</li>
-      <li>Avoid trading during API/EIA releases</li>
-      <li>Watch dollar index correlation</li>
-    </ul>
+  <div class="card section">
+    <h2>Oil-Linked Stocks and ETFs</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Use</th>
+          <th id="asofCell">As of</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>USO</td><td>United States Oil Fund</td><td>Oil ETF</td><td>Tracks front-month crude exposure</td><td id="usoRow">$0.00</td></tr>
+        <tr><td>XLE</td><td>Energy Select Sector SPDR</td><td>Sector ETF</td><td>Broad energy equity basket</td><td id="xleRow">$0.00</td></tr>
+        <tr><td>XOP</td><td>SPDR S&P Oil & Gas Exploration & Production</td><td>Equity ETF</td><td>Exploration and production stocks</td><td>Watchlist</td></tr>
+        <tr><td>OIH</td><td>VanEck Oil Services ETF</td><td>Service ETF</td><td>Oilfield services exposure</td><td>Watchlist</td></tr>
+        <tr><td>CVX</td><td>Chevron</td><td>Integrated major</td><td>Large-cap oil and gas producer</td><td>Watchlist</td></tr>
+        <tr><td>XOM</td><td>Exxon Mobil</td><td>Integrated major</td><td>Global upstream, downstream, chemicals</td><td>Watchlist</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card section">
+    <h2>Why Oil Moves</h2>
+    <div class="two-col">
+      <div>
+        <div class="adv-item good">OPEC+ output decisions can tighten or loosen supply quickly.</div>
+        <div class="adv-item good">Summer driving season can lift gasoline demand and refinery runs.</div>
+        <div class="adv-item good">Geopolitical disruptions can create sudden risk premiums.</div>
+        <div class="adv-item good">Inventory draws often support bullish sentiment.</div>
+      </div>
+      <div>
+        <div class="adv-item bad">Demand slowdowns can pressure crude and energy shares.</div>
+        <div class="adv-item bad">Inventory builds may signal weak consumption.</div>
+        <div class="adv-item bad">Higher rates can affect growth expectations and fuel demand.</div>
+        <div class="adv-item bad">Sharp swings in oil can make leveraged exposure risky.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Oil Market Structure</h2>
+    <div class="oilmap">
+      <div class="map-card">
+        <h3>Upstream</h3>
+        <p>Exploration and production companies drill for and produce crude oil and natural gas. They usually benefit most when crude prices rise.</p>
+      </div>
+      <div class="map-card">
+        <h3>Midstream</h3>
+        <p>Pipelines, transport, storage, and logistics move crude and refined products. These firms often focus more on volume and fees than spot prices.</p>
+      </div>
+      <div class="map-card">
+        <h3>Downstream</h3>
+        <p>Refineries turn crude into gasoline, diesel, jet fuel, and chemicals. Refining margins matter more than crude alone.</p>
+      </div>
+      <div class="map-card">
+        <h3>Oil Services</h3>
+        <p>Drilling, seismic, rigs, and field services support the full oil supply chain. They can be highly cyclical and sensitive to capex trends.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Trading View</h2>
+    <div class="grid">
+      <div class="metric">
+        <div class="metric-label">INVENTORY DATA</div>
+        <div class="metric-value">API / EIA / OPEC</div>
+        <div class="metric-sub">Weekly inventory reports and production commentary often drive short-term price reactions.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">RISK STYLE</div>
+        <div class="metric-value">Moderate to High</div>
+        <div class="metric-sub">Oil can trend cleanly but also gap sharply on headlines, making risk controls important.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">BEST USE</div>
+        <div class="metric-value">Macro + Swing</div>
+        <div class="metric-sub">Oil often works better with broader macro and inventory context than with pure intraday noise.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Market Notes</h2>
+    <div class="small">
+      <p>• WTI and Brent are benchmarks, not individual stocks. Oil stocks such as XOM and CVX react to crude, margins, production, and capital spending.</p>
+      <p>• ETFs like USO can track oil futures behavior more directly than energy equities, which means they may diverge from stock-based oil plays.</p>
+      <p>• For a live dashboard, connect your preferred API and replace the fallback values inside the JavaScript data layer.</p>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>AI Oil Insight</h2>
+    <div id="aiText">Scanning crude structure, energy stocks, and macro catalysts...</div>
+    <button class="btn" onclick="refreshInsight()">Refresh Oil Insight</button>
   </div>
 </div>
-
-<div class="oil-card ai-section" style="animation-delay: 0.8s">
-  <h2>🤖 AI Oil Pattern Scanner</h2>
-  <div id="aiOutput">Initializing oil pattern recognition...</div>
-  <button class="ai-button" onclick="window.open('https://oil-trading-analysis.com','_blank')">
-    LAUNCH FULL AI SCANNER 🚀
-  </button>
-</div>
-
 </div>
 
 <script>
-/* OIL RIG ANIMATIONS */
-const rigLayer = document.getElementById('rigLayer');
-const rigs = ['🛢️','🪣','⛽','🛢️','🔧','⚙️'];
-for(let i = 0; i < 12; i++) {
-  const rig = document.createElement('div');
-  rig.className = 'oil-rig';
-  rig.innerHTML = rigs[Math.floor(Math.random() * rigs.length)];
-  rig.style.left = Math.random() * 100 + '%';
-  rig.style.animationDelay = Math.random() * 20 + 's';
-  rig.style.animationDuration = (18 + Math.random() * 12) + 's';
-  rigLayer.appendChild(rig);
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  buildBackground();
 }
+window.addEventListener('resize',resize);
 
-/* CANVAS OIL FLOW */
-const canvas = document.getElementById('oilCanvas');
-const ctx = canvas.getContext('2d');
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+let fields=[];
+let pipes=[];
+let sparks=[];
+function rand(a,b){return a+Math.random()*(b-a)}
+function buildBackground(){
+  fields=[];
+  pipes=[];
+  sparks=[];
+  const W=canvas.width,H=canvas.height;
+  for(let i=0;i<5;i++){
+    fields.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      r:rand(120,260),
+      vr:rand(0.08,0.22),
+      alpha:rand(0.03,0.08),
+      color:i%2===0?'255,184,77':'255,125,26'
+    });
+  }
+  for(let i=0;i<9;i++){
+    pipes.push({
+      y:rand(50,H-50),
+      speed:rand(0.18,0.45),
+      amp:rand(6,22),
+      freq:rand(0.002,0.007),
+      phase:rand(0,Math.PI*2)
+    });
+  }
+  for(let i=0;i<120;i++){
+    sparks.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      vx:rand(-0.1,0.18),
+      vy:rand(0.02,0.12),
+      size:rand(0.6,1.8),
+      alpha:rand(0.06,0.22)
+    });
+  }
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+resize();
 
-function drawOilFlow() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Oil droplets rising
-  for(let i = 0; i < 25; i++) {
-    const x = (i * canvas.width) / 25 + (Date.now() * 0.02) % canvas.width;
-    const y = canvas.height - (Math.sin(Date.now() * 0.001 + i) * 50 + 100);
-    const size = 2 + Math.sin(Date.now() * 0.003 + i) * 1.5;
-    
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
-    gradient.addColorStop(0, 'rgba(212,175,55,0.8)');
-    gradient.addColorStop(0.6, 'rgba(212,175,55,0.3)');
-    gradient.addColorStop(1, 'rgba(212,175,55,0)');
-    
-    ctx.fillStyle = gradient;
+function drawGrid(){
+  const W=canvas.width,H=canvas.height;
+  ctx.save();
+  ctx.lineWidth=1;
+  for(let x=0;x<W;x+=70){
+    ctx.strokeStyle='rgba(255,184,77,0.03)';
     ctx.beginPath();
-    ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,H);
+    ctx.stroke();
+  }
+  for(let y=0;y<H;y+=70){
+    ctx.strokeStyle='rgba(255,184,77,0.03)';
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(W,y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawRefineryGlow(){
+  const W=canvas.width,H=canvas.height;
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(255,180,70,0.03)');
+  g.addColorStop(0.5,'rgba(0,0,0,0)');
+  g.addColorStop(1,'rgba(255,120,20,0.04)');
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawSmoke(){
+  fields.forEach(f=>{
+    f.r+=f.vr;
+    if(f.r>320){
+      f.r=120;
+      f.x=Math.random()*canvas.width;
+      f.y=Math.random()*canvas.height;
+      f.alpha=rand(0.03,0.08);
+    }
+    const grad=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r);
+    grad.addColorStop(0,`rgba(${f.color},${f.alpha})`);
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
     ctx.fill();
-  }
-  
-  // Pipeline glow
-  ctx.strokeStyle = 'rgba(212,175,55,0.15)';
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  for(let i = 0; i < 5; i++) {
-    const y = canvas.height * 0.2 + i * 60;
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
-  }
-  ctx.stroke();
-  
-  requestAnimationFrame(drawOilFlow);
+  });
 }
-drawOilFlow();
 
-/* TICKER DATA */
-const oilTickerData = [
-  {sym:'CLZ6', price:'$78.45', change:'+0.95', up:true},
-  {sym:'CLF7', price:'$79.12', change:'+1.23', up:true},
-  {sym:'XLE', price:'$92.34', change:'-0.45', up:false},
-  {sym:'USO', price:'$14.82', change:'+1.09', up:true},
-  {sym:'OXY', price:'$58.76', change:'+2.14', up:true},
-  {sym:'SLB', price:'$44.23', change:'-0.67', up:false},
-  {sym:'CVX', price:'$152.45', change:'+0.89', up:true},
-  {sym:'COP', price:'$112.67', change:'+1.34', up:true},
-  {sym:'BKR', price:'$34.89', change:'-0.23', up:false},
-  {sym:'HAL', price:'$26.45', change:'+3.12', up:true}
+function drawPipeLines(){
+  const W=canvas.width,H=canvas.height;
+  ctx.save();
+  ctx.lineCap='round';
+  pipes.forEach(p=>{
+    p.phase+=p.speed*0.01;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=10){
+      const y=p.y + Math.sin(x*p.freq + p.phase)*p.amp;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle='rgba(255,184,77,0.07)';
+    ctx.lineWidth=2;
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawSparks(){
+  const W=canvas.width,H=canvas.height;
+  sparks.forEach(s=>{
+    s.x+=s.vx;
+    s.y+=s.vy;
+    if(s.y>H+10){s.y=-10;s.x=Math.random()*W}
+    if(s.x<0)s.x=W;
+    if(s.x>W)s.x=0;
+    ctx.fillStyle=`rgba(255,213,145,${s.alpha})`;
+    ctx.fillRect(s.x,s.y,s.size,s.size);
+  });
+}
+
+function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid();
+  drawRefineryGlow();
+  drawSmoke();
+  drawPipeLines();
+  drawSparks();
+  requestAnimationFrame(loop);
+}
+loop();
+
+const oilLayer=document.getElementById('oilLayer');
+const symbols=[
+  {sym:'🛢️',label:'CRUDE',color:'#ffb84d',size:60},
+  {sym:'🛢️',label:'WTI',color:'#ff9b21',size:52},
+  {sym:'🛢️',label:'BRENT',color:'#ffd88a',size:54},
+  {sym:'⛽',label:'REFINE',color:'#f6be5f',size:48},
+  {sym:'⬤',label:'PIPE',color:'#d8b06a',size:42}
 ];
-
-document.getElementById('oilTicker').innerHTML = 
-  oilTickerData.map(t => 
-    `<span class="ticker-item">
-      <span class="t-sym">${t.sym}</span>
-      <span class="t-price">${t.price}</span>
-      <span class="${t.up ? 't-change-up' : 't-change-down'}">${t.change}</span>
-    </span>`
-  ).join('') + Array(3).fill().map(() => 
-    oilTickerData.map(t => 
-      `<span class="ticker-item">
-        <span class="t-sym">${t.sym}</span>
-        <span class="t-price">${t.price}</span>
-        <span class="${t.up ? 't-change-up' : 't-change-down'}">${t.change}</span>
-      </span>`
-    ).join('')
-  ).join('');
-
-/* AI INSIGHTS */
-const aiInsights = [
-  '🛢️ Bullish engulfing detected on CL hourly → Long bias developing',
-  '📉 Head & shoulders forming on Brent daily → Watch $75 support',
-  '⚡ Volume spike + breakout above $80 → Strong bullish momentum',
-  '🔻 Double top rejection at $82.50 → Short opportunity emerging',
-  '📊 EIA draw smaller than expected → Bullish supply signal',
-  '🕯️ Hammer reversal at key support → Bounce potential forming',
-  '⚠️ Bearish divergence on RSI → Momentum weakening detected',
-  '📈 Bull flag consolidation → Breakout above $79.50 targeted'
-];
-
-function updateAI() {
-  const el = document.getElementById('aiOutput');
-  el.style.opacity = '0';
-  setTimeout(() => {
-    el.textContent = aiInsights[Math.floor(Math.random() * aiInsights.length)];
-    el.style.opacity = '1';
-  }, 400);
-}
-setInterval(updateAI, 4500);
-updateAI();
-updateAI(); // Initial call
-
-/* MODAL FUNCTIONS */
-function openModal(src) {
-  document.getElementById('modalImage').src = src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjI0NDIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2Q0YWYzNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+T2lsIFBhdHRlcm4gQ2hhcnQ8L3RleHQ+PC9zdmc+';
-  document.getElementById('lightbox').style.display = 'block';
-}
-function closeModal() {
-  document.getElementById('lightbox').style.display = 'none';
-}
-
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') closeModal();
+const floats=[];
+symbols.forEach(def=>{
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:absolute;display:flex;flex-direction:column;align-items:center;will-change:transform;';
+  const el=document.createElement('div');
+  el.textContent=def.sym;
+  el.style.cssText=`
+    width:${def.size}px;height:${def.size}px;display:flex;align-items:center;justify-content:center;
+    font-size:${Math.round(def.size*0.45)}px;border-radius:50%;
+    background:rgba(27,18,8,0.58);border:1px solid rgba(255,184,77,0.2);
+    box-shadow:0 0 20px rgba(255,184,77,0.12), inset 0 0 18px rgba(255,184,77,0.08);
+    color:${def.color};text-shadow:0 0 12px ${def.color};
+  `;
+  const lbl=document.createElement('div');
+  lbl.textContent=def.label;
+  lbl.style.cssText=`
+    margin-top:4px;font-family:'Share Tech Mono',monospace;font-size:9px;
+    color:${def.color};opacity:0.65;letter-spacing:0.18em;
+  `;
+  wrap.appendChild(el);
+  wrap.appendChild(lbl);
+  oilLayer.appendChild(wrap);
+  floats.push({
+    wrap,
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    vx:(Math.random()-0.5)*0.25,
+    vy:(Math.random()-0.5)*0.18,
+    r:Math.random()*360,
+    vr:(Math.random()-0.5)*0.25,
+    size:def.size
+  });
 });
+
+(function floatLoop(){
+  const W=window.innerWidth,H=window.innerHeight;
+  floats.forEach(f=>{
+    f.x+=f.vx;
+    f.y+=f.vy;
+    f.r+=f.vr;
+    if(f.x<0){f.x=0;f.vx=Math.abs(f.vx)}
+    if(f.x>W-f.size){f.x=W-f.size;f.vx=-Math.abs(f.vx)}
+    if(f.y<0){f.y=0;f.vy=Math.abs(f.vy)}
+    if(f.y>H-f.size){f.y=H-f.size;f.vy=-Math.abs(f.vy)}
+    f.wrap.style.transform=`translate(${f.x}px,${f.y}px) rotate(${f.r}deg)`;
+    f.wrap.style.opacity=String(0.35+0.18*Math.abs(Math.sin(Date.now()*0.0006 + f.r)));
+  });
+  requestAnimationFrame(floatLoop);
+})();
+
+const sampleData = {
+  wti: 78.42,
+  brent: 82.11,
+  uso: 77.98,
+  xle: 89.26,
+  trend: 'Mild bullish bias',
+  bias: 'Watching EIA inventories'
+};
+
+function setLiveValues(d){
+  document.getElementById('wtiPrice').textContent = '$' + d.wti.toFixed(2);
+  document.getElementById('brentPrice').textContent = '$' + d.brent.toFixed(2);
+  document.getElementById('usoPrice').textContent = '$' + d.uso.toFixed(2);
+  document.getElementById('xlePrice').textContent = '$' + d.xle.toFixed(2);
+  document.getElementById('trendText').textContent = d.trend;
+  document.getElementById('biasText').textContent = d.bias;
+  document.getElementById('usoRow').textContent = '$' + d.uso.toFixed(2);
+  document.getElementById('xleRow').textContent = '$' + d.xle.toFixed(2);
+  document.getElementById('asofCell').textContent = 'As of ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+setLiveValues(sampleData);
+
+const tickerData = [
+  {s:'WTI',p:'$78.42',c:'+0.64%',u:true},
+  {s:'BRENT',p:'$82.11',c:'+0.58%',u:true},
+  {s:'USO',p:'$77.98',c:'+0.41%',u:true},
+  {s:'XLE',p:'$89.26',c:'-0.18%',u:false},
+  {s:'XOP',p:'$142.34',c:'+1.12%',u:true},
+  {s:'OIH',p:'$311.90',c:'+0.73%',u:true},
+  {s:'CVX',p:'$152.45',c:'+0.29%',u:true},
+  {s:'XOM',p:'$118.63',c:'+0.22%',u:true},
+  {s:'EIA',p:'INVENTORY',c:'WEEKLY',u:true},
+  {s:'OPEC+',p:'CUTS',c:'RISK',u:false}
+];
+document.getElementById('tickerEl').innerHTML = tickerData.concat(tickerData).map(t=>
+  `<span class="tick"><span class="t-sym">${t.s}</span><span class="t-p">${t.p}</span><span class="${t.u?'t-up':'t-dn'}">${t.c}</span></span>`
+).join('');
+
+const insights = [
+  'Crude is reacting to inventory expectations and refinery demand.',
+  'Oil equities are showing a stronger response than the broad market.',
+  'WTI and Brent are aligned, which suggests a stable benchmark spread.',
+  'Energy ETF rotation is improving as macro risk appetite picks up.',
+  'Watch for EIA data and OPEC headlines before the next breakout.',
+  'Refining and transport names may lag or lead depending on margin pressure.'
+];
+function refreshInsight(){
+  const el=document.getElementById('aiText');
+  el.style.opacity='0';
+  setTimeout(()=>{
+    el.textContent=insights[Math.floor(Math.random()*insights.length)];
+    el.style.opacity='1';
+  },250);
+}
+setInterval(refreshInsight,4200);
+refreshInsight();
 </script>
 </body>
 </html>
