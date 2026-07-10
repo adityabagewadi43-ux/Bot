@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forex Market Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#04070f;
+  --bg1:#07111d;
+  --bg2:#0b1726;
+  --glass:rgba(11,21,35,0.42);
+  --glass2:rgba(13,25,42,0.28);
+  --border:rgba(108,170,255,0.16);
+  --blue:#60a5fa;
+  --cyan:#67e8f9;
+  --green:#34d399;
+  --red:#f87171;
+  --gold:#fbbf24;
+  --violet:#a78bfa;
+  --text:rgba(245,250,255,0.96);
+  --muted:rgba(245,250,255,0.70);
+  --dim:rgba(245,250,255,0.45);
+  --shadow:0 18px 44px rgba(0,0,0,0.48);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(96,165,250,0.14), transparent 24%),
+    radial-gradient(circle at 85% 0%, rgba(103,232,249,0.09), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(167,139,250,0.10), transparent 24%),
+    linear-gradient(180deg,var(--bg0),var(--bg1) 45%,var(--bg2));
+}
+#bgCanvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+#fxLayer{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+}
+.scanlines{
+  position:fixed;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.11) 3px,
+    rgba(0,0,0,0.11) 6px
+  );
+}
+.vignette{
+  position:fixed;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 22%, rgba(4,8,18,0.84) 100%);
+}
+#uiLayer{position:relative;z-index:10}
+header{
+  position:relative;
+  z-index:10;
+  padding:30px 18px 16px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(9,18,30,0.80),rgba(5,10,18,0.42));
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(96,165,250,0.14);
+}
+header h1{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(1.2rem,3.6vw,2.35rem);
+  font-weight:900;
+  letter-spacing:0.09em;
+  background:linear-gradient(135deg,#f8fbff 0%, var(--cyan) 26%, var(--blue) 52%, var(--violet) 82%, var(--gold) 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 0 22px rgba(96,165,250,0.18);
+}
+.subline{
+  margin-top:8px;
+  font-family:'Share Tech Mono',monospace;
+  letter-spacing:0.26em;
+  font-size:0.62rem;
+  color:rgba(180,221,255,0.76);
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  display:inline-block;
+  margin-right:8px;
+  box-shadow:0 0 12px rgba(52,211,153,0.85);
+  animation:pulse 1.2s infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.55);opacity:0.35}}
+.live-row{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:16px;
+}
+.live-chip{
+  min-width:184px;
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid rgba(96,165,250,0.16);
+  background:linear-gradient(180deg,rgba(9,18,30,0.92),rgba(6,12,22,0.76));
+  box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  font-family:'Share Tech Mono',monospace;
+}
+.live-chip .sym{color:#dff2ff}
+.live-chip .px{color:#f8fbff}
+.live-chip .chg.up{color:var(--green)}
+.live-chip .chg.down{color:var(--red)}
+.ticker{
+  position:relative;
+  z-index:10;
+  overflow:hidden;
+  padding:8px 0;
+  background:linear-gradient(180deg,rgba(8,14,24,0.76),rgba(12,22,36,0.88));
+  border-top:1px solid rgba(96,165,250,0.08);
+  border-bottom:1px solid rgba(96,165,250,0.12);
+}
+.ticker-inner{
+  display:inline-block;
+  white-space:nowrap;
+  animation:scroll 92s linear infinite;
+  will-change:transform;
+}
+@keyframes scroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.tick{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-right:30px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.72rem;
+  letter-spacing:0.06em;
+}
+.t-sym{color:#dff2ff}
+.t-p{color:#f6fbff}
+.t-up{color:var(--green)}
+.t-dn{color:var(--red)}
+.container{
+  position:relative;
+  z-index:10;
+  max-width:1260px;
+  margin:auto;
+  padding:28px 18px 92px;
+}
+.hero{
+  display:grid;
+  grid-template-columns:1.25fr 0.95fr;
+  gap:18px;
+  margin-bottom:18px;
+}
+.card{
+  background:linear-gradient(180deg,rgba(12,23,40,0.38),rgba(8,15,27,0.22));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(18px);
+  overflow:hidden;
+  position:relative;
+}
+.card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(96,165,250,0.07),transparent 48%,rgba(167,139,250,0.04));
+  pointer-events:none;
+}
+.card h2{
+  font-family:'Orbitron',sans-serif;
+  font-size:1rem;
+  letter-spacing:0.06em;
+  margin-bottom:14px;
+  color:#f4faff;
+}
+.hero-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(1.18rem,2.2vw,2rem);
+  line-height:1.25;
+  margin-bottom:12px;
+  color:#f7fbff;
+}
+.hero-text{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:0.94rem;
+  margin-bottom:16px;
+}
+.pill-grid{display:flex;flex-wrap:wrap;gap:10px}
+.pill{
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:0.8rem;
+  border:1px solid;
+  backdrop-filter:blur(6px);
+}
+.pg{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.22);color:#9ff0bf}
+.pr{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.22);color:#ffacac}
+.po{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.22);color:#ffd88f}
+.pc{background:rgba(103,232,249,0.08);border-color:rgba(103,232,249,0.22);color:#b9f7ff}
+.pv{background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.22);color:#d9cbff}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+}
+.metric{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(96,165,250,0.12);
+  border-radius:14px;
+  padding:16px;
+}
+.metric-label{
+  font-size:0.66rem;
+  letter-spacing:0.24em;
+  color:#a8d2ff;
+  margin-bottom:8px;
+}
+.metric-value{
+  font-family:'Orbitron',sans-serif;
+  font-size:1.16rem;
+  color:#f7fbff;
+  margin-bottom:4px;
+}
+.metric-sub{
+  color:var(--dim);
+  font-size:0.82rem;
+  line-height:1.6;
+}
+.section{margin-top:18px}
+.two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.adv-item{
+  padding:6px 0;
+  color:var(--muted);
+  font-size:0.86rem;
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+}
+.adv-item::before{
+  content:'';
+  width:7px;height:7px;border-radius:50%;
+  background:#c9e6ff;
+  flex-shrink:0;
+  margin-top:8px;
+  box-shadow:0 0 8px rgba(201,230,255,0.5);
+}
+.adv-item.good::before{background:var(--green);box-shadow:0 0 8px rgba(52,211,153,0.65)}
+.adv-item.bad::before{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,0.65)}
+.table{
+  width:100%;
+  border-collapse:collapse;
+}
+.table th,.table td{
+  text-align:left;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:0.86rem;
+}
+.table th{
+  color:#b9dcff;
+  font-size:0.72rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+}
+.table td{color:var(--muted)}
+.small{
+  font-size:0.82rem;
+  line-height:1.75;
+  color:var(--muted);
+}
+.market-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
+}
+.market-card{
+  border:1px solid rgba(96,165,250,0.12);
+  border-radius:16px;
+  padding:16px;
+  background:linear-gradient(180deg,rgba(12,23,40,0.42),rgba(8,14,24,0.22));
+}
+.market-card h3{
+  font-size:0.9rem;
+  margin-bottom:8px;
+  color:#cfe7ff;
+}
+.market-card p{
+  font-size:0.84rem;
+  color:var(--muted);
+  line-height:1.7;
+}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.badge{
+  padding:7px 10px;
+  border-radius:8px;
+  border:1px solid rgba(96,165,250,0.16);
+  background:rgba(96,165,250,0.06);
+  color:#d6ebff;
+  font-size:0.76rem;
+  font-family:'Share Tech Mono',monospace;
+}
+#aiText{
+  min-height:2.6em;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.9rem;
+  letter-spacing:0.03em;
+  color:#bfe5ff;
+  padding:14px;
+  border-radius:10px;
+  background:rgba(96,165,250,0.05);
+  border:1px solid rgba(96,165,250,0.14);
+}
+.btn{
+  margin-top:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:11px 18px;
+  border-radius:10px;
+  border:1px solid rgba(96,165,250,0.26);
+  background:linear-gradient(180deg,rgba(96,165,250,0.16),rgba(103,232,249,0.08));
+  color:#d8f0ff;
+  font-family:'Share Tech Mono',monospace;
+  cursor:pointer;
+}
+.btn:hover{
+  background:linear-gradient(180deg,rgba(96,165,250,0.24),rgba(103,232,249,0.14));
+}
+.footer-note{
+  margin-top:14px;
+  color:var(--dim);
+  font-size:0.78rem;
+  line-height:1.7;
+}
+.chart-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+}
+.chart-card{
+  border:1px solid rgba(96,165,250,0.12);
+  border-radius:16px;
+  padding:16px;
+  background:linear-gradient(180deg,rgba(11,22,39,0.48),rgba(8,14,24,0.24));
+}
+.chart-title{
+  font-size:0.92rem;
+  color:#d7ebff;
+  margin-bottom:10px;
+}
+.mini-chart{
+  width:100%;
+  height:150px;
+  border-radius:12px;
+  background:
+    linear-gradient(180deg,rgba(96,165,250,0.08),rgba(0,0,0,0.04)),
+    radial-gradient(circle at 20% 20%, rgba(103,232,249,0.14), transparent 30%),
+    radial-gradient(circle at 80% 80%, rgba(167,139,250,0.12), transparent 30%);
+  border:1px solid rgba(255,255,255,0.05);
+  position:relative;
+  overflow:hidden;
+}
+.mini-chart svg{
+  width:100%;
+  height:100%;
+}
+.pattern-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+}
+.pattern{
+  padding:14px;
+  border-radius:14px;
+  border:1px solid rgba(96,165,250,0.12);
+  background:rgba(255,255,255,0.02);
+}
+.pattern h4{
+  font-size:0.88rem;
+  margin-bottom:6px;
+  color:#d9ecff;
+}
+.pattern p{
+  font-size:0.82rem;
+  line-height:1.7;
+  color:var(--muted);
+}
+.glossary{
+  columns:2;
+  column-gap:18px;
+}
+.glossary div{
+  break-inside:avoid;
+  padding:8px 0;
+  color:var(--muted);
+  font-size:0.84rem;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.glossary strong{color:#eff7ff}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+  .glossary{columns:1}
+}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div id="fxLayer"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div id="uiLayer">
+<header>
+  <h1>FOREX MARKET INTELLIGENCE</h1>
+  <div class="subline"><span class="live-dot"></span>GLOBAL CURRENCY MARKET EDUCATION + TRADER DASHBOARD</div>
+  <div class="live-row" id="liveRow"></div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-inner" id="tickerEl"></div>
+</div>
+
+<div class="container">
+  <div class="hero">
+    <div class="card">
+      <div class="hero-title">Forex is the world’s currency market, used for trade, hedging, investment, and speculation across every major economy.</div>
+      <div class="hero-text">
+        This single-page design is built for beginners and advanced traders alike. It explains what forex is, why it exists, how currency pairs move, what matters in India, and which technical charts are most important for decision-making.
+      </div>
+      <div class="pill-grid">
+        <div class="pill pc">CURRENCY PAIRS</div>
+        <div class="pill pg">LIQUIDITY</div>
+        <div class="pill po">SPREAD / PIP</div>
+        <div class="pill pv">SESSION VOLATILITY</div>
+        <div class="pill pr">RISK MANAGEMENT</div>
+        <div class="pill pc">TECHNICAL ANALYSIS</div>
+      </div>
+      <div class="footer-note">
+        In India, resident persons can undertake forex transactions only with authorised persons and for permitted purposes; RBI also permits exchange-traded currency derivatives in specified currency pairs such as USD-INR, EUR-INR, GBP-INR, JPY-INR, and certain cross-currency pairs on recognized exchanges [web:2][web:12][web:17].
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Live Market Snapshot</h2>
+      <div class="info-box"><span>USD / INR</span><span id="usdInr">₹83.48</span></div>
+      <div class="info-box"><span>EUR / USD</span><span id="eurUsd">1.0874</span></div>
+      <div class="info-box"><span>GBP / USD</span><span id="gbpUsd">1.2691</span></div>
+      <div class="info-box"><span>JPY / INR</span><span id="jpyInr">₹0.56</span></div>
+      <div class="info-box"><span>MARKET BIAS</span><span id="biasText">Balanced / event-driven</span></div>
+      <div class="info-box"><span>LAST UPDATE</span><span id="updateText">--:--</span></div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Forex Basics</h2>
+    <div class="grid">
+      <div class="metric">
+        <div class="metric-label">WHAT IS FOREX</div>
+        <div class="metric-value">Currency Exchange</div>
+        <div class="metric-sub">Forex means buying one currency while selling another. Every trade is a pair, like EUR/USD or USD/INR.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">WHY FOREX EXISTS</div>
+        <div class="metric-value">Trade & Hedging</div>
+        <div class="metric-sub">Companies, travelers, importers, exporters, governments, and investors need forex for settlement and risk control.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">WHAT MOVES PRICE</div>
+        <div class="metric-value">Rates & News</div>
+        <div class="metric-sub">Inflation, interest rates, central banks, trade balance, geopolitics, and risk sentiment move currencies.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">PRICE UNITS</div>
+        <div class="metric-value">Pips / Lots</div>
+        <div class="metric-sub">Pips measure movement. Lots measure trade size. Spread is the cost between bid and ask prices.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Why Forex Matters</h2>
+    <div class="two-col">
+      <div>
+        <div class="adv-item good">It supports international trade because payments across countries need conversion into other currencies.</div>
+        <div class="adv-item good">It helps exporters and importers hedge against currency swings that can affect profits.</div>
+        <div class="adv-item good">It gives traders access to one of the most liquid markets in the world.</div>
+        <div class="adv-item good">It reflects macroeconomics in real time, so it is useful for both analysis and speculation.</div>
+      </div>
+      <div>
+        <div class="adv-item bad">It can be highly leveraged, which makes losses faster than many beginners expect.</div>
+        <div class="adv-item bad">Major news can create sudden spikes, slippage, and widened spreads.</div>
+        <div class="adv-item bad">Low-liquidity hours can be deceptive and can produce false breakouts.</div>
+        <div class="adv-item bad">Poor risk management can wipe out accounts even when the trade direction is right.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>India Legality</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Allowed / Not Allowed</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Resident person forex transactions</td>
+          <td>Allowed only through authorised persons</td>
+          <td>Must be for permitted purposes under FEMA and RBI framework [web:1][web:2].</td>
+        </tr>
+        <tr>
+          <td>Exchange-traded currency derivatives</td>
+          <td>Allowed in specified pairs</td>
+          <td>RBI permits USD-INR, EUR-INR, GBP-INR, JPY-INR and certain cross-currency pairs on recognized exchanges [web:12][web:17].</td>
+        </tr>
+        <tr>
+          <td>Offshore speculative retail forex</td>
+          <td>High-risk / potentially non-compliant</td>
+          <td>Trading through unauthorized foreign brokers can fall outside Indian rules and should be treated as a compliance risk [web:2][web:9].</td>
+        </tr>
+        <tr>
+          <td>Hedging foreign exposure</td>
+          <td>Generally permitted in appropriate cases</td>
+          <td>Typically relevant for genuine exposure, not random speculation [web:2].</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card section">
+    <h2>Major Currency Pairs</h2>
+    <div class="market-grid">
+      <div class="market-card">
+        <h3>EUR/USD</h3>
+        <p>The most watched pair globally. It is heavily influenced by US and Eurozone rate expectations, inflation, and central-bank language.</p>
+      </div>
+      <div class="market-card">
+        <h3>GBP/USD</h3>
+        <p>Often more volatile than EUR/USD because sterling reacts strongly to UK data and surprise policy shifts.</p>
+      </div>
+      <div class="market-card">
+        <h3>USD/JPY</h3>
+        <p>A major macro pair driven by US yields, Japan policy, risk sentiment, and safe-haven demand.</p>
+      </div>
+      <div class="market-card">
+        <h3>USD/INR</h3>
+        <p>Important for India. It reacts to RBI policy, crude oil, import demand, portfolio flows, and the US dollar trend.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Why Some Pairs Fluctuate More</h2>
+    <div class="two-col">
+      <div>
+        <div class="adv-item good">Lower liquidity usually means bigger swings, especially in exotic pairs.</div>
+        <div class="adv-item good">Economic releases create sharp volatility when expectations are far from the actual result.</div>
+        <div class="adv-item good">Session overlap, especially London and New York, often increases momentum and volume [web:18][web:19].</div>
+        <div class="adv-item good">Pairs tied to interest-rate changes can move quickly around central bank meetings.</div>
+      </div>
+      <div>
+        <div class="adv-item bad">Pairs with thin order books can gap or spike without much warning.</div>
+        <div class="adv-item bad">News during illiquid Asian hours can produce fake breakouts.</div>
+        <div class="adv-item bad">High leverage magnifies every small move into a larger equity swing.</div>
+        <div class="adv-item bad">Sudden policy intervention can reverse a strong trend in minutes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Trading Sessions</h2>
+    <div class="grid">
+      <div class="metric">
+        <div class="metric-label">ASIA / TOKYO</div>
+        <div class="metric-value">Lower to Moderate</div>
+        <div class="metric-sub">Often calmer except for JPY-related news and Asian macro events.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">LONDON</div>
+        <div class="metric-value">High Activity</div>
+        <div class="metric-sub">Major Europe flows arrive, spreads improve, and trends often accelerate.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">NEW YORK</div>
+        <div class="metric-value">Very Active</div>
+        <div class="metric-sub">US data, Fed expectations, and US equity sentiment can sharply move FX.</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">OVERLAP HOURS</div>
+        <div class="metric-value">Most Volatile</div>
+        <div class="metric-sub">London-New York overlap is one of the best windows for momentum and breakout trades [web:18][web:19].</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Most Important Charts</h2>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Candlestick Trend</div>
+        <div class="mini-chart">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="line1" x1="0" x2="1">
+                <stop offset="0%" stop-color="#67e8f9"/>
+                <stop offset="100%" stop-color="#60a5fa"/>
+              </linearGradient>
+            </defs>
+            <polyline points="0,120 35,110 60,125 85,100 110,104 130,78 155,92 180,60 205,70 230,48 255,56 280,30 300,36" fill="none" stroke="url(#line1)" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Support & Resistance</div>
+        <div class="mini-chart">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+            <line x1="0" y1="100" x2="300" y2="100" stroke="#34d399" stroke-width="2" stroke-dasharray="6 4"/>
+            <line x1="0" y1="55" x2="300" y2="55" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6 4"/>
+            <polyline points="0,125 25,116 50,110 75,96 100,98 125,82 150,92 175,76 200,64 225,72 250,58 275,44 300,50" fill="none" stroke="#dbeafe" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">RSI / Momentum</div>
+        <div class="mini-chart">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+            <line x1="0" y1="35" x2="300" y2="35" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <line x1="0" y1="75" x2="300" y2="75" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <polyline points="0,110 30,102 60,72 90,55 120,63 150,48 180,40 210,54 240,68 270,56 300,42" fill="none" stroke="#a78bfa" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">MACD / Crossovers</div>
+        <div class="mini-chart">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+            <rect x="10" y="78" width="28" height="40" fill="#34d399" opacity="0.7"/>
+            <rect x="48" y="88" width="28" height="30" fill="#34d399" opacity="0.7"/>
+            <rect x="86" y="74" width="28" height="44" fill="#f87171" opacity="0.7"/>
+            <rect x="124" y="60" width="28" height="58" fill="#34d399" opacity="0.7"/>
+            <rect x="162" y="50" width="28" height="68" fill="#34d399" opacity="0.7"/>
+            <rect x="200" y="66" width="28" height="52" fill="#f87171" opacity="0.7"/>
+            <rect x="238" y="43" width="28" height="75" fill="#34d399" opacity="0.7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Common Candlestick Patterns</h2>
+    <div class="pattern-grid">
+      <div class="pattern">
+        <h4>Doji</h4>
+        <p>Shows indecision. Often useful near support or resistance when direction is unclear.</p>
+      </div>
+      <div class="pattern">
+        <h4>Bullish Engulfing</h4>
+        <p>Can indicate a possible reversal when buyers overpower the previous candle strongly.</p>
+      </div>
+      <div class="pattern">
+        <h4>Bearish Engulfing</h4>
+        <p>Often warns of a downside reversal after a strong upward move.</p>
+      </div>
+      <div class="pattern">
+        <h4>Hammer</h4>
+        <p>Can signal rejection of lower prices after sellers failed to keep control.</p>
+      </div>
+      <div class="pattern">
+        <h4>Shooting Star</h4>
+        <p>May appear after an uptrend and can suggest exhaustion near resistance.</p>
+      </div>
+      <div class="pattern">
+        <h4>Inside Bar</h4>
+        <p>Often reflects contraction before expansion, useful for breakout setups.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Expert Trader Checklist</h2>
+    <div class="small">
+      <p>• Start from the higher timeframe first, then move down to the entry timeframe.</p>
+      <p>• Watch trend, momentum, liquidity, and event risk together, not as separate ideas.</p>
+      <p>• Use support, resistance, prior highs/lows, VWAP, moving averages, and session opens as practical levels.</p>
+      <p>• Keep position size smaller when volatility expands or a major announcement is near.</p>
+      <p>• Treat leverage as a tool, not a strategy.</p>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Risk Management</h2>
+    <div class="two-col">
+      <div>
+        <div class="adv-item good">Use stop-loss orders to define risk before entering the trade.</div>
+        <div class="adv-item good">Risk only a small fixed portion of capital on each trade.</div>
+        <div class="adv-item good">Avoid overtrading during news spikes and thin sessions.</div>
+      </div>
+      <div>
+        <div class="adv-item bad">Do not hold oversized leveraged positions through unknown event risk.</div>
+        <div class="adv-item bad">Do not average losses without a clear plan.</div>
+        <div class="adv-item bad">Do not confuse a lucky win with a repeatable edge.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Forex Glossary</h2>
+    <div class="glossary">
+      <div><strong>Bid</strong> is the price buyers are willing to pay.</div>
+      <div><strong>Ask</strong> is the price sellers are willing to accept.</div>
+      <div><strong>Spread</strong> is the difference between bid and ask.</div>
+      <div><strong>Pip</strong> is the standard unit of movement in many pairs.</div>
+      <div><strong>Lot</strong> is the trade size.</div>
+      <div><strong>Leverage</strong> increases exposure using less capital.</div>
+      <div><strong>Margin</strong> is the deposit required to open a trade.</div>
+      <div><strong>Volatility</strong> measures how fast price changes.</div>
+      <div><strong>Liquidity</strong> measures how easily a trade can be executed.</div>
+      <div><strong>Hedge</strong> reduces risk from exchange-rate movement.</div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>AI Market Read</h2>
+    <div id="aiText">Scanning forex trend, session volatility, and major pair momentum...</div>
+    <button class="btn" onclick="refreshInsight()">Refresh Market Read</button>
+  </div>
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  buildBackground();
+}
+window.addEventListener('resize',resize);
+
+let waves=[],particles=[],candles=[],traces=[];
+function rand(a,b){return a+Math.random()*(b-a)}
+
+function buildBackground(){
+  waves=[];particles=[];candles=[];traces=[];
+  const W=canvas.width,H=canvas.height;
+  for(let i=0;i<8;i++){
+    waves.push({
+      y:rand(70,H-70),
+      amp:rand(6,24),
+      freq:rand(0.002,0.007),
+      phase:rand(0,Math.PI*2),
+      speed:rand(0.004,0.012)
+    });
+  }
+  for(let i=0;i<120;i++){
+    particles.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      vx:rand(-0.08,0.16),
+      vy:rand(0.03,0.12),
+      s:rand(0.7,1.6),
+      a:rand(0.05,0.2)
+    });
+  }
+  for(let i=0;i<5;i++){
+    candles.push({
+      x:rand(0,W*0.9),
+      y:rand(40,H*0.65),
+      w:rand(18,34),
+      h:rand(60,170),
+      speed:rand(0.08,0.22)
+    });
+  }
+  for(let i=0;i<6;i++){
+    traces.push({
+      x:rand(20,W-100),
+      y:rand(50,H-80),
+      r:rand(80,160),
+      vr:rand(0.05,0.14)
+    });
+  }
+}
+resize();
+
+function drawGrid(){
+  const W=canvas.width,H=canvas.height;
+  ctx.save();
+  ctx.lineWidth=1;
+  for(let x=0;x<W;x+=70){
+    ctx.strokeStyle='rgba(96,165,250,0.03)';
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,H);
+    ctx.stroke();
+  }
+  for(let y=0;y<H;y+=70){
+    ctx.strokeStyle='rgba(96,165,250,0.03)';
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(W,y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawGlow(){
+  const W=canvas.width,H=canvas.height;
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(96,165,250,0.03)');
+  g.addColorStop(0.5,'rgba(0,0,0,0)');
+  g.addColorStop(1,'rgba(167,139,250,0.03)');
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawWaves(){
+  const W=canvas.width;
+  ctx.save();
+  ctx.lineCap='round';
+  waves.forEach((w,i)=>{
+    w.phase+=w.speed;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=10){
+      const y=w.y + Math.sin(x*w.freq + w.phase)*w.amp;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=i%2===0?'rgba(96,165,250,0.07)':'rgba(103,232,249,0.05)';
+    ctx.lineWidth=2;
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawCandles(){
+  const W=canvas.width,H=canvas.height;
+  ctx.save();
+  candles.forEach(c=>{
+    c.x+=c.speed;
+    if(c.x>W+50)c.x=-50;
+    const bodyH=c.h*0.48;
+    const x=c.x,y=c.y;
+    ctx.strokeStyle='rgba(255,255,255,0.12)';
+    ctx.fillStyle='rgba(96,165,250,0.07)';
+    ctx.strokeRect(x,y,Math.max(8,c.w*0.7),bodyH);
+    ctx.fillRect(x,y,Math.max(8,c.w*0.7),bodyH);
+    ctx.beginPath();
+    ctx.moveTo(x+Math.max(4,c.w*0.35),y-20);
+    ctx.lineTo(x+Math.max(4,c.w*0.35),y+bodyH+28);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawTraces(){
+  traces.forEach(t=>{
+    t.r+=t.vr;
+    if(t.r>t.y+180)t.r=80;
+    const g=ctx.createRadialGradient(t.x,t.y,0,t.x,t.y,t.r);
+    g.addColorStop(0,'rgba(96,165,250,0.08)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.arc(t.x,t.y,t.r,0,Math.PI*2);
+    ctx.fill();
+  });
+}
+
