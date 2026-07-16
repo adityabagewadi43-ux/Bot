@@ -1,1106 +1,395 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OilTrader Pro - Ultimate Oil Trading Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --oil-gold: #FFD700;
-            --oil-orange: #FF8C00;
-            --oil-green: #00FF88;
-            --oil-red: #FF4444;
-            --glass-bg: rgba(0,0,0,0.85);
-            --glass-border: rgba(255,215,0,0.25);
-            --text-primary: #E8E8E8;
-            --text-secondary: #B0B0B0;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(ellipse at top, #0a0a23 0%, #1a1a2e 50%, #0f1419 100%);
-            background-attachment: fixed;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* Animated Oil Background */
-        .oil-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(255,215,0,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,140,0,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(0,255,136,0.05) 0%, transparent 50%);
-            animation: oilPulse 8s ease-in-out infinite;
-        }
-
-        @keyframes oilPulse {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-
-        /* Particle System */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange));
-            animation: floatOil 20s linear infinite;
-        }
-
-        @keyframes floatOil {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0);
-                opacity: 0;
-            }
-            10% { opacity: 1; scale(1); }
-            90% { opacity: 1; }
-            100% {
-                transform: translateY(-100vh) translateX(100px) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* Header - Compact */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(10,10,35,0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 0.5rem 0;
-        }
-
-        .nav-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            height: 70px;
-        }
-
-        .logo {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.95rem;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: var(--oil-gold);
-            background: rgba(255,215,0,0.15);
-            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
-        }
-
-        /* Hero Section - Compact */
-        .hero {
-            text-align: center;
-            padding: 3rem 2rem 2rem;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(20px);
-            margin: 0 2rem;
-            border-radius: 25px;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
-        }
-
-        .hero h1 {
-            font-family: 'Orbitron', monospace;
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange), var(--oil-gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 10px var(--oil-gold)); }
-            to { filter: drop-shadow(0 0 20px var(--oil-orange)); }
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.5;
-        }
-
-        /* Stats Grid - Tight */
-        .stats-grid {
-            max-width: 1600px;
-            margin: 0 auto 2rem;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .stat-card {
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px);
-            padding: 1.5rem 1rem;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--oil-gold), var(--oil-orange));
-        }
-
-        .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(255,215,0,0.25);
-            border-color: var(--oil-gold);
-        }
-
-        .stat-number {
-            font-family: 'Orbitron', monospace;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--oil-gold);
-            margin-bottom: 0.25rem;
-            line-height: 1.1;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .stat-change {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 0.25rem;
-        }
-
-        /* Main Dashboard - Compact Grid */
-        .dashboard {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 2rem 2rem;
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 2rem;
-            min-height: 70vh;
-        }
-
-        /* Oil Stocks Panel */
-        .panel {
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(25px);
-            border-radius: 24px;
-            border: 1px solid var(--glass-border);
-            padding: 1.5rem;
-            height: fit-content;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,215,0,0.2);
-        }
-
-        .panel-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--oil-gold);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange));
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            color: #000;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255,215,0,0.4);
-        }
-
-        .stock-list {
-            max-height: 500px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-
-        .stock-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0.75rem;
-            margin-bottom: 0.75rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .stock-item:hover {
-            background: rgba(255,215,0,0.1);
-            border-color: rgba(255,215,0,0.3);
-            transform: translateX(4px);
-            box-shadow: 0 8px 20px rgba(255,215,0,0.15);
-        }
-
-        .stock-symbol {
-            font-weight: 700;
-            color: var(--oil-gold);
-            font-size: 1.1rem;
-        }
-
-        .stock-details {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .stock-price {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.25rem;
-            font-weight: 800;
-        }
-
-        .price-change {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-left: 0.25rem;
-        }
-
-        /* Patterns Panel - Compact */
-        .patterns-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .pattern-category {
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 1.25rem;
-            border: 1px solid var(--glass-border);
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .category-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: #000;
-            font-weight: 700;
-        }
-
-        .category-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
-            color: var(--oil-gold);
-            font-weight: 700;
-        }
-
-        .pattern-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-        }
-
-        .pattern-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 1rem 0.75rem 0.75rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .pattern-card:hover {
-            background: rgba(255,215,0,0.15);
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(255,215,0,0.25);
-            border-color: var(--oil-gold);
-        }
-
-        .pattern-canvas {
-            width: 100%;
-            height: 90px;
-            border-radius: 12px;
-            background: #111;
-            margin-bottom: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .pattern-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .pattern-type {
-            font-size: 0.75rem;
-            font-weight: 500;
-            opacity: 0.8;
-        }
-
-        /* Live Chart - Full Width */
-        .chart-section {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        .chart-container {
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            padding: 1.5rem;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
-        }
-
-        .chart-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .chart-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.8rem;
-            color: var(--oil-gold);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Strategies Section - Compact Cards */
-        .strategies-section {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 2rem 2rem;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 2.2rem;
-            color: var(--oil-gold);
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .strategy-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .strategy-card {
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
-            padding: 1.75rem;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .strategy-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--oil-gold), var(--oil-orange));
-        }
-
-        .strategy-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 25px 50px rgba(255,215,0,0.2);
-            border-color: var(--oil-gold);
-        }
-
-        .strategy-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #000;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        .strategy-bull { background: linear-gradient(45deg, var(--oil-green), #00CC66); }
-        .strategy-bear { background: linear-gradient(45deg, var(--oil-red), #CC3333); }
-        .strategy-neutral { background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange)); }
-
-        /* Risk Cards - Compact */
-        .risk-grid {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 2rem 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .risk-card {
-            padding: 1.5rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .risk-safe {
-            background: rgba(0,255,136,0.12);
-            border: 1px solid rgba(0,255,136,0.3);
-        }
-
-        .risk-danger {
-            background: rgba(255,68,68,0.12);
-            border: 1px solid rgba(255,68,68,0.3);
-        }
-
-        /* Footer - Compact */
-        .footer {
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(30px);
-            padding: 2.5rem 2rem;
-            text-align: center;
-            border-top: 1px solid var(--glass-border);
-            margin-top: 3rem;
-        }
-
-        .ai-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 1rem;
-            background: linear-gradient(45deg, var(--oil-gold), var(--oil-orange));
-            color: #000;
-            padding: 1.2rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1.3rem;
-            font-weight: 800;
-            font-family: 'Orbitron', monospace;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 12px 40px rgba(255,215,0,0.4);
-            animation: pulse-glow 3s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 12px 40px rgba(255,215,0,0.4); }
-            50% { box-shadow: 0 12px 50px rgba(255,215,0,0.6); }
-        }
-
-        .ai-btn:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 60px rgba(255,215,0,0.5);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-                padding: 0 1rem;
-            }
-            
-            .hero {
-                margin: 0 1rem 1.5rem;
-                padding: 2rem 1.5rem;
-            }
-            
-            .dashboard, .chart-section, .strategies-section, .risk-grid {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.3);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--oil-gold), var(--oil-orange));
-            border-radius: 4px;
-        }
-
-        /* Loading Spinner */
-        .loading {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,215,0,0.3);
-            border-top: 2px solid var(--oil-gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oil Market Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            oilblack: "#050505",
+            oilgold: "#D4AF37",
+            energyorange: "#FF8C00",
+            emerald: "#00E676",
+            crimson: "#FF3D57",
+          },
+        },
+      },
+    };
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-    <!-- Dynamic Background -->
-    <div class="oil-bg"></div>
-    <div class="particles" id="particles"></div>
+<body class="bg-oilblack text-white overflow-x-hidden">
+  <div id="root"></div>
 
-    <!-- Header -->
-    <header class="header">
-        <nav class="nav-container">
-            <div class="logo">
-                <i class="fas fa-oil-can"></i>
-                OilTrader Pro
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="#stocks" class="nav-link"><i class="fas fa-building-columns"></i> Stocks</a></li>
-                <li><a href="#patterns" class="nav-link"><i class="fas fa-shapes"></i> Patterns</a></li>
-                <li><a href="#strategies" class="nav-link"><i class="fas fa-layer-group"></i> Strategies</a></li>
-                <li><a href="#risk" class="nav-link"><i class="fas fa-shield-alt"></i> Risk</a></li>
-            </ul>
-        </nav>
-    </header>
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
 
-    <!-- Hero -->
-    <section class="hero">
-        <h1>OilTrader Pro</h1>
-        <p>Professional oil trading dashboard with live patterns, strategies, and risk management. Your complete A-Z oil trading command center.</p>
-    </section>
+    const NAV = ["Dashboard","Markets","Stocks","Charts","News","Screener","Portfolio","Watchlist","Commodities","AI Insights","Learning","Settings"];
+    const FILTERS = ["All","Company","Oil Prices","OPEC","Middle East","Economy","Energy"];
 
-    <!-- Live Stats -->
-    <section class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number" id="brent">$82.45</div>
-            <div class="stat-label">Brent Crude</div>
-            <div class="stat-change price-up">+1.23%</div>
+    const quotes = [
+      { symbol: "WTI", name: "WTI Crude", price: 82.41, change: 1.82, volume: "2.4M", trend: "up" },
+      { symbol: "BRENT", name: "Brent Crude", price: 85.73, change: 1.14, volume: "3.1M", trend: "up" },
+      { symbol: "NG", name: "Natural Gas", price: 2.91, change: -0.08, volume: "9.8M", trend: "down" },
+      { symbol: "HO", name: "Heating Oil", price: 2.72, change: 0.22, volume: "1.9M", trend: "up" },
+      { symbol: "RB", name: "Gasoline", price: 2.49, change: -0.05, volume: "2.8M", trend: "down" },
+      { symbol: "OPEC", name: "OPEC Basket", price: 84.02, change: 0.97, volume: "N/A", trend: "up" },
+    ];
+
+    const stocks = [
+      ["XOM","ExxonMobil",118.2,1.8,"18.2M","$462B","3.1%","15.3","7.72",124.8,94.1,"17.9M","Energy","Integrated Oil",18,91,"Buy"],
+      ["CVX","Chevron",149.5,1.2,"7.1M","$281B","4.0%","14.8","10.1",171.0,132.5,"6.9M","Energy","Integrated Oil",16,88,"Buy"],
+      ["SHEL","Shell",68.4,-0.6,"5.3M","$225B","3.8%","10.9","6.31",74.0,58.9,"5.7M","Energy","Integrated Oil",21,79,"Hold"],
+      ["BP","BP",35.9,0.7,"12.4M","$103B","5.9%","8.7","4.12",40.3,29.7,"11.8M","Energy","Integrated Oil",25,74,"Hold"],
+      ["TTE","TotalEnergies",68.8,1.1,"3.4M","$164B","4.6%","8.8","7.84",72.6,56.4,"3.1M","Energy","Integrated Oil",19,82,"Buy"],
+      ["COP","ConocoPhillips",118.9,-1.4,"6.5M","$143B","2.8%","12.2","8.81",135.6,95.2,"6.1M","Energy","E&P",17,77,"Hold"],
+      ["OXY","Occidental",58.6,2.3,"13.2M","$53B","1.1%","17.4","3.48",71.1,47.4,"12.5M","Energy","E&P",28,85,"Buy"],
+      ["MRO","Marathon Oil",27.3,-0.9,"9.1M","$16B","1.9%","11.8","2.31",31.7,20.5,"8.8M","Energy","E&P",23,70,"Hold"],
+    ].map(([symbol,name,price,daily,volume,marketCap,dividend,pe,eps,high52,low52,avgVol,sector,industry,risk,ai,signal]) => ({
+      symbol: String(symbol), name: String(name), price: Number(price), daily: Number(daily), volume: String(volume),
+      marketCap: String(marketCap), dividend: String(dividend), pe: Number(pe), eps: Number(eps),
+      high52: Number(high52), low52: Number(low52), avgVol: String(avgVol), sector: String(sector),
+      industry: String(industry), risk: Number(risk), ai: Number(ai), signal: String(signal)
+    }));
+
+    const news = [
+      { title: "OPEC signals cautious supply discipline amid rising demand expectations", source: "Reuters", time: "2m ago", impact: 84 },
+      { title: "Brent firms as inventory draw boosts sentiment across energy markets", source: "Bloomberg", time: "6m ago", impact: 77 },
+      { title: "Refinery margins widen as gasoline crack spreads improve", source: "CNBC", time: "12m ago", impact: 68 },
+      { title: "US shale producers maintain capital discipline while cash flows stay strong", source: "Financial Times", time: "19m ago", impact: 73 },
+    ];
+
+    function useTicker() {
+      const [t, setT] = useState(0);
+      useEffect(() => {
+        const id = setInterval(() => setT(v => v + 1), 1000);
+        return () => clearInterval(id);
+      }, []);
+      return t;
+    }
+
+    function MiniSparkline({ up = true }) {
+      const pts = useMemo(() =>
+        Array.from({ length: 16 }, (_, i) => {
+          const base = up ? 20 + i * 1.5 : 44 - i * 1.3;
+          return `${i * 7},${Math.max(6, Math.min(54, base + Math.sin(i * 0.8) * 8))}`;
+        }).join(" "),
+      [up]);
+      return (
+        <svg viewBox="0 0 110 60" className="h-10 w-full overflow-visible">
+          <polyline points={pts} fill="none" stroke="url(#g)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          <defs>
+            <linearGradient id="g" x1="0" x2="1">
+              <stop offset="0%" stopColor={up ? "#00E676" : "#FF3D57"} />
+              <stop offset="100%" stopColor="#D4AF37" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    }
+
+    function GlassCard({ children, className = "" }) {
+      return (
+        <div className={`rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_50px_rgba(212,175,55,0.08)] ${className}`}>
+          {children}
         </div>
-        <div class="stat-card">
-            <div class="stat-number" id="wti">$78.92</div>
-            <div class="stat-label">WTI Crude</div>
-            <div class="stat-change price-up">+0.89%</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="volume">2.4M</div>
-            <div class="stat-label">24h Volume</div>
-            <div class="stat-change price-up">+15%</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="volatility">2.8%</div>
-            <div class="stat-label">Volatility (ATR)</div>
-            <div class="stat-change price-down">+0.3%</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="crack">$18.50</div>
-            <div class="stat-label">3:2:1 Crack</div>
-            <div class="stat-change price-up">+2.1%</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="contango">0.45</div>
-            <div class="stat-label">Contango ($)</div>
-            <div class="stat-change price-down">-0.12</div>
-        </div>
-    </section>
+      );
+    }
 
-    <!-- Main Dashboard -->
-    <div class="dashboard" id="dashboard">
-        <!-- Oil Stocks -->
-        <section class="panel" id="stocks">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="fas fa-chart-line"></i>
-                    Major Oil Stocks
-                </div>
-                <button class="btn" onclick="refreshData()">
-                    <span id="loading" class="loading" style="display: none;"></span>
-                    Refresh
-                </button>
-            </div>
-            <div class="stock-list">
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">XOM</div>
-                        <div class="stock-details">ExxonMobil • $452B • P/E 14.2</div>
-                    </div>
-                    <div class="stock-price">$118.45<span class="price-change price-up">+2.1%</span></div>
-                </div>
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">CVX</div>
-                        <div class="stock-details">Chevron • $298B • 4.1% Yield</div>
-                    </div>
-                    <div class="stock-price">$156.78<span class="price-change price-down">-0.8%</span></div>
-                </div>
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">SLB</div>
-                        <div class="stock-details">Schlumberger • $68B • Beta 1.6</div>
-                    </div>
-                    <div class="stock-price">$45.23<span class="price-change price-up">+1.5%</span></div>
-                </div>
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">HAL</div>
-                        <div class="stock-details">Halliburton • $32B • ROE 28%</div>
-                    </div>
-                    <div class="stock-price">$34.67<span class="price-change price-up">+3.2%</span></div>
-                </div>
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">BKR</div>
-                        <div class="stock-details">Baker Hughes • $42B • D/E 0.4</div>
-                    </div>
-                    <div class="stock-price">$35.12<span class="price-change price-down">-1.1%</span></div>
-                </div>
-                <div class="stock-item">
-                    <div>
-                        <div class="stock-symbol">PSX</div>
-                        <div class="stock-details">Phillips 66 • $58B • Margin $12</div>
-                    </div>
-                    <div class="stock-price">$142.89<span class="price-change price-up">+0.9%</span></div>
-                </div>
-            </div>
-        </section>
+    function LiveBackground() {
+      const ref = useRef(null);
+      useEffect(() => {
+        const c = ref.current;
+        if (!c) return;
+        const ctx = c.getContext("2d");
+        let raf = 0, t = 0, w = 0, h = 0;
 
-        <!-- Patterns Panel -->
-        <section class="panel" id="patterns">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="fas fa-cubes"></i>
-                    Candlestick Patterns
-                </div>
-            </div>
-            <div class="patterns-panel">
-                <div class="pattern-category">
-                    <div class="category-header">
-                        <div class="category-icon"><i class="fas fa-exchange-alt"></i></div>
-                        <div class="category-title">Reversals</div>
-                    </div>
-                    <div class="pattern-grid">
-                        <div class="pattern-card" onclick="showDetail('Head & Shoulders', 'Bearish reversal at trend tops')">
-                            <canvas class="pattern-canvas" id="hs-mini"></canvas>
-                            <div class="pattern-name">Head & Shoulders</div>
-                            <div class="pattern-type">Bearish</div>
-                        </div>
-                        <div class="pattern-card" onclick="showDetail('Inverse H&S', 'Bullish reversal at bottoms')">
-                            <canvas class="pattern-canvas" id="ihs-mini"></canvas>
-                            <div class="pattern-name">Inverse H&S</div>
-                            <div class="pattern-type">Bullish</div>
-                        </div>
-                        <div class="pattern-card" onclick="showDetail('Double Top', 'M/W formation')">
-                            <canvas class="pattern-canvas" id="dt-mini"></canvas>
-                            <div class="pattern-name">Double Top</div>
-                            <div class="pattern-type">Bearish</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pattern-category">
-                    <div class="category-header">
-                        <div class="category-icon"><i class="fas fa-forward"></i></div>
-                        <div class="category-title">Continuation</div>
-                    </div>
-                    <div class="pattern-grid">
-                        <div class="pattern-card" onclick="showDetail('Bull Flag', 'Continuation after breakout')">
-                            <canvas class="pattern-canvas" id="flag-mini"></canvas>
-                            <div class="pattern-name">Bull Flag</div>
-                            <div class="pattern-type">Bullish</div>
-                        </div>
-                        <div class="pattern-card" onclick="showDetail('Pennant', 'Tight consolidation')">
-                            <canvas class="pattern-canvas" id="pennant-mini"></canvas>
-                            <div class="pattern-name">Pennant</div>
-                            <div class="pattern-type">Continuation</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pattern-category">
-                    <div class="category-header">
-                        <div class="category-icon"><i class="fas fa-candle-stick"></i></div>
-                        <div class="category-title">Single Candles</div>
-                    </div>
-                    <div class="pattern-grid">
-                        <div class="pattern-card" onclick="showDetail('Hammer', 'Bullish reversal candle')">
-                            <canvas class="pattern-canvas" id="hammer-mini"></canvas>
-                            <div class="pattern-name">Hammer</div>
-                            <div class="pattern-type">Bullish</div>
-                        </div>
-                        <div class="pattern-card" onclick="showDetail('Doji', 'Market indecision')">
-                            <canvas class="pattern-canvas" id="doji-mini"></canvas>
-                            <div class="pattern-name">Doji</div>
-                            <div class="pattern-type">Neutral</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Live Chart -->
-    <section class="chart-section">
-        <div class="chart-container">
-            <div class="chart-header">
-                <div class="chart-title">Brent Crude Live <i class="fas fa-chart-line"></i></div>
-                <div style="color: var(--text-secondary); font-size: 0.95rem;">1H Chart • Auto-updating every 5s</div>
-            </div>
-            <div id="liveChart" style="width: 100%; height: 450px;"></div>
-        </div>
-    </section>
-
-    <!-- Strategies -->
-    <section class="strategies-section" id="strategies">
-        <div class="section-header">
-            <h2 class="section-title">Pro Trading Strategies</h2>
-            <p style="color: var(--text-secondary); max-width: 800px; margin: 0 auto 2rem; font-size: 1.1rem;">
-                Battle-tested oil strategies with exact entry/exit rules and performance metrics
-            </p>
-        </div>
-        <div class="strategy-grid">
-            <div class="strategy-card">
-                <div class="strategy-icon strategy-bull"><i class="fas fa-bolt"></i></div>
-                <h3>EIA Report Scalping</h3>
-                <p><strong>10:30 AM EST</strong> • 1-min chart • 20EMA • Target 30 ticks • <strong>68% win rate</strong> • R:R 1:2.5</p>
-            </div>
-            <div class="strategy-card">
-                <div class="strategy-icon strategy-bull"><i class="fas fa-clock"></i></div>
-                <h3>NYMEX Breakout</h3>
-                <p><strong>9:00 AM EST</strong> • First 30-min range • Breakout + volume • Trail 10-tick stops • <strong>72% win rate</strong></p>
-            </div>
-            <div class="strategy-card">
-                <div class="strategy-icon strategy-neutral"><i class="fas fa-layer-group"></i></div>
-                <h3>OPEC Swing Trade</h3>
-                <p>Post-announcement H&S • Daily timeframe • Hold 3-10 days • <strong>65% win rate</strong> • R:R 1:4</p>
-            </div>
-            <div class="strategy-card">
-                <div class="strategy-icon strategy-bear"><i class="fas fa-balance-scale"></i></div>
-                <h3>Contango Reversion</h3>
-                <p>Front vs deferred spreads • 3SD entry • 1SD exit • <strong>78% win rate</strong> • Low volatility</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Risk Management -->
-    <section class="risk-grid" id="risk">
-        <div class="risk-card risk-safe">
-            <h3><i class="fas fa-percentage"></i> Position Sizing</h3>
-            <p><strong>Max 2% risk/trade</strong> • Oil 5% daily range = 0.4% risk per CL • Kelly optimized</p>
-        </div>
-        <div class="risk-card risk-safe">
-            <h3><i class="fas fa-stop"></i> Daily Limits</h3>
-            <p><strong>3 losses OR 4% drawdown = STOP</strong> • Weekly max 8% • Capital preservation #1</p>
-        </div>
-        <div class="risk-card risk-danger">
-            <h3><i class="fas fa-exclamation-triangle"></i> Inventory Reports</h3>
-            <p><strong>API 4:30PM Tue • EIA 10:30AM Wed = NO NEW TRADES</strong> • Close shorts pre-report</p>
-        </div>
-        <div class="risk-card risk-safe">
-            <h3><i class="fas fa-link"></i> Correlations</h3>
-            <p>Max 30% oil exposure • Monitor USDX/Gold • Reduce size VIX > 25 • Hedge USO puts</p>
-        </div>
-    </section>
-
-    <!-- AI Analyst CTA -->
-    <footer class="footer">
-        <h2 style="font-family: 'Orbitron', monospace; color: var(--oil-gold); font-size: 2rem; margin-bottom: 1rem;">
-            Professional AI Analysis
-        </h2>
-        <p style="max-width: 600px; margin: 0 auto 2rem; color: var(--text-secondary);">
-            Get AI-powered pattern recognition, trade signals, and market forecasts tailored to oil trading
-        </p>
-        <a href="https://perplexity.ai" class="ai-btn" target="_blank">
-            <i class="fas fa-rocket"></i>
-            Launch AI Oil Analyst
-        </a>
-    </footer>
-
-    <script>
-        // Particles
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 60; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = Math.random() * 6 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
-                particle.style.animationDelay = Math.random() * 10 + 's';
-                container.appendChild(particle);
-            }
-        }
-
-        // Live Data Updates
-        function refreshData() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'inline-block';
-            
-            setTimeout(() => {
-                const prices = document.querySelectorAll('.stock-price');
-                prices.forEach(price => {
-                    const current = parseFloat(price.textContent.replace(/[^0-9.]/g, ''));
-                    const change = (Math.random() - 0.5) * 4;
-                    const newPrice = (current + change).toFixed(2);
-                    const changePct = (change/current*100).toFixed(1);
-                    
-                    price.innerHTML = `$${newPrice}<span class="price-change ${change > 0 ? 'price-up' : 'price-down'}">${change > 0 ? '+' : ''}${changePct}%</span>`;
-                });
-
-                // Update stats
-                const stats = ['brent', 'wti', 'volume', 'volatility', 'crack', 'contango'];
-                stats.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        const val = parseFloat(el.textContent.replace(/[^0-9.]/g, '')) || 0;
-                        el.textContent = (val + (Math.random() - 0.5) * (id === 'volume' ? 0.5 : 0.5)).toFixed(id === 'volume' ? 1 : 2);
-                    }
-                });
-
-                loading.style.display = 'none';
-            }, 1200);
-        }
-
-        // Pattern Charts
-        const patternData = {
-            'hs-mini': [{o:45,h:55,l:42,c:48},{o:48,h:75,l:47,c:72},{o:72,h:74,l:68,c:70},{o:70,h:71,l:65,c:67},{o:67,h:68,l:62,c:64}],
-            'ihs-mini': [{o:55,h:58,l:45,c:52},{o:52,h:53,l:30,c:32},{o:32,h:34,l:28,c:30},{o:30,h:31,l:28,c:29},{o:29,h:32,l:27,c:31}],
-            'dt-mini': [{o:40,h:70,l:38,c:68},{o:68,h:69,l:60,c:62},{o:62,h:70,l:58,c:65},{o:65,h:66,l:55,c:57}],
-            'flag-mini': [{o:40,h:70,l:38,c:68},{o:68,h:69,l:66,c:67},{o:67,h:68,l:66,c:67},{o:67,h:75,l:66,c:74}],
-            'pennant-mini': [{o:45,h:65,l:43,c:62},{o:62,h:64,l:58,c:60},{o:60,h:62,l:57,c:59},{o:59,h:67,l:58,c:65}],
-            'hammer-mini': [{o:50,h:52,l:30,c:51}],
-            'doji-mini': [{o:50,h:52,l:48,c:50}]
+        const resize = () => {
+          const dpr = window.devicePixelRatio || 1;
+          w = c.clientWidth * dpr;
+          h = c.clientHeight * dpr;
+          c.width = w;
+          c.height = h;
         };
 
-        function drawPattern(canvasId, data) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width = canvas.offsetWidth * 2;
-            const h = canvas.height = canvas.offsetHeight * 2;
-            ctx.scale(2,2);
+        const draw = () => {
+          const dpr = window.devicePixelRatio || 1;
+          t += 0.006;
+          ctx.clearRect(0, 0, w, h);
+          const grad = ctx.createLinearGradient(0, 0, 0, h);
+          grad.addColorStop(0, "#050505");
+          grad.addColorStop(0.6, "#09090c");
+          grad.addColorStop(1, "#030303");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
 
-            ctx.clearRect(0,0,w/2,h/2);
-            
-            // Grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 0.5;
-            for(let i=0; i<=5; i++) {
-                ctx.beginPath();
-                ctx.moveTo(0, i*h/10);
-                ctx.lineTo(canvas.width/2, i*h/10);
-                ctx.stroke();
+          for (let i = 0; i < 7; i++) {
+            ctx.globalAlpha = 0.05;
+            ctx.strokeStyle = i % 2 ? "#D4AF37" : "#FF8C00";
+            ctx.lineWidth = 2 * dpr;
+            ctx.beginPath();
+            for (let x = 0; x <= w; x += 20 * dpr) {
+              const y = h * 0.72 + Math.sin(x * 0.002 + t * 1.2 + i) * 18 * dpr + Math.sin(x * 0.01 + t * 2 + i) * 6 * dpr;
+              x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             }
+            ctx.stroke();
+          }
 
-            // Candles
-            const candleW = canvas.width/2 / data.length * 0.8;
-            data.forEach((candle,i) => {
-                const x = i * canvas.width/2 / data.length + candleW/2;
-                const yH = h - (candle.h/100 * h * 0.8 + h*0.1);
-                const yL = h - (candle.l/100 * h * 0.8 + h*0.1);
-                const yO = h - (candle.o/100 * h * 0.8 + h*0.1);
-                const yC = h - (candle.c/100 * h * 0.8 + h*0.1);
-                
-                // Wick
-                ctx.strokeStyle = candle.c > candle.o ? '#00FF88' : '#FF4444';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(x, yH);
-                ctx.lineTo(x, yL);
-                ctx.stroke();
+          ctx.globalAlpha = 0.08;
+          for (let i = 0; i < 55; i++) {
+            const x = (Math.sin(t * 0.9 + i) * 0.5 + 0.5) * w;
+            const y = (Math.cos(t * 1.1 + i * 1.7) * 0.5 + 0.5) * h;
+            ctx.fillStyle = i % 3 === 0 ? "#00E676" : i % 3 === 1 ? "#D4AF37" : "#FF3D57";
+            ctx.beginPath();
+            ctx.arc(x, y, (i % 4 + 1) * dpr, 0, Math.PI * 2);
+            ctx.fill();
+          }
 
-                // Body
-                ctx.fillStyle = candle.c > candle.o ? 'rgba(0,255,136,0.85)' : 'rgba(255,68,68,0.85)';
-                const bodyTop = Math.min(yO, yC);
-                const bodyH = Math.abs(yC - yO);
-                ctx.fillRect(x - candleW/2, bodyTop, candleW, bodyH);
-            });
-        }
+          raf = requestAnimationFrame(draw);
+        };
 
-        // Live Chart
-        let chart;
-        function initChart() {
-            const container = document.getElementById('liveChart');
-            chart = LightweightCharts.createChart(container, {
-                width: container.clientWidth,
-                height: 450,
-                layout: { background: { color: '#0f0f1a' }, textColor: '#E8E8E8' },
-                grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
-                crosshair: { mode: 1 },
-                timeScale: { timeVisible: true, secondsVisible: false }
-            });
+        resize();
+        draw();
+        window.addEventListener("resize", resize);
+        const vis = () => {
+          if (document.hidden) cancelAnimationFrame(raf);
+          else draw();
+        };
+        document.addEventListener("visibilitychange", vis);
 
-            const series = chart.addCandlestickSeries({
-                upColor: '#00FF88', downColor: '#FF4444',
-                borderVisible: false, wickUpColor: '#00FF88', wickDownColor: '#FF4444'
-            });
+        return () => {
+          cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", vis);
+        };
+      }, []);
+      return <canvas ref={ref} className="absolute inset-0 h-full w-full opacity-[0.55]" />;
+    }
 
-            const data = [];
-            let price = 82.5;
-            for(let i = 0; i < 150; i++) {
-                const change = (Math.random()-0.5)*0.4;
-                const high = Math.max(price, price + Math.random()*0.3);
-                const low = Math.min(price, price - Math.random()*0.3);
-                const open = price;
-                price += change;
-                const close = price;
-                
-                data.push({
-                    time: '2026-05-0' + (3 + Math.floor(i/24)) + '-' + (i%24 + 1).toString().padStart(2,'0') + 'T12:00:00.000Z',
-                    open, high, low, close
-                });
-            }
-            series.setData(data);
+    function App() {
+      const [dark, setDark] = useState(true);
+      const [activeFilter, setActiveFilter] = useState("All");
+      useTicker();
 
-            setInterval(() => {
-                const last = data[data.length-1];
-                const change = (Math.random()-0.5)*0.15;
-                const high = Math.max(last.close, last.close + Math.random()*0.2);
-                const low = Math.min(last.close, last.close - Math.random()*0.2);
-                const open = last.close;
-                const close = open + change;
-                
-                data.push({
-                    time: new Date(Date.now() - (150-data.length)*3600000).toISOString(),
-                    open, high, low, close
-                });
-                if(data.length > 200) data.shift();
-                series.update({time: data[data.length-1].time, open, high, low, close});
-            }, 5000);
-        }
+      return (
+        <div className={`${dark ? "dark" : ""} min-h-screen bg-[#050505] text-white`}>
+          <div className="fixed inset-0 overflow-hidden">
+            <LiveBackground />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/35 to-black/70"></div>
+            <div className="absolute inset-0 opacity-40 [background:radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.12),transparent_25%),radial-gradient(circle_at_80%_20%,rgba(0,230,118,0.10),transparent_22%),radial-gradient(circle_at_50%_80%,rgba(255,140,0,0.08),transparent_26%)]"></div>
+          </div>
 
-        // Utils
-        function showDetail(name, desc) {
-            alert(`${name}\n\n${desc}\n\n💡 Pro Tip: Wait for volume confirmation + key level test`);
-        }
+          <div className="relative z-10">
+            <header className="sticky top-0 z-50 border-b border-white/10 bg-black/35 backdrop-blur-2xl">
+              <div className="mx-auto flex max-w-[1800px] items-center gap-4 px-4 py-3 lg:px-6">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#D4AF37] via-[#FF8C00] to-[#00E676] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">🔥</div>
+                  <div>
+                    <div className="text-sm font-semibold tracking-[0.3em] text-[#D4AF37]">OIL MARKET PRO</div>
+                    <div className="text-[10px] uppercase tracking-[0.3em] text-white/45">Bloomberg x TradingView x Tesla</div>
+                  </div>
+                </div>
+                <div className="hidden flex-1 items-center gap-1 overflow-x-auto lg:flex">
+                  {NAV.map((n) => <button key={n} className="rounded-full px-4 py-2 text-sm text-white/75 transition hover:bg-white/8 hover:text-white">{n}</button>)}
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  <button className="rounded-full border border-white/10 bg-white/5 p-2.5">🔍</button>
+                  <button className="rounded-full border border-white/10 bg-white/5 p-2.5">🔔</button>
+                  <button className="rounded-full border border-white/10 bg-white/5 p-2.5" onClick={() => setDark(v => !v)}>{dark ? "🌙" : "☀️"}</button>
+                  <button className="rounded-full border border-white/10 bg-white/5 p-2.5">👤</button>
+                </div>
+              </div>
+            </header>
 
-        // Nav
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector('.nav-link.active').classList.remove('active');
-                link.classList.add('active');
-            });
-        });
+            <main className="mx-auto max-w-[1800px] space-y-6 px-4 py-6 lg:px-6">
+              <section className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+                <GlassCard className="relative overflow-hidden p-6 md:p-8">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(0,230,118,0.08),transparent_28%)]"></div>
+                  <div className="relative">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[#D4AF37]">Live Energy Intelligence</div>
+                    <h1 className="max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">Global Oil Stock Intelligence Platform</h1>
+                    <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72 md:text-lg">Analyze every oil company in the world using live charts, financial data, technical indicators, news sentiment and AI-powered predictions.</p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button className="rounded-2xl bg-[#D4AF37] px-5 py-3 font-medium text-black">Explore Markets</button>
+                      <button className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 font-medium text-white">Start Investing</button>
+                      <button className="rounded-2xl border border-[#00E676]/20 bg-[#00E676]/10 px-5 py-3 font-medium text-[#00E676]">Live Market</button>
+                    </div>
+                  </div>
+                </GlassCard>
 
-        // Init
-        window.addEventListener('load', () => {
-            createParticles();
-            Object.entries(patternData).forEach(([id, data]) => drawPattern(id, data));
-            initChart();
-            setInterval(refreshData, 25000);
-        });
+                <GlassCard className="relative overflow-hidden p-5">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.28em] text-white/40">Live Market Ticker</div>
+                      <div className="text-lg font-semibold text-[#D4AF37]">Streaming Overview</div>
+                    </div>
+                    <div className="text-[#FF8C00]">⚡</div>
+                  </div>
+                  <div className="space-y-3">
+                    {quotes.map((q) => (
+                      <div key={q.symbol} className="rounded-2xl border border-white/8 bg-black/20 p-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium">{q.name}</div>
+                            <div className="text-xs text-white/45">{q.symbol} · {q.volume}</div>
+                          </div>
+                          <div className={`flex items-center gap-1 text-sm font-semibold ${q.trend === "up" ? "text-[#00E676]" : q.trend === "down" ? "text-[#FF3D57]" : "text-white/70"}`}>
+                            {q.price}
+                            <span>{q.change > 0 ? "+" : ""}{q.change}%</span>
+                          </div>
+                        </div>
+                        <div className="mt-2"><MiniSparkline up={q.trend !== "down"} /></div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              </section>
 
-        window.addEventListener('resize', () => {
-            if(chart) chart.applyOptions({width: document.getElementById('liveChart').clientWidth});
-        });
-    </script>
+              <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+                {quotes.map((q) => (
+                  <GlassCard key={q.symbol} className="p-4">
+                    <div className="text-xs uppercase tracking-[0.25em] text-white/35">{q.name}</div>
+                    <div className="mt-2 text-2xl font-semibold">{q.price}</div>
+                    <div className={`mt-1 flex items-center gap-1 text-sm ${q.change >= 0 ? "text-[#00E676]" : "text-[#FF3D57]"}`}>
+                      {q.change > 0 ? "+" : ""}{q.change}% today
+                    </div>
+                    <div className="mt-3"><MiniSparkline up={q.trend !== "down"} /></div>
+                  </GlassCard>
+                ))}
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr]">
+                <GlassCard className="p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.3em] text-white/40">Advanced Chart</div>
+                      <div className="text-xl font-semibold">TradingView-style Interactive Chart</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {["1D","5D","1M","6M","1Y","5Y","MAX"].map((x) => <button key={x} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">{x}</button>)}
+                    </div>
+                  </div>
+                  <div className="mt-4 grid h-[420px] place-items-center rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))]">
+                    <div className="text-center">
+                      <div className="mx-auto text-4xl text-[#D4AF37]">📈</div>
+                      <div className="mt-3 text-lg font-semibold">Candlestick, line, area, Heikin Ashi</div>
+                      <div className="mt-2 max-w-xl text-sm text-white/55">Integrate TradingView Lightweight Charts here for live OHLC, indicators, drawing tools, and synced technical overlays.</div>
+                    </div>
+                  </div>
+                </GlassCard>
+
+                <div className="space-y-6">
+                  <GlassCard className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs uppercase tracking-[0.3em] text-white/40">Market Status</div>
+                        <div className="text-xl font-semibold">Global Sessions</div>
+                      </div>
+                      <div className="text-[#00E676]">🌍</div>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {["US Market","UK Market","India","Europe","Middle East","Asia"].map((m, i) => (
+                        <div key={m} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                          <span>{m}</span>
+                          <span className={i % 2 === 0 ? "text-[#00E676]" : "text-[#FF3D57]"}>{i % 2 === 0 ? "Open" : "Closed"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+
+                  <GlassCard className="p-5">
+                    <div className="text-xs uppercase tracking-[0.3em] text-white/40">AI Insights</div>
+                    <div className="mt-2 text-xl font-semibold">Sentiment + Momentum</div>
+                    <div className="mt-4 space-y-3">
+                      {[
+                        ["Bullish", "76% confidence"],
+                        ["Prediction", "Price likely to continue higher"],
+                        ["Risk Score", "Moderate"],
+                        ["Entry", "82.10 - 82.35"],
+                        ["Target", "84.60 / 86.25"],
+                        ["Stop Loss", "80.90"],
+                      ].map(([a,b]) => (
+                        <div key={a} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                          <span className="text-white/70">{a}</span>
+                          <span className="text-sm text-[#D4AF37]">{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+                <GlassCard className="p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.3em] text-white/40">Top Oil Stocks</div>
+                      <div className="text-xl font-semibold">Institutional-grade company universe</div>
+                    </div>
+                    <button className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Compare Selected</button>
+                  </div>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+                    {stocks.map((s) => (
+                      <div key={s.symbol} className="rounded-3xl border border-white/10 bg-white/5 p-4 transition hover:-translate-y-1 hover:border-[#D4AF37]/35 hover:bg-white/7">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-lg font-semibold">{s.name}</div>
+                            <div className="text-xs text-white/45">{s.symbol} · {s.sector}</div>
+                          </div>
+                          <button className="rounded-full border border-white/10 bg-black/20 p-2">★</button>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                          <div className="rounded-2xl bg-black/20 p-2">Price <span className="float-right text-[#D4AF37]">{s.price}</span></div>
+                          <div className="rounded-2xl bg-black/20 p-2">Daily <span className={`float-right ${s.daily >= 0 ? "text-[#00E676]" : "text-[#FF3D57]"}`}>{s.daily > 0 ? "+" : ""}{s.daily}%</span></div>
+                          <div className="rounded-2xl bg-black/20 p-2">PE <span className="float-right">{s.pe}</span></div>
+                          <div className="rounded-2xl bg-black/20 p-2">AI <span className="float-right text-[#00E676]">{s.ai}</span></div>
+                        </div>
+                        <div className="mt-3"><MiniSparkline up={s.daily >= 0} /></div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+
+                <div className="space-y-6">
+                  <GlassCard className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs uppercase tracking-[0.3em] text-white/40">Breaking News</div>
+                        <div className="text-xl font-semibold">Live energy headlines</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                      {FILTERS.map((f) => <button key={f} onClick={() => setActiveFilter(f)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm ${activeFilter===f ? "bg-[#D4AF37] text-black" : "border border-white/10 bg-white/5 text-white/75"}`}>{f}</button>)}
+                    </div>
+                    <div className="mt-3 space-y-3">
+                      {news.map((n) => (
+                        <div key={n.title} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <div className="font-medium">{n.title}</div>
+                              <div className="mt-1 text-xs text-white/45">{n.source} · {n.time}</div>
+                            </div>
+                            <div className="rounded-full border border-[#00E676]/20 bg-[#00E676]/10 px-2 py-1 text-xs text-[#00E676]">{n.impact}%</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              </section>
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
