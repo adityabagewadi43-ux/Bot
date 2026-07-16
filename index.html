@@ -1,100 +1,755 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oil Market Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            oilblack: "#050505",
+            oilgold: "#D4AF37",
+            energyorange: "#FF8C00",
+            emerald: "#00E676",
+            crimson: "#FF3D57"
+          }
         }
-
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            width: 95%;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            background-color: #2c5364;
-            color: white;
-            cursor: pointer;
-        }
-
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-    </style>
+      }
+    }
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html,body{margin:0;height:100%;background:#050505;color:#fff;overflow-x:hidden;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    ::-webkit-scrollbar{height:10px;width:10px}
+    ::-webkit-scrollbar-thumb{background:rgba(212,175,55,.35);border-radius:999px}
+    .glass{backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11); box-shadow: 0 0 50px rgba(212,175,55,.08)}
+    .glow{box-shadow:0 0 30px rgba(212,175,55,.22), 0 0 60px rgba(255,140,0,.09)}
+    .title-gradient{background: linear-gradient(90deg, #fff 0%, #D4AF37 35%, #FF8C00 70%, #00E676 100%); -webkit-background-clip:text; background-clip:text; color:transparent}
+    .card-hover{transition:transform .25s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease}
+    .card-hover:hover{transform:translateY(-4px); border-color: rgba(212,175,55,.35); box-shadow:0 0 0 1px rgba(212,175,55,.08), 0 18px 60px rgba(0,0,0,.4)}
+    .grid-bg{background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 42px 42px;}
+    .ticker{white-space:nowrap; animation:ticker 28s linear infinite}
+    @keyframes ticker{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+    .pulse{animation:pulse 3.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.55; transform:scale(1)}50%{opacity:1; transform:scale(1.08)}}
+    .float{animation:float 8s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-10px)}}
+  </style>
 </head>
-
 <body>
+  <div id="root"></div>
 
-<div class="container">
-    <h2>Login</h2>
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
 
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    const NAV = ["Dashboard","Markets","Stocks","Charts","News","Screener","Portfolio","Watchlist","Commodities","AI Insights","Learning","Settings"];
+    const FILTERS = ["All","Company","Oil Prices","OPEC","Middle East","Economy","Energy"];
 
-    <button onclick="login()">Login</button>
+    const marketCards = [
+      { name: "WTI Crude", symbol:"WTI", price: 82.41, change: +1.82, weekly:+3.14, monthly:+7.90, yearly:+11.55, vol:"2.4M", trend:"up" },
+      { name: "Brent Crude", symbol:"BRENT", price: 85.73, change: +1.14, weekly:+2.75, monthly:+6.80, yearly:+10.33, vol:"3.1M", trend:"up" },
+      { name: "Natural Gas", symbol:"NG", price: 2.91, change: -0.08, weekly:-1.04, monthly:+2.20, yearly:+14.80, vol:"9.8M", trend:"down" },
+      { name: "Heating Oil", symbol:"HO", price: 2.72, change: +0.22, weekly:+0.71, monthly:+3.12, yearly:+8.30, vol:"1.9M", trend:"up" },
+      { name: "Gasoline", symbol:"RB", price: 2.49, change: -0.05, weekly:-0.32, monthly:+1.55, yearly:+9.41, vol:"2.8M", trend:"down" },
+      { name: "OPEC Basket", symbol:"OPEC", price: 84.02, change: +0.97, weekly:+2.23, monthly:+5.11, yearly:+9.77, vol:"N/A", trend:"up" },
+    ];
 
-    <p class="error" id="errorMsg"></p>
-</div>
+    const stocks = [
+      ["XOM","ExxonMobil",118.2,1.8,"18.2M","$462B","3.1%","15.3","7.72",124.8,94.1,"17.9M","Energy","Integrated Oil",18,91,"Buy"],
+      ["CVX","Chevron",149.5,1.2,"7.1M","$281B","4.0%","14.8","10.1",171.0,132.5,"6.9M","Energy","Integrated Oil",16,88,"Buy"],
+      ["SHEL","Shell",68.4,-0.6,"5.3M","$225B","3.8%","10.9","6.31",74.0,58.9,"5.7M","Energy","Integrated Oil",21,79,"Hold"],
+      ["BP","BP",35.9,0.7,"12.4M","$103B","5.9%","8.7","4.12",40.3,29.7,"11.8M","Energy","Integrated Oil",25,74,"Hold"],
+      ["TTE","TotalEnergies",68.8,1.1,"3.4M","$164B","4.6%","8.8","7.84",72.6,56.4,"3.1M","Energy","Integrated Oil",19,82,"Buy"],
+      ["COP","ConocoPhillips",118.9,-1.4,"6.5M","$143B","2.8%","12.2","8.81",135.6,95.2,"6.1M","Energy","E&P",17,77,"Hold"],
+      ["OXY","Occidental",58.6,2.3,"13.2M","$53B","1.1%","17.4","3.48",71.1,47.4,"12.5M","Energy","E&P",28,85,"Buy"],
+      ["MRO","Marathon Oil",27.3,-0.9,"9.1M","$16B","1.9%","11.8","2.31",31.7,20.5,"8.8M","Energy","E&P",23,70,"Hold"],
+      ["EQNR","Equinor",27.8,0.4,"4.2M","$89B","3.9%","7.9","3.62",32.9,23.6,"3.9M","Energy","Integrated Oil",18,76,"Buy"],
+      ["ENB","Enbridge",35.4,0.3,"6.7M","$76B","7.2%","18.9","2.13",39.4,30.1,"6.4M","Energy","Pipelines",12,68,"Hold"],
+      ["SU","Suncor",39.2,1.6,"5.8M","$50B","4.2%","11.2","3.51",42.9,29.8,"5.1M","Energy","Integrated Oil",20,81,"Buy"],
+      ["DVN","Devon Energy",46.1,-1.2,"7.4M","$29B","4.8%","7.6","6.07",55.5,40.1,"7.1M","Energy","E&P",24,73,"Hold"],
+      ["EOG","EOG Resources",126.8,0.9,"2.7M","$72B","2.6%","11.9","10.65",139.5,103.2,"2.5M","Energy","E&P",15,84,"Buy"],
+      ["SLB","Schlumberger",48.6,1.4,"10.3M","$67B","2.1%","16.1","3.01",50.2,38.4,"9.8M","Energy","Oil Services",19,78,"Buy"],
+      ["HAL","Halliburton",29.7,-0.8,"8.8M","$26B","1.9%","11.7","2.54",41.2,24.8,"8.3M","Energy","Oil Services",22,69,"Hold"],
+      ["BKR","Baker Hughes",36.5,0.5,"5.6M","$36B","2.3%","17.2","2.12",37.9,27.4,"5.3M","Energy","Oil Services",16,74,"Hold"],
+      ["RELIANCE","Reliance",3012,0.6,"7.9M","$205B","0.4%","21.4","140.9",3218,2301,"7.5M","Energy","Conglomerate",14,80,"Buy"],
+      ["ONGC","ONGC",287,1.3,"22.4M","$36B","4.9%","8.1","35.4",327,234,"20.5M","Energy","Exploration",21,77,"Buy"],
+      ["OIL","Oil India",602,0.8,"4.7M","$10B","2.7%","9.2","65.4",688,520,"4.3M","Energy","Exploration",18,75,"Hold"],
+      ["IOC","Indian Oil",148,0.5,"19.1M","$20B","2.1%","11.0","13.5",165,123,"17.4M","Energy","Refining",17,71,"Hold"],
+      ["HPCL","HPCL",431,1.9,"8.2M","$12B","1.8%","10.4","41.3",477,352,"7.8M","Energy","Refining",19,73,"Buy"],
+      ["BPCL","BPCL",610,-0.4,"6.1M","$15B","2.2%","9.7","62.9",682,498,"5.9M","Energy","Refining",18,72,"Hold"],
+      ["2222.SR","Saudi Aramco",29.8,0.2,"11.4M","$2.0T","6.7%","15.8","1.89",31.4,27.2,"10.9M","Energy","Integrated Oil",10,93,"Buy"],
+      ["0857.HK","PetroChina",7.2,-1.1,"31.0M","$180B","4.4%","7.8","0.93",8.4,6.2,"29.5M","Energy","Integrated Oil",20,70,"Hold"],
+    ].map(([symbol,name,price,daily,volume,marketCap,dividend,pe,eps,high52,low52,avgVol,sector,industry,risk,ai,signal]) => ({
+      symbol, name, price, daily, volume, marketCap, dividend, pe, eps, high52, low52, avgVol, sector, industry, risk, ai, signal
+    }));
 
-<script>
-function login() {
-    let username = document.getElementById("username").value.trim();
-    let password = document.getElementById("password").value.trim();
+    const topMovers = [
+      {symbol:"OXY", name:"Occidental", ch:+2.3},
+      {symbol:"HPCL", name:"HPCL", ch:+1.9},
+      {symbol:"XOM", name:"ExxonMobil", ch:+1.8},
+      {symbol:"SU", name:"Suncor", ch:+1.6},
+      {symbol:"SLB", name:"Schlumberger", ch:+1.4}
+    ];
 
-    const users = {
-        "Dead_psycho": "No_mercykiller",
-        "idealboy": "same_aimed_hunter"
-    };
+    const losers = [
+      {symbol:"MRO", name:"Marathon Oil", ch:-0.9},
+      {symbol:"HAL", name:"Halliburton", ch:-0.8},
+      {symbol:"SHEL", name:"Shell", ch:-0.6},
+      {symbol:"BPCL", name:"BPCL", ch:-0.4},
+      {symbol:"NG", name:"Natural Gas", ch:-0.08}
+    ];
 
-    if (username === "" || password === "") {
-        document.getElementById("errorMsg").innerText = "Please fill all fields!";
-    } 
-    else if (users[username] && users[username] === password) {
-        // save login + username
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("user", username);
+    const active = [
+      {symbol:"ONGC", name:"ONGC", vol:"22.4M"},
+      {symbol:"IOC", name:"Indian Oil", vol:"19.1M"},
+      {symbol:"XOM", name:"ExxonMobil", vol:"18.2M"},
+      {symbol:"OXY", name:"Occidental", vol:"13.2M"},
+      {symbol:"BP", name:"BP", vol:"12.4M"}
+    ];
 
-        // redirect
-        window.location.href = "home.html";
-    } 
-    else {
-        document.getElementById("errorMsg").innerText = "Invalid Username or Password!";
+    const news = [
+      { title: "OPEC signals cautious supply discipline amid rising demand expectations", source: "Reuters", time: "2m ago", impact: 84 },
+      { title: "Brent firms as inventory draw boosts sentiment across energy markets", source: "Bloomberg", time: "6m ago", impact: 77 },
+      { title: "Refinery margins widen as gasoline crack spreads improve", source: "CNBC", time: "12m ago", impact: 68 },
+      { title: "US shale producers maintain capital discipline while cash flows stay strong", source: "Financial Times", time: "19m ago", impact: 73 },
+      { title: "LNG terminal activity picks up on stronger seasonal export flows", source: "MarketWatch", time: "23m ago", impact: 61 }
+    ];
+
+    function formatPct(x){ return `${x > 0 ? "+" : ""}${x.toFixed(2)}%`; }
+    function trendClass(x){ return x >= 0 ? "text-[#00E676]" : "text-[#FF3D57]"; }
+
+    function useTicker() {
+      const [t, setT] = useState(0);
+      useEffect(() => {
+        const id = setInterval(() => setT(v => v + 1), 1000);
+        return () => clearInterval(id);
+      }, []);
+      return t;
     }
-}
 
-// Enter key support
-document.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        login();
+    function MiniSparkline({ up = true }) {
+      const pts = useMemo(() => {
+        return Array.from({ length: 18 }, (_, i) => {
+          const y = up ? 45 - Math.sin(i * 0.55) * 10 - i * 0.6 : 28 + Math.sin(i * 0.55) * 10 + i * 0.45;
+          return `${i * 6.2},${Math.max(6, Math.min(54, y))}`;
+        }).join(" ");
+      }, [up]);
+      return <svg viewBox="0 0 110 60" className="h-10 w-full overflow-visible"><polyline points={pts} fill="none" stroke={up ? "#00E676" : "#FF3D57"} strokeWidth="2.7" strokeLinejoin="round" strokeLinecap="round" opacity="0.95" /></svg>;
     }
-});
-</script>
 
+    function MetricPill({label, value, tone="gold"}) {
+      const c = tone === "green" ? "#00E676" : tone === "red" ? "#FF3D57" : tone === "orange" ? "#FF8C00" : "#D4AF37";
+      return (
+        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-white/35">{label}</div>
+          <div style={{color:c}} className="mt-1 text-lg font-semibold">{value}</div>
+        </div>
+      );
+    }
+
+    function LiveBackground() {
+      const canvasRef = useRef(null);
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        let raf = 0, t = 0, w = 0, h = 0;
+
+        const dpr = () => Math.min(window.devicePixelRatio || 1, 1.8);
+        const resize = () => {
+          w = canvas.clientWidth * dpr();
+          h = canvas.clientHeight * dpr();
+          canvas.width = w;
+          canvas.height = h;
+        };
+
+        const draw = () => {
+          t += 0.007;
+          ctx.clearRect(0, 0, w, h);
+
+          const bg = ctx.createLinearGradient(0, 0, 0, h);
+          bg.addColorStop(0, "#050505");
+          bg.addColorStop(.55, "#0b0b10");
+          bg.addColorStop(1, "#030303");
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, w, h);
+
+          ctx.fillStyle = "rgba(255,255,255,0.02)";
+          ctx.fillRect(0, 0, w, h);
+
+          for (let i = 0; i < 5; i++) {
+            ctx.globalAlpha = 0.05;
+            ctx.strokeStyle = i % 2 ? "#D4AF37" : "#00E676";
+            ctx.lineWidth = 1 * dpr();
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 34 * dpr()) {
+              const y = h * 0.24 + i * 70 * dpr() + Math.sin(x * 0.002 + t * 0.6 + i) * 8 * dpr();
+              x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+
+          const horizon = h * 0.71;
+          const skyline = [0.18,0.22,0.29,0.34,0.41,0.47,0.55,0.62,0.69,0.77,0.84].map(v => w * v);
+          skyline.forEach((x, idx) => {
+            const base = horizon - (idx % 3) * 14 * dpr() - Math.sin(t + idx) * 8 * dpr();
+            ctx.fillStyle = "rgba(255,255,255,0.05)";
+            ctx.fillRect(x, base - 50 * dpr(), 7 * dpr(), 50 * dpr());
+            ctx.fillStyle = idx % 2 ? "rgba(255,140,0,0.10)" : "rgba(212,175,55,0.10)";
+            ctx.fillRect(x - 2 * dpr(), base - 18 * dpr(), 14 * dpr(), 18 * dpr());
+            ctx.fillStyle = "rgba(255,255,255,0.05)";
+            ctx.fillRect(x + 10 * dpr(), base - 22 * dpr(), 3 * dpr(), 22 * dpr());
+          });
+
+          for (let i = 0; i < 24; i++) {
+            const x = ((i * 83 + Math.sin(t + i) * 80) % w);
+            const y = h * 0.20 + Math.sin(t * 1.6 + i) * 25 * dpr();
+            ctx.beginPath();
+            ctx.arc(x, y, (12 + (i % 5) * 8) * dpr(), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(180,180,180,${0.015 + (i % 3) * 0.006})`;
+            ctx.fill();
+          }
+
+          const routes = [[0.12,0.32,0.38,0.24],[0.38,0.24,0.66,0.31],[0.18,0.56,0.52,0.41],[0.58,0.44,0.86,0.22],[0.24,0.73,0.67,0.63],[0.12,0.78,0.9,0.64]];
+          routes.forEach(([x1,y1,x2,y2],i) => {
+            ctx.beginPath();
+            const sx = x1 * w, sy = y1 * h, ex = x2 * w, ey = y2 * h, cx = (sx + ex) / 2, cy = (sy + ey) / 2 - 45 * dpr();
+            ctx.moveTo(sx, sy);
+            ctx.quadraticCurveTo(cx, cy, ex, ey);
+            ctx.strokeStyle = i % 2 ? "rgba(0,230,118,0.30)" : "rgba(212,175,55,0.28)";
+            ctx.lineWidth = 1.2 * dpr();
+            ctx.stroke();
+          });
+
+          ctx.globalAlpha = 0.75;
+          for (let i = 0; i < 120; i++) {
+            const x = (Math.sin(t * 0.9 + i * 1.3) * 0.5 + 0.5) * w;
+            const y = (Math.cos(t * 1.2 + i * 1.7) * 0.5 + 0.5) * h;
+            const r = (i % 5 + 1) * 0.9 * dpr();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = i % 4 === 0 ? "rgba(0,230,118,0.45)" : i % 4 === 1 ? "rgba(212,175,55,0.45)" : i % 4 === 2 ? "rgba(255,140,0,0.40)" : "rgba(255,61,87,0.35)";
+            ctx.fill();
+          }
+
+          const baseY = h * 0.54;
+          for (let i = 0; i < 28; i++) {
+            const x = w * 0.10 + i * w * 0.028;
+            const hi = baseY - 40 * dpr() - Math.sin(t * 1.2 + i) * 16 * dpr();
+            const lo = baseY + 28 * dpr() + Math.cos(t * 1.4 + i) * 12 * dpr();
+            const open = baseY + Math.sin(t * 1.7 + i) * 16 * dpr();
+            const close = baseY + Math.cos(t * 1.6 + i) * 16 * dpr();
+            ctx.strokeStyle = close >= open ? "rgba(0,230,118,0.26)" : "rgba(255,61,87,0.26)";
+            ctx.lineWidth = 1.2 * dpr();
+            ctx.beginPath();
+            ctx.moveTo(x, hi);
+            ctx.lineTo(x, lo);
+            ctx.stroke();
+            ctx.fillStyle = close >= open ? "rgba(0,230,118,0.18)" : "rgba(255,61,87,0.18)";
+            ctx.fillRect(x - 2.4 * dpr(), Math.min(open, close), 4.8 * dpr(), Math.max(2 * dpr(), Math.abs(close - open)));
+          }
+
+          for (let i = 0; i < 34; i++) {
+            const x = (i * 91 + (t * 80)) % w;
+            const y = h * 0.78 + Math.sin(t * 1.5 + i) * 18 * dpr();
+            ctx.beginPath();
+            ctx.ellipse(x, y, 6 * dpr(), 8 * dpr(), Math.sin(t + i), 0, Math.PI * 2);
+            const g = ctx.createRadialGradient(x - 2 * dpr(), y - 3 * dpr(), 1, x, y, 8 * dpr());
+            g.addColorStop(0, "rgba(255,255,255,0.85)");
+            g.addColorStop(.28, "rgba(212,175,55,0.55)");
+            g.addColorStop(1, "rgba(0,0,0,0.05)");
+            ctx.fillStyle = g;
+            ctx.fill();
+          }
+
+          if (!document.hidden) raf = requestAnimationFrame(draw);
+        };
+
+        const onVis = () => {
+          if (document.hidden) cancelAnimationFrame(raf);
+          else draw();
+        };
+
+        resize();
+        draw();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", onVis);
+
+        return () => {
+          cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", onVis);
+        };
+      }, []);
+      return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full opacity-[0.88]" />;
+    }
+
+    function SectionTitle({title, sub}) {
+      return (
+        <div>
+          <div className="text-xs uppercase tracking-[0.32em] text-white/40">{title}</div>
+          <div className="mt-1 text-xl font-semibold">{sub}</div>
+        </div>
+      );
+    }
+
+    function QuoteRow({q}) {
+      return (
+        <div className="rounded-2xl border border-white/8 bg-black/20 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium">{q.name}</div>
+              <div className="text-xs text-white/45">{q.symbol} · Volume {q.vol}</div>
+            </div>
+            <div className={`text-sm font-semibold ${trendClass(q.change)}`}>{q.price} <span>{formatPct(q.change)}</span></div>
+          </div>
+          <div className="mt-2"><MiniSparkline up={q.trend !== "down"} /></div>
+        </div>
+      );
+    }
+
+    function MarketCard({m}) {
+      return (
+        <div className="glass card-hover rounded-3xl p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <div className="text-sm text-white/55">{m.symbol}</div>
+              <div className="text-lg font-semibold">{m.name}</div>
+            </div>
+            <div className={`text-sm font-semibold ${trendClass(m.change)}`}>{m.price}</div>
+          </div>
+          <div className="mt-3 text-sm space-y-1 text-white/75">
+            <div>Today: <span className={trendClass(m.change)}>{formatPct(m.change)}</span></div>
+            <div>Weekly: <span className={trendClass(m.weekly)}>{formatPct(m.weekly)}</span></div>
+            <div>Monthly: <span className={trendClass(m.monthly)}>{formatPct(m.monthly)}</span></div>
+            <div>Yearly: <span className={trendClass(m.yearly)}>{formatPct(m.yearly)}</span></div>
+            <div>Volume: <span className="text-[#D4AF37]">{m.vol}</span></div>
+          </div>
+          <div className="mt-3"><MiniSparkline up={m.trend !== "down"} /></div>
+        </div>
+      );
+    }
+
+    function StockCard({s}) {
+      return (
+        <div className="glass card-hover rounded-3xl p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-lg font-semibold">{s.name}</div>
+              <div className="text-xs text-white/45">{s.symbol} · {s.sector} · {s.industry}</div>
+            </div>
+            <button className="rounded-full border border-white/10 bg-black/20 p-2">★</button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-2xl bg-black/20 p-2">Price <span className="float-right text-[#D4AF37]">{s.price}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Daily <span className={`float-right ${s.daily >= 0 ? "text-[#00E676]" : "text-[#FF3D57]"}`}>{s.daily > 0 ? "+" : ""}{s.daily}%</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Volume <span className="float-right">{s.volume}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Market Cap <span className="float-right">{s.marketCap}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Dividend <span className="float-right text-[#00E676]">{s.dividend}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">PE <span className="float-right">{s.pe}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">EPS <span className="float-right">{s.eps}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">AI Score <span className="float-right text-[#00E676]">{s.ai}</span></div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-2xl bg-black/20 p-2">52W High <span className="float-right">{s.high52}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">52W Low <span className="float-right">{s.low52}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Avg Vol <span className="float-right">{s.avgVol}</span></div>
+            <div className="rounded-2xl bg-black/20 p-2">Risk <span className="float-right text-[#D4AF37]">{s.risk}</span></div>
+          </div>
+          <div className="mt-3"><MiniSparkline up={s.daily >= 0} /></div>
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+            <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[#D4AF37]">{s.signal}</span>
+            <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">Favorite</span>
+            <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1">Compare</span>
+          </div>
+        </div>
+      );
+    }
+
+    function RankList({title, tone, items}) {
+      return (
+        <div className="rounded-3xl border border-white/8 bg-black/20 p-4">
+          <div className={`text-sm font-semibold ${tone === "green" ? "text-[#00E676]" : tone === "red" ? "text-[#FF3D57]" : "text-[#D4AF37]"}`}>{title}</div>
+          <div className="mt-3 space-y-2 text-sm">
+            {items.map((x, i) => (
+              <div key={x.symbol} className="rounded-2xl border border-white/8 bg-white/5 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <span>{i + 1}. {x.name}</span>
+                  <span className={x.ch && x.ch >= 0 ? "text-[#00E676]" : "text-[#FF3D57]"}>{x.ch ? (x.ch > 0 ? "+" : "") + x.ch.toFixed(2) + "%" : x.vol}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function StatusRow({name, status}) {
+      return (
+        <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 flex items-center justify-between">
+          <span>{name}</span>
+          <span className={status === "Open" ? "text-[#00E676]" : "text-[#FF3D57]"}>{status}</span>
+        </div>
+      );
+    }
+
+    function Shell() {
+      const [dark, setDark] = useState(true);
+      const [activeFilter, setActiveFilter] = useState("All");
+      const [search, setSearch] = useState("");
+      const [sidebar, setSidebar] = useState(true);
+      const tick = useTicker();
+      const [time, setTime] = useState(new Date());
+
+      useEffect(() => {
+        const id = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      const clock = time.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+      const date = time.toLocaleDateString([], {weekday:"short", month:"short", day:"numeric", year:"numeric"});
+
+      const filteredStocks = stocks.filter(s => !search || `${s.symbol} ${s.name} ${s.sector} ${s.industry}`.toLowerCase().includes(search.toLowerCase()));
+      const visibleNews = news.filter(n => activeFilter === "All" || n.title.toLowerCase().includes(activeFilter.toLowerCase()) || n.source.toLowerCase().includes(activeFilter.toLowerCase()));
+
+      const stats = [
+        ["Oil Price", "$82.41", "+1.82%"],
+        ["Volatility", "24.8", "Moderate"],
+        ["Beta Basket", "1.18", "Market"],
+        ["Sharpe", "1.84", "Strong"]
+      ];
+
+      const fundamentals = [
+        ["Revenue","3.2T"], ["Net Profit","412B"], ["Operating Margin","18.4%"], ["ROE","21.7%"], ["ROCE","17.2%"], ["Debt/Equity","0.43"], ["Cash Flow","246B"], ["Dividend","3.4%"], ["PEG","1.2"], ["PE","13.8"], ["PB","1.6"], ["Book Value","52.4"], ["EPS","5.84"], ["Quarterly Growth","8.1%"], ["Annual Growth","11.4%"]
+      ];
+
+      const technical = [
+        ["Moving Averages","Bullish crossover"], ["Oscillators","RSI 61 / MACD positive"], ["Trend Strength","Strong uptrend"], ["Momentum","Accelerating"], ["Support","$80.90"], ["Resistance","$84.60"], ["Breakout Detection","Pending"], ["Pattern Recognition","Ascending channel"], ["Overall Signal","Bullish"]
+      ];
+
+      const holdings = [
+        ["Mutual Funds","34.2%"], ["FIIs","18.7%"], ["DIIs","12.4%"], ["Promoters","28.1%"], ["Retail","5.0%"], ["Insider Trading","Low activity"], ["Recent Changes","+1.2%"]
+      ];
+
+      const dividend = [
+        ["Dividend History","Quarterly"], ["Yield","3.8%"], ["Ex Date","Aug 18"], ["Payment Date","Sep 05"], ["Growth Rate","8.7%"]
+      ];
+
+      const earnings = [
+        ["Upcoming Earnings","Aug 02"], ["Past Earnings","Beat"], ["EPS Surprise","+7.4%"], ["Revenue Surprise","+3.1%"]
+      ];
+
+      const alerts = ["Price Alerts","Volume Alerts","RSI Alerts","News Alerts","Breakout Alerts","Email Notifications","Push Notifications"];
+      const learning = ["Beginner","Intermediate","Advanced","Oil Investing Basics","Technical Analysis","Fundamental Analysis","Swing Trading","Options","Risk Management","Video Tutorials","Glossary"];
+      const calendar = ["OPEC Meetings","Fed Meetings","Inventory Reports","EIA Reports","Inflation","GDP","Interest Rates"];
+      const comparison = [
+        ["WTI","82.41"], ["Brent","85.73"], ["Natural Gas","2.91"], ["Gold","2,458"], ["Silver","29.8"], ["Copper","4.22"], ["Dollar Index","104.8"]
+      ];
+      const eco = [["US","Open"],["UK","Closed"],["India","Open"],["Europe","Open"],["Middle East","Open"],["Asia","Open"]];
+      const watchlist = stocks.slice(0, 8).map(s => s.symbol);
+      const portfolio = [
+        ["Investment","$128,420"], ["Current Value","$163,880"], ["Profit","$35,460"], ["Loss","$2,220"]
+      ];
+
+      return (
+        <div className={dark ? "dark" : ""}>
+          <div className="fixed inset-0 overflow-hidden">
+            <LiveBackground />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/80"></div>
+            <div className="absolute inset-0 grid-bg opacity-[0.10]"></div>
+            <div className="absolute inset-0 opacity-40 [background:radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.14),transparent_25%),radial-gradient(circle_at_80%_20%,rgba(0,230,118,0.10),transparent_22%),radial-gradient(circle_at_50%_80%,rgba(255,140,0,0.09),transparent_26%)]"></div>
+          </div>
+
+          <div className="relative z-10">
+            <header className="sticky top-0 z-50 border-b border-white/10 bg-black/38 backdrop-blur-2xl">
+              <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 lg:px-6">
+                <button onClick={() => setSidebar(v => !v)} className="glass rounded-2xl p-2.5 text-white/85">☰</button>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#D4AF37] via-[#FF8C00] to-[#00E676] text-black glow float">🛢️</div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold tracking-[0.34em] text-[#D4AF37] truncate">OIL MARKET PRO</div>
+                    <div className="text-[10px] uppercase tracking-[0.32em] text-white/45 truncate">Bloomberg x TradingView x Apple x Tesla finance terminal</div>
+                  </div>
+                </div>
+                <div className="hidden xl:flex flex-1 items-center gap-1 overflow-x-auto">
+                  {NAV.map(n => <button key={n} className="rounded-full px-4 py-2 text-sm text-white/75 transition hover:bg-white/8 hover:text-white whitespace-nowrap">{n}</button>)}
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  <div className="hidden md:flex items-center gap-2 glass rounded-2xl px-3 py-2 min-w-[280px]">
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search companies, tickers, countries..." className="w-full bg-transparent outline-none text-sm placeholder:text-white/35" />
+                    <span className="text-white/40">⌘K</span>
+                  </div>
+                  <button className="glass rounded-2xl p-2.5">🔔</button>
+                  <button className="glass rounded-2xl p-2.5" onClick={() => setDark(v => !v)}>{dark ? "🌙" : "☀️"}</button>
+                  <button className="glass rounded-2xl p-2.5">👤</button>
+                </div>
+              </div>
+              <div className="overflow-hidden border-t border-white/8 bg-black/25">
+                <div className="ticker py-2 text-sm text-white/72 px-4">
+                  {Array.from({length:2}).map((_,i) => (
+                    <span key={i} className="inline-flex items-center gap-6 pr-8">
+                      {marketCards.map(m => (
+                        <span key={m.symbol} className={m.trend === "up" ? "text-[#00E676]" : "text-[#FF3D57]"}>
+                          {m.symbol} {m.price} ({m.change > 0 ? "+" : ""}{m.change.toFixed(2)}%)
+                        </span>
+                      ))}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </header>
+
+            <main className="mx-auto max-w-[2000px] px-4 py-5 lg:px-6 space-y-6">
+              <section className="grid gap-6 xl:grid-cols-[1.65fr_0.95fr]">
+                <GlassBlock
+                  hero
+                  title="Global Oil Stock Intelligence Platform"
+                  subtitle="Analyze every oil company in the world using live charts, financial data, technical indicators, news sentiment, AI signals, and market structure — built for beginners and professionals."
+                />
+                <GlassCard className="relative overflow-hidden p-5 card-hover">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.14),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(0,230,118,0.08),transparent_24%)]"></div>
+                  <div className="relative flex items-center justify-between">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.3em] text-white/40">Live Terminal</div>
+                      <div className="text-xl font-semibold text-[#D4AF37]">Streaming Overview</div>
+                    </div>
+                    <div className="rounded-full border border-[#00E676]/25 bg-[#00E676]/10 px-3 py-1 text-xs text-[#00E676] pulse">LIVE</div>
+                  </div>
+                  <div className="relative mt-4 space-y-3">
+                    {marketCards.map(q => <QuoteRow key={q.symbol} q={q} />)}
+                  </div>
+                </GlassCard>
+              </section>
+
+              <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {stats.map(([a,b,c], idx) => (
+                  <GlassCard key={a} className="p-4 card-hover">
+                    <div className="text-xs uppercase tracking-[0.28em] text-white/35">{a}</div>
+                    <div className="mt-2 text-3xl font-semibold">{b}</div>
+                    <div className={`mt-1 text-sm ${idx % 2 === 0 ? "text-[#00E676]" : "text-[#FF8C00]"}`}>{c}</div>
+                  </GlassCard>
+                ))}
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Global Market Overview" sub="WTI, Brent, Natural Gas, Heating Oil, Gasoline and OPEC Basket with live chart and trend context" />
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+                    {marketCards.map(m => <MarketCard key={m.symbol} m={m} />)}
+                  </div>
+                </GlassCard>
+                <div className="space-y-6">
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Market Status" sub="Open/closed sessions and countdown to next open" />
+                    <div className="mt-4 space-y-3">{eco.map(([m,s]) => <StatusRow key={m} name={m} status={s} />)}</div>
+                    <div className="mt-4 rounded-2xl border border-[#D4AF37]/15 bg-[#D4AF37]/8 p-4 text-sm">Next market opens in <span className="text-[#D4AF37] font-semibold">05:18:42</span></div>
+                  </GlassCard>
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="AI Insights" sub="News, indicators, momentum, institutional activity and prediction layer" />
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <MetricPill label="Bias" value="Bullish" tone="green" />
+                      <MetricPill label="Confidence" value="76%" tone="gold" />
+                      <MetricPill label="Risk" value="Moderate" tone="orange" />
+                      <MetricPill label="Target" value="86.25" tone="green" />
+                    </div>
+                    <div className="mt-3 space-y-2 text-sm text-white/70">
+                      <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Suggested Entry: <span className="text-[#D4AF37]">82.10 - 82.35</span></div>
+                      <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Stop Loss: <span className="text-[#FF3D57]">80.90</span></div>
+                      <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Prediction Probability: <span className="text-[#00E676]">71%</span></div>
+                    </div>
+                  </GlassCard>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Advanced Chart" sub="Candlestick, line, area, Heikin Ashi, indicators and drawing tools" />
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {["1D","5D","1M","6M","1Y","5Y","MAX","Candlestick","Line","Area","Heikin Ashi","EMA","SMA","VWAP","RSI","MACD","ATR","Supertrend","Bollinger Bands","Ichimoku Cloud","Fibonacci","Volume","Trend Line","Rectangle","Circle","Text","Arrow","Measure"].map(x => (
+                      <span key={x} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/75">{x}</span>
+                    ))}
+                  </div>
+                  <div className="mt-4 grid h-[430px] place-items-center rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.01))] overflow-hidden relative">
+                    <div className="absolute inset-0 opacity-40 [background:linear-gradient(transparent_49%,rgba(255,255,255,0.05)_50%),linear-gradient(90deg,transparent_49%,rgba(255,255,255,0.05)_50%)] [background-size:100%_52px,52px_100%]"></div>
+                    <div className="relative text-center px-6">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl glass glow">📈</div>
+                      <div className="mt-4 text-2xl font-semibold">TradingView-style chart area</div>
+                      <div className="mt-2 max-w-2xl text-sm text-white/55">Hook TradingView Lightweight Charts here for real OHLC candles, overlays, secondary series, crosshair sync, and responsive autoscaling.</div>
+                    </div>
+                  </div>
+                </GlassCard>
+
+                <div className="space-y-6">
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Search + Alerts + Watchlist" sub="Instant company search, alerts, notifications and quick access" />
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <MetricPill label="Watchlist" value={watchlist.length + " symbols"} tone="gold" />
+                      <MetricPill label="Alerts" value={alerts.length + " active"} tone="green" />
+                    </div>
+                    <div className="mt-4 space-y-2">{watchlist.map(x => <div key={x} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">{x} <span className="float-right text-white/40">Pinned</span></div>)}</div>
+                  </GlassCard>
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Economic Calendar" sub="Macro events that move crude, energy equities and currencies" />
+                    <div className="mt-4 space-y-2">{calendar.map(x => <div key={x} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">{x}</div>)}</div>
+                  </GlassCard>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Top Oil Stocks" sub="Company cards with price, valuation, dividend, risk, AI score and signal" />
+                  <div className="mt-4 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+                    {filteredStocks.map(s => <StockCard key={s.symbol} s={s} />)}
+                  </div>
+                </GlassCard>
+                <div className="space-y-6">
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Top Gainers / Losers / Active" sub="Fast movers across the energy universe" />
+                    <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                      <RankList title="Top Gainers" tone="green" items={topMovers} />
+                      <RankList title="Top Losers" tone="red" items={losers} />
+                      <RankList title="Most Active" tone="gold" items={active} />
+                    </div>
+                  </GlassCard>
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Commodity Comparison" sub="WTI, Brent, Gas, Gold, Silver, Copper, Dollar Index" />
+                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                      {comparison.map(([a,b]) => <div key={a} className="rounded-2xl border border-white/8 bg-black/20 p-3"><div className="text-xs uppercase tracking-[0.28em] text-white/35">{a}</div><div className="mt-1 text-lg font-semibold">{b}</div></div>)}
+                    </div>
+                  </GlassCard>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Breaking News" sub="Live scrolling energy headlines with source and impact" />
+                  <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                    {FILTERS.map(f => <button key={f} className={`rounded-full px-4 py-2 text-sm whitespace-nowrap ${activeFilter===f ? "bg-[#D4AF37] text-black" : "border border-white/10 bg-white/5 text-white/75"}`}>{f}</button>)}
+                  </div>
+                  <div className="mt-2 space-y-3">
+                    {visibleNews.map(n => (
+                      <div key={n.title} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="font-medium">{n.title}</div>
+                            <div className="mt-1 text-xs text-white/45">{n.source} · {n.time}</div>
+                          </div>
+                          <div className="rounded-full border border-[#00E676]/20 bg-[#00E676]/10 px-2 py-1 text-xs text-[#00E676]">Impact {n.impact}%</div>
+                        </div>
+                        <div className="mt-2 text-sm text-white/60">AI Summary: likely moderate bullish effect on integrated energy, upstream producers and service names.</div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+                <div className="space-y-6">
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Fundamental Analysis" sub="Core metrics for quality, value, leverage and growth" />
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {fundamentals.map(([a,b]) => <div key={a} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm flex items-center justify-between"><span className="text-white/70">{a}</span><span className="text-[#D4AF37] font-medium">{b}</span></div>)}
+                    </div>
+                  </GlassCard>
+                  <GlassCard className="p-5 card-hover">
+                    <SectionTitle title="Technical Analysis" sub="Trend, momentum, support, resistance and breakout framework" />
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {technical.map(([a,b]) => <div key={a} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm flex items-center justify-between"><span className="text-white/70">{a}</span><span className="text-[#00E676] font-medium">{b}</span></div>)}
+                    </div>
+                  </GlassCard>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-3">
+                <GlassCard className="p-5 card-hover"><SectionTitle title="Institutional Holdings" sub="Mutual funds, FIIs, DIIs, promoters, retail and insider trading" />{holdings.map(([a,b]) => <div key={a} className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm flex items-center justify-between"><span>{a}</span><span className="text-[#D4AF37]">{b}</span></div>)}</GlassCard>
+                <GlassCard className="p-5 card-hover"><SectionTitle title="Dividend Section" sub="Dividend history and payouts" />{dividend.map(([a,b]) => <div key={a} className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm flex items-center justify-between"><span>{a}</span><span className="text-[#00E676]">{b}</span></div>)}</GlassCard>
+                <GlassCard className="p-5 card-hover"><SectionTitle title="Earnings Section" sub="Upcoming and past results with surprises" />{earnings.map(([a,b]) => <div key={a} className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm flex items-center justify-between"><span>{a}</span><span className="text-[#FF8C00]">{b}</span></div>)}</GlassCard>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-3">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Risk Analysis" sub="Volatility, beta, drawdown, sharpe and risk meter" />
+                  <div className="mt-4 space-y-3 text-sm">
+                    <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Volatility: <span className="float-right text-[#D4AF37]">24.8</span></div>
+                    <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Beta: <span className="float-right text-[#D4AF37]">1.18</span></div>
+                    <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Sharpe Ratio: <span className="float-right text-[#00E676]">1.84</span></div>
+                    <div className="rounded-2xl border border-white/8 bg-black/20 p-3">Max Drawdown: <span className="float-right text-[#FF3D57]">-12.6%</span></div>
+                  </div>
+                </GlassCard>
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Alert System" sub="Price, volume, RSI, news and breakout alerts" />
+                  {alerts.map(x => <div key={x} className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">{x}</div>)}
+                </GlassCard>
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Learning Center" sub="Beginner to advanced oil investing and trading education" />
+                  {learning.map(x => <div key={x} className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">{x}</div>)}
+                </GlassCard>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Portfolio" sub="Investment, current value, P/L and allocation visuals" />
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    {portfolio.map(([a,b]) => <div key={a} className="rounded-2xl border border-white/8 bg-black/20 p-3"><div className="text-xs uppercase tracking-[0.28em] text-white/35">{a}</div><div className="mt-1 text-xl font-semibold text-[#D4AF37]">{b}</div></div>)}
+                  </div>
+                  <div className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+                    <div className="text-sm text-white/70 mb-3">Allocation Pie / Sector Allocation / Performance Graph</div>
+                    <div className="h-40 rounded-2xl bg-[conic-gradient(from_180deg,#D4AF37_0_27%,#00E676_27%_49%,#FF8C00_49%_73%,#FF3D57_73%_100%)] opacity-80"></div>
+                  </div>
+                </GlassCard>
+                <GlassCard className="p-5 card-hover">
+                  <SectionTitle title="Screener" sub="Country, market cap, PE, dividend, volume, momentum, RSI, sector and industry" />
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {["Country","Market Cap","Price","PE","Dividend","Volume","Momentum","RSI","Market","Growth","Sector","Industry"].map(x => <div key={x} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm">{x}</div>)}
+                  </div>
+                </GlassCard>
+              </section>
+
+              <footer className="border-t border-white/10 py-8 text-sm text-white/55">
+                <div className="grid gap-3 md:grid-cols-6">
+                  {["Markets","Legal","Privacy","About","API","Support","Contact"].map(x => <a key={x} className="hover:text-white" href="#">{x}</a>)}
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                  <div>Oil Market Pro · institutional energy terminal UI</div>
+                  <div>{date} · {clock}</div>
+                </div>
+              </footer>
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    function GlassBlock({hero=false,title,subtitle}) {
+      return (
+        <GlassCard className={`relative overflow-hidden ${hero ? "p-6 md:p-8" : "p-5"} card-hover`}>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(0,230,118,0.08),transparent_28%)]"></div>
+          <div className="relative">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[#D4AF37]">Live Energy Intelligence</div>
+            <h1 className="max-w-4xl text-4xl font-semibold leading-tight md:text-6xl title-gradient">{title}</h1>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-white/72 md:text-lg">{subtitle}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button className="rounded-2xl bg-[#D4AF37] px-5 py-3 font-medium text-black glow">Explore Markets</button>
+              <button className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 font-medium text-white">Start Investing</button>
+              <button className="rounded-2xl border border-[#00E676]/20 bg-[#00E676]/10 px-5 py-3 font-medium text-[#00E676]">Live Market</button>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {[["AI Rating","92/100","+8%"],["Forecast","Bullish","Prob. 76%"],["Risk","Moderate","Sharpe 1.8"]].map(([a,b,c]) => (
+                <div key={a} className="glass rounded-3xl p-4">
+                  <div className="text-xs uppercase tracking-[0.28em] text-white/40">{a}</div>
+                  <div className="mt-2 text-2xl font-semibold">{b}</div>
+                  <div className="mt-1 text-sm text-[#D4AF37]">{c}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </GlassCard>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Shell />);
+  </script>
 </body>
 </html>
